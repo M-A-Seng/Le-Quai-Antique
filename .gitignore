@@ -1,0 +1,68 @@
+############################
+# Dépendances PHP / Composer
+############################
+/vendor/
+composer.phar
+
+############################
+# Fichiers d'environnement
+############################
+.env
+.env.*
+!.env.example
+
+############################
+# Logs & fichiers temporaires
+############################
+*.log
+*.tmp
+*.cache
+*.swp
+*.swo
+
+############################
+# Cache / fichiers générés
+############################
+/cache/
+/tmp/
+/storage/logs/
+/storage/framework/cache/
+/storage/framework/sessions/
+/storage/framework/views/
+
+############################
+# Fichiers générés / build
+############################
+/build/
+/dist/
+
+############################
+# VS Code
+############################
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+!.vscode/*.code-snippets
+.history/
+*.vsix
+.history
+.ionide
+
+############################
+# Tests / couverture
+############################
+/coverage/
+.phpunit.result.cache
+
+############################
+# Fichiers inutiles
+############################
+*.odt
+*.odt.bak
+*.ods
+*.ods.bak
+myprocess.md
+diagram_activites_quai-antique.pdf
+
