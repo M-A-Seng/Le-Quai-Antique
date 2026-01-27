@@ -64,5 +64,6 @@ composer.phar
 *.ods
 *.ods.bak
 myprocess.md
+logs.md
 diagram_activites_quai-antique.pdf
 

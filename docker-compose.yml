@@ -1,0 +1,66 @@
+
+services:
+  db:
+    image: postgres:18
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql # Persister la bdd
+    healthcheck:
+      # Vérifie si une connexion utilisateur est possible, si non = unheathy
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"] 
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - lqa-network
+
+  php:
+    build: ./docker/php
+    volumes:
+      - ./app:/var/www/html/app # backend
+      - ./public:/var/www/html/public # frontend
+      - ./config:/var/www/html/config # configuration
+      - ./docker/php/opcache.${APP_ENV}.ini:/usr/local/etc/php/conf.d/10-opcache.ini  # Caching php pour performances
+    expose:
+      - "9000"
+    depends_on:
+      db:
+        condition: service_healthy # Vérifie si le service db est healthy avant de démarrer
+    healthcheck:
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    networks:
+      - lqa-network
+
+  nginx:
+    image: nginx:1.28
+    ports:
+      - "8080:80"
+    volumes:
+      - ./public:/var/www/html/public
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf # Persister la config serveur
+    depends_on:
+      php:
+        condition: service_started # Vérifie si le service php est démarré avant de démarrer
+    healthcheck:
+      # Vérifie si php-fpm répond à la requête -> si non = unhealthy
+      test: ["CMD-SHELL", "curl -fsS http://localhost/healthcheck.php || exit 1"] 
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 40s
+    networks:
+      - lqa-network
+
+volumes:
+  pgdata:
+
+networks:
+  lqa-network:
+    driver: bridge
