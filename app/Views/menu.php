@@ -1,0 +1,1 @@
+<h1>Carte du restaurant</h1>

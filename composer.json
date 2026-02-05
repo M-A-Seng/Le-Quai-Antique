@@ -1,0 +1,9 @@
+{
+    "name": "le-quai-antique/website",
+    "description": "Site vitrine du restaurant Le Quai Antique",
+    "autoload": {
+        "psr-4": {
+            "App\\": "app/"
+        }
+    }
+}

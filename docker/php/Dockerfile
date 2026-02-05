@@ -11,6 +11,11 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /var/www/html
 
+# Installer php composer directement dans l'image
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+
+# Installer autoload directement dans l'image
+COPY composer.json ./
+RUN composer install --no-dev --optimize-autoloader
 
 EXPOSE 9000

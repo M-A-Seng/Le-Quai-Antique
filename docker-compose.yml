@@ -19,7 +19,9 @@ services:
       - lqa-network
 
   php:
-    build: ./docker/php
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
     volumes:
       - ./app:/var/www/html/app # backend
       - ./public:/var/www/html/public # frontend
