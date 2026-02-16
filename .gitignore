@@ -57,14 +57,11 @@ composer.phar
 .phpunit.result.cache
 
 ############################
-# Fichiers inutiles
+# Autre
 ############################
 *.odt
 *.odt.bak
 *.ods
 *.ods.bak
-myprocess.md
-logs.md
-memo.md
 diagram_activites_quai-antique.pdf
-
+info.php

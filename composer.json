@@ -1,9 +1,18 @@
 {
     "name": "le-quai-antique/website",
-    "description": "Site vitrine du restaurant Le Quai Antique",
+    "description": "Site vitrine du restaurant 'Le Quai Antique'",
+    "type": "projet-scolaire",
+    "version": "1.0.0",
+    "require": {
+        "php": "^8.5",
+        "vlucas/phpdotenv": "^5.6"
+    },
     "autoload": {
         "psr-4": {
             "App\\": "app/"
         }
+    },
+    "config": {
+        "optimize-autoloader": true
     }
 }

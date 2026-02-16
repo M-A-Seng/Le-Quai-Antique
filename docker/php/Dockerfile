@@ -1,8 +1,12 @@
 FROM php:8.5.2-fpm
 
 RUN apt-get update && apt-get install -y \
+    git \
+    unzip \
+    zip \
     libpq-dev \
     libonig-dev \
+    libssl-dev \
     && docker-php-ext-install \
         pdo_pgsql \
         mbstring \
@@ -14,8 +18,9 @@ WORKDIR /var/www/html
 # Installer php composer directement dans l'image
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-# Installer autoload directement dans l'image
 COPY composer.json ./
+
+# Installer autoload directement dans l'image
 RUN composer install --no-dev --optimize-autoloader
 
 EXPOSE 9000

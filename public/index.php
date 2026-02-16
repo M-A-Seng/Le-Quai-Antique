@@ -1,7 +1,6 @@
 <?php
 
-require __DIR__ . '/../vendor/autoload.php';
-$routes = require __DIR__ . '/../config/routes.php';
+require __DIR__ . '/../app/Config/config.php';
 
 use App\Core\Router;
 

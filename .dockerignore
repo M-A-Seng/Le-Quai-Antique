@@ -1,0 +1,21 @@
+# Environnement
+docker/
+.env
+.env.*
+
+# Git
+.git
+.gitignore
+
+# Fichiers temporaires
+cache/
+tmp/
+*.log
+*.tmp
+
+# Dépendances
+vendor/
+
+# Autre
+docs/
+*.md

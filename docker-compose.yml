@@ -3,14 +3,14 @@ services:
   db:
     image: postgres:18
     environment:
-      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_DB: ${DB_NAME}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
       - pgdata:/var/lib/postgresql # Persister la bdd
     healthcheck:
       # Vérifie si une connexion utilisateur est possible, si non = unheathy
-      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"] 
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${DB_NAME}"] 
       interval: 10s
       timeout: 5s
       retries: 5
@@ -25,13 +25,15 @@ services:
     volumes:
       - ./app:/var/www/html/app # backend
       - ./public:/var/www/html/public # frontend
-      - ./config:/var/www/html/config # configuration
+      - ./composer.json:/var/www/html/composer.json # synchroniser composer docker/machine
+      - ./composer.lock:/var/www/html/composer.lock # synchroniser composer docker/machine
+      - /var/www/html/vendor # volume anonyme pour vendor
       - ./docker/php/opcache.${APP_ENV}.ini:/usr/local/etc/php/conf.d/10-opcache.ini  # Caching php pour performances
     expose:
       - "9000"
     depends_on:
       db:
-        condition: service_healthy # Vérifie si le service db est healthy avant de démarrer
+        condition: service_healthy # Check si service db est healthy avant de démarrer
     healthcheck:
       interval: 10s
       timeout: 5s
@@ -49,7 +51,7 @@ services:
       - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf # Persister la config serveur
     depends_on:
       php:
-        condition: service_started # Vérifie si le service php est démarré avant de démarrer
+        condition: service_started # Check si service php a démarré avant de démarrer
     healthcheck:
       # Vérifie si php-fpm répond à la requête -> si non = unhealthy
       test: ["CMD-SHELL", "curl -fsS http://localhost/healthcheck.php || exit 1"] 

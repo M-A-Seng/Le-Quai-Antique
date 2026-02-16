@@ -1,9 +1,7 @@
 <?php
 
 return [
-    # ------|------------------|--------------------------|-----------------------|
-    ['HTTP', 'PATH',            'CONTROLLER NAME',          'CONTROLLER METHOD'],
-    # ------|------------------|--------------------------|-----------------------|
+#   ['HTTP', 'PATH',            'CONTROLLER NAME',          'CONTROLLER METHOD'],
     ['GET',  '/',               'HomeController',           'index'],
     ['GET',  '/accueil',        'RedirectController',       'home'],
     ['GET',  '/la-carte',       'MenuController',           'index'],
