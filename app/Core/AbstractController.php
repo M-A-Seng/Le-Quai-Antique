@@ -2,7 +2,7 @@
 
 namespace App\Core;
 
-abstract class Controller
+abstract class AbstractController
 {    
     /**
      * Méthode render() affiche le rendu d'une vue

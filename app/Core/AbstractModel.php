@@ -4,7 +4,6 @@ namespace App\Core;
 
 use App\Config\DbConnection;
 use App\Core\AbstractCheckersModel;
-use App\Services\ConstantsCheckerService;
 use PDO;
 use InvalidArgumentException;
 use RuntimeException;
@@ -18,20 +17,17 @@ abstract class AbstractModel extends AbstractCheckersModel
     protected const TABLE="";
  
     /**
-     * __construct prend en paramètre une instance de la classe DbConnection, et une instance du service ConstantsCheckerService. Il vérifie également que les constantes sont définies.
+     * __construct prend en paramètre une instance de la classe DbConnection. Il vérifie également que les constantes sont définies.
      *
      * @param  mixed $connection
-     * @param  mixed $constantsCheckerService
      * @return void
      */
-    public function __construct (DbConnection $connection, ConstantsCheckerService $constantsCheckerService)
+    public function __construct (DbConnection $connection)
     {
-        parent::__construct($constantsCheckerService);
-
         $constantsToCheck = array_merge(
-            $this->getBaseConstants(), ['TABLE' => 'is_string']
+            $this->getParentConstants(), ['TABLE' => 'is_string']
         );
-        $this->constantsCheckerService->validateConstants(static::class, $constantsToCheck);
+        $this->validateConstants(static::class, $constantsToCheck);
 
         $this->filterAllowedTables(static::TABLE);
         $this->pdo = $connection->getConnection();

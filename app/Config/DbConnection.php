@@ -10,7 +10,7 @@ use PDOException;
  */
 class DbConnection
 {
-    private $pdo;
+    private PDO $pdo;
     
     /**
      * __construct

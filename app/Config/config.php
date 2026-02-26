@@ -2,14 +2,15 @@
 
 namespace App\Config;
 
-# Charger automatiquement les "require" en fonction des 'spacenames' & 'use'
+# Charger automatiquement les "require" avec les spacenames et use
 require __DIR__ . '/../../vendor/autoload.php';
 
 # Routes de l'application
 $routes = require 'routes.php';
 
-# Charger automatiqument les variables d'environnement du fichier .env
-use Dotenv\Dotenv;
+# Instances PDO
+use App\Config\DbConnection;
 
-$dotenv = Dotenv::createUnsafeImmutable(__DIR__ . '/../../');
-$dotenv->safeLoad();
+$frontConnection = new DbConnection('front');
+$backConnection = new DbConnection('back');
+$logsConnection = new DbConnection('logs');

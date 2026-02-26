@@ -18,4 +18,22 @@ class RedirectController
         header('Location: /la-carte', true, 301);
         exit;
     }
+
+    public function gallery(): void
+    {
+        header('Location: /galerie', true, 301);
+        exit;
+    }
+
+    public function signup(): void
+    {
+        header('Location: /inscription', true, 301);
+        exit;
+    }
+
+    public function login(): void
+    {
+        header('Location: /connexion', true, 301);
+        exit;
+    }
 }

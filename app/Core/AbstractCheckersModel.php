@@ -7,19 +7,12 @@ use Exception;
 use App\Services\ConstantsCheckerService;
 
 /**
- * AbstractCheckersModel implémente la vérification des tables et des colonnes autorisées.
+ * AbstractCheckersModel implémente la vérification des tables et des colonnes autorisées et étend la classe ConstantsCheckerService.
  */
-abstract class AbstractCheckersModel
+abstract class AbstractCheckersModel extends ConstantsCheckerService
 {
-    protected ConstantsCheckerService $constantsCheckerService;
-
     protected const ALLOWED_TABLES=[];
     protected const ALLOWED_COLUMNS=[];
-
-    public function __construct(ConstantsCheckerService $constantsCheckerService)
-    {
-        $this->constantsCheckerService = $constantsCheckerService;
-    }
     
     /**
      * getBaseConstants retourne un tableau associatif des constantes de la classe AbstractCheckersModel. Le tableau est structuré selon la syntaxe attendue par le service ConstantsCheckerService.
@@ -30,7 +23,7 @@ abstract class AbstractCheckersModel
      *
      * @return array
      */
-    protected function getBaseConstants(): array
+    protected function getParentConstants(): array
     {
         return [
             'ALLOWED_TABLES' => 'is_array',
@@ -93,18 +86,16 @@ abstract class AbstractCheckersModel
     /**
      * checkProtectedColumns vérifie que les données envoyées ne touchent pas aux colonnes spécifiées. Par exemple pour les colonnes accessibles uniquement en "read only".
      *
-     * Lève une exception si une colonne protégée est détectée, sinon RAS.
-     * 
      * @param  array $data
      * @param  array $protectedColumns
      * @return void
      */
-    protected function checkProtectedColumns(array $data, array $protectedColumns): void
+    public function checkProtectedColumns(array $data, array $protectedColumns): void
     {
         $forbiddenColumns = array_intersect(array_keys($data), $protectedColumns);
 
         if (!empty($forbiddenColumns)) {
-            throw new Exception("Accès refusé à ces colonnes : " . implode(", ", $forbiddenColumns));
+            throw new Exception("Accès refusé pour les colonnes : " . implode(", ", $forbiddenColumns));
         }
     }
     
