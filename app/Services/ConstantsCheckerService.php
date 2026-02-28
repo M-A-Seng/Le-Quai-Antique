@@ -3,7 +3,7 @@
 namespace App\Services;
 
 use InvalidArgumentException;
-use Exception;
+use LogicException;
 
 /**
  * ConstantsCheckerService vérifie la définition des constantes
@@ -29,16 +29,16 @@ class ConstantsCheckerService
             $constantId = $className . '::' . $constName;
 
             if (!defined($constantId)) {
-                throw new Exception($constantId . " : Constante non définie");
+                throw new LogicException($constantId . " : Constante non définie");
             }
 
             $value = constant($constantId);
 
             if ($value === null) {
-                throw new Exception($constantId . " : Constante ne peut pas être null");
+                throw new LogicException($constantId . " : Constante ne peut pas être null");
             }
             if (empty($value)) {
-                throw new Exception($constantId . " : Constante vide");
+                throw new LogicException($constantId . " : Constante ne peut pas être vide");
             }
             if (!$validator($value)) {
                 $validatorName = is_string($validator) ? $validator : 'Closure';

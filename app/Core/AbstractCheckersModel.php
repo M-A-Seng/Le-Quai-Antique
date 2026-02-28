@@ -2,8 +2,8 @@
 
 namespace App\Core;
 
+use App\Exceptions\ForbiddenException;
 use InvalidArgumentException;
-use Exception;
 use App\Services\ConstantsCheckerService;
 
 /**
@@ -36,15 +36,16 @@ abstract class AbstractCheckersModel extends ConstantsCheckerService
      *
      * Assurez-vous que la constante ALLOWED_TABLES est correctement définie dans la classe où filterAllowedTables est appelée.
      *
+     * @param  string $className
      * @param  array|string $table
      * @return array|string
      */
-    protected function filterAllowedTables(array|string $table): array|string
+    protected function filterAllowedTables(string $className, array|string $table): array|string
     {
         $tables = is_string($table) ? [$table] : $table;
 
         $tables = array_map('strtolower', $tables);
-        $allowedTables = array_map('strtolower', static::ALLOWED_TABLES);
+        $allowedTables = array_map('strtolower', $className::ALLOWED_TABLES);
 
         $unknownTables = array_diff($tables, $allowedTables);
 
@@ -65,12 +66,12 @@ abstract class AbstractCheckersModel extends ConstantsCheckerService
      * @param  array|string $data
      * @return array|string
      */
-    protected function filterAllowedColumns(array|string $data): array|string
+    protected function filterAllowedColumns(string $className, array|string $data): array|string
     {
         $columns = is_string($data) ? [$data] : (array_is_list($data) ? $data : array_keys($data));
 
         $columns = array_map('strtolower', $columns);
-        $allowedColumns = array_map('strtolower', static::ALLOWED_COLUMNS);
+        $allowedColumns = array_map('strtolower', $className::ALLOWED_COLUMNS);
 
         $unknownColumns = array_diff($columns, $allowedColumns);
 
@@ -95,7 +96,7 @@ abstract class AbstractCheckersModel extends ConstantsCheckerService
         $forbiddenColumns = array_intersect(array_keys($data), $protectedColumns);
 
         if (!empty($forbiddenColumns)) {
-            throw new Exception("Accès refusé pour les colonnes : " . implode(", ", $forbiddenColumns));
+            throw new ForbiddenException("Accès refusé pour les colonnes : " . implode(", ", $forbiddenColumns));
         }
     }
     

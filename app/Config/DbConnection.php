@@ -4,6 +4,8 @@ namespace App\Config;
 
 use PDO;
 use PDOException;
+use App\Exceptions\ValidationException;
+use RuntimeException;
 
 /**
  * Connection à la base de données postgresql
@@ -20,8 +22,8 @@ class DbConnection
      */
     public function __construct(string $userType)
     {
-        $host = $_ENV['DB_HOST'] ?? throw new \Exception('DB Host manquant');
-        $dbName = $_ENV['DB_NAME'] ?? throw new \Exception('DB Name manquant');
+        $host = $_ENV['DB_HOST'] ?? throw new RuntimeException('DB Host manquant');
+        $dbName = $_ENV['DB_NAME'] ?? throw new RuntimeException('DB Name manquant');
 
         $users = [
             'front' => [
@@ -39,7 +41,7 @@ class DbConnection
         ];
 
         if (!isset($users[$userType])) {
-            throw new \Exception("Utilisateur DB non valide");
+            throw new ValidationException("Utilisateur DB non valide");
         }
 
         $user = $users[$userType]['user'];

@@ -3,7 +3,7 @@
 namespace App\Models;
 
 use App\Core\AbstractModel;
-use Exception;
+use App\Exceptions\NotFoundException;
 
 /**
  * UserModel implémente un CRUD utilisateur.
@@ -67,7 +67,7 @@ class UserModel extends AbstractModel
         $result = $this->findBy("id", $id);
 
         if (empty($result)) {
-            throw new Exception("Utilisateur non trouvé.");
+            throw new NotFoundException("Utilisateur non trouvé.");
         }
         return $result[0];
     }

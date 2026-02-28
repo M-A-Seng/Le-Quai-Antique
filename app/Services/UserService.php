@@ -3,10 +3,9 @@
 namespace App\Services;
 
 use App\Core\AbstractDataValidationService;
+use App\Exceptions\ValidationException;
 use App\Models\UserModel;
-use Exception;
 use InvalidArgumentException;
-use RuntimeException;
 
 class UserService extends AbstractDataValidationService
 {
@@ -36,17 +35,15 @@ class UserService extends AbstractDataValidationService
 
         $data['password'] = password_hash($data['password'], PASSWORD_DEFAULT);
 
-        if (!$this->userModel->createUser($data)) {
-            throw new RuntimeException("Echec de création de l'utilisateur.");
-        }
+        $this->userModel->createUser($data);
     }
 
-    public function authenticateUser(array $data): void
+    public function authenticateUser(array $data): string
     {
         $expectedKeys = ['email', 'password'];
         $unknownKeys = array_diff(array_keys($data), $expectedKeys);
         if ($unknownKeys) {
-            throw new Exception("Clés invalides: " . implode(", ", $unknownKeys));
+            throw new InvalidArgumentException("Clés invalides: " . implode(", ", $unknownKeys));
         }
 
         $this->validateNotNullKeys(static::class, $data, false);
@@ -54,8 +51,11 @@ class UserService extends AbstractDataValidationService
         $result = $this->userModel->getUserByEmail($data['email']);
 
         if (empty($result) || !password_verify($data['password'], $result['password'])) {
-            throw new InvalidArgumentException("Email ou mot de passe invalide.");
+            throw new ValidationException("Email ou mot de passe invalide.");
         }
+
+        $userRole = $result['role'];
+        return $userRole;
     }
 
     public function updateUserProfile(array $data): void
@@ -67,17 +67,12 @@ class UserService extends AbstractDataValidationService
 
         unset($data['id'], $data['user_id']);
 
-        if (!$this->userModel->updateUser($userId, $data)) {
-            throw new RuntimeException("Echec de mise à jour de l'utilisateur.");
-        }
+        $this->userModel->updateUser($userId, $data);
     }
 
     public function deleteUserAccount(int $id): void
     {
         $this->userModel->getUserById($id);
-
-        if (!$this->userModel->deleteUser($id)) {
-            throw new RuntimeException("Echec de suppression de l'utilisateur.");
-        }
+        $this->userModel->deleteUser($id);
     }
 }

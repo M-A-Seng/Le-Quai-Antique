@@ -2,6 +2,8 @@
 
 namespace App\Core;
 
+use App\Exceptions\NotFoundException;
+
 abstract class AbstractController
 {    
     /**
@@ -20,10 +22,10 @@ abstract class AbstractController
         $layoutPath = __DIR__ . '/../Views/layouts/' . $layout . '.php';
 
         if (!file_exists($viewPath)) {
-            throw new \Exception("Vue introuvable : $view");
+            throw new NotFoundException("Vue introuvable : $view");
         }
         if (!file_exists($layoutPath)) {
-            throw new \Exception("Layout introuvable : $layout");
+            throw new NotFoundException("Layout introuvable : $layout");
         }
 
         ob_start();
