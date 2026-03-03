@@ -2,8 +2,7 @@
 
 namespace App\Core;
 
-use App\Exceptions\ForbiddenException;
-use InvalidArgumentException;
+use App\Exceptions\InvalidArrayForDbException;
 use App\Services\ConstantsCheckerService;
 
 /**
@@ -50,7 +49,7 @@ abstract class AbstractCheckersModel extends ConstantsCheckerService
         $unknownTables = array_diff($tables, $allowedTables);
 
         if (!empty($unknownTables)) {
-            throw new InvalidArgumentException(
+            throw new InvalidArrayForDbException(
                 'Tables inconnues ou invalides: ' . implode(', ', $unknownTables)
             );
         }
@@ -76,7 +75,7 @@ abstract class AbstractCheckersModel extends ConstantsCheckerService
         $unknownColumns = array_diff($columns, $allowedColumns);
 
         if (!empty($unknownColumns)) {
-            throw new InvalidArgumentException(
+            throw new InvalidArrayForDbException(
                 'Colonnes inconnues ou invalides: ' . implode(', ', $unknownColumns)
             );
         }
@@ -96,7 +95,7 @@ abstract class AbstractCheckersModel extends ConstantsCheckerService
         $forbiddenColumns = array_intersect(array_keys($data), $protectedColumns);
 
         if (!empty($forbiddenColumns)) {
-            throw new ForbiddenException("Accès refusé pour les colonnes : " . implode(", ", $forbiddenColumns));
+            throw new InvalidArrayForDbException("Accès refusé pour les colonnes : " . implode(", ", $forbiddenColumns));
         }
     }
     

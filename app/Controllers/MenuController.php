@@ -2,9 +2,9 @@
 
 namespace App\Controllers;
 
-use App\Core\Controller;
+use App\Core\AbstractController;
 
-class MenuController extends Controller
+class MenuController extends AbstractController
 {
     public function index()
     {

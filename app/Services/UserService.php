@@ -3,7 +3,7 @@
 namespace App\Services;
 
 use App\Core\AbstractDataValidationService;
-use App\Exceptions\ValidationException;
+use App\Exceptions\InvalidCredentialsException;
 use App\Models\UserModel;
 use InvalidArgumentException;
 
@@ -43,19 +43,22 @@ class UserService extends AbstractDataValidationService
         $expectedKeys = ['email', 'password'];
         $unknownKeys = array_diff(array_keys($data), $expectedKeys);
         if ($unknownKeys) {
-            throw new InvalidArgumentException("Clés invalides: " . implode(", ", $unknownKeys));
+            throw new InvalidArgumentException("Vous ne pouvez entrer qu'un email et un mot de passe.");
         }
 
         $this->validateNotNullKeys(static::class, $data, false);
 
-        $result = $this->userModel->getUserByEmail($data['email']);
-
-        if (empty($result) || !password_verify($data['password'], $result['password'])) {
-            throw new ValidationException("Email ou mot de passe invalide.");
+        if (filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
+            $result = $this->userModel->getUserByEmail($data['email']);
+        } else {
+            $result = NULL;
         }
 
-        $userRole = $result['role'];
-        return $userRole;
+        if (empty($result) || !password_verify($data['password'], $result['password'])) {
+            throw new InvalidCredentialsException("Email ou mot de passe invalide.");
+        }
+
+        return $result['role'];
     }
 
     public function updateUserProfile(array $data): void

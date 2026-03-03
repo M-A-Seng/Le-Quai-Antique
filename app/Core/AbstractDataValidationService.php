@@ -2,8 +2,8 @@
 
 namespace App\Core;
 
+use App\Exceptions\InvalidArrayForDbException;
 use App\Services\ConstantsCheckerService;
-use InvalidArgumentException;
 
 abstract class AbstractDataValidationService extends ConstantsCheckerService
 {
@@ -48,7 +48,7 @@ abstract class AbstractDataValidationService extends ConstantsCheckerService
         }
         
         if (!empty($invalidKeys)) {
-            throw new InvalidArgumentException
+            throw new InvalidArrayForDbException 
             (
                 ($checkAllRequiredKeys ?
                     "Clés obligatoires manquantes ou vides: " :

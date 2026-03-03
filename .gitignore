@@ -14,6 +14,7 @@ composer.phar
 ############################
 # Logs & fichiers temporaires
 ############################
+/logs/
 *.log
 *.tmp
 *.cache

@@ -2,9 +2,12 @@
 
 namespace App\Core;
 
+use App\Core\DIContainer;
+
 class Router
 {
     private array $routes;
+    private DIContainer $diContainer;
     
     /**
      * Constructeur recevant un tableau de routes pour l'attribuer à la variable $routes
@@ -15,14 +18,15 @@ class Router
     public function __construct(array $routes)
     {
         $this->routes = $routes; 
+        $this->diContainer = new DIContainer;
     }
-    
+        
     /**
-     * Méthode dispatch() gère les controllers à exécuter selon les requêtes client
+     * dispatch exécute les méthodes de controller selon les requêtes entrées.
      *
-     * @param  string $method   | méthode http demandé
-     * @param  string $uri      | chemin demandé par le client
-     * @return void             | stop le flux d'exécution après le IF
+     * @param  string $method
+     * @param  string $uri
+     * @return void
      */
     public function dispatch(string $method, string $uri): void
     {
@@ -30,9 +34,17 @@ class Router
         {
             if ($method === $httpMethod && $uri === $path)
             {
-                $controller = 'App\Controllers\\' . $controllerName;
+                $getController = "get" . $controllerName;
 
-                (new $controller)->$controllerMethod();
+                if (!method_exists($this->diContainer, $getController)) {
+                    http_response_code(500);
+                    # Retirer echo en prod
+                    echo "Erreur : méthode $getController non trouvée dans le container";
+                    return;
+                }
+
+                $controller = $this->diContainer->$getController();
+                $controller->$controllerMethod();
                 return;
             }
         }
