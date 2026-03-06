@@ -3,22 +3,31 @@
 namespace App\Core;
 
 use App\Core\DIContainer;
+use App\Core\Auth;
+use App\Enums\Role;
+use App\Exceptions\NotFoundException;
 
+/**
+ * Router 
+ */
 class Router
 {
     private array $routes;
     private DIContainer $diContainer;
+    private Auth $auth;
     
     /**
-     * Constructeur recevant un tableau de routes pour l'attribuer à la variable $routes
+     * __construct
      *
-     * @param array<int, array{0:string,1:string,2:string,3:string}> $routes
+     * @param  array $routes
+     * @param  DIContainer $diContainer
      * @return void
      */
-    public function __construct(array $routes)
+    public function __construct(array $routes, DIContainer $diContainer)
     {
         $this->routes = $routes; 
-        $this->diContainer = new DIContainer;
+        $this->diContainer = $diContainer;
+        $this->auth = $this->diContainer->getAuth(); 
     }
         
     /**
@@ -30,10 +39,19 @@ class Router
      */
     public function dispatch(string $method, string $uri): void
     {
-        foreach ($this->routes as [$httpMethod, $path, $controllerName, $controllerMethod])
+        foreach ($this->routes as $route)
         {
+            [$httpMethod, $path, $controllerName, $controllerMethod] = $route;
+            $middlewares = $route[4] ?? [];
+
             if ($method === $httpMethod && $uri === $path)
             {
+                if ($middlewares) {
+                    foreach ($middlewares as $middleware) {
+                        $this->runMiddleware($middleware);
+                    }   
+                }
+
                 $getController = "get" . $controllerName;
 
                 if (!method_exists($this->diContainer, $getController)) {
@@ -50,5 +68,32 @@ class Router
         }
         http_response_code(404);
         echo '404 - Page non trouvée';
+    }
+    
+    /**
+     * runMiddleware exécute des vérifications propres à certaines routes.
+     *
+     * @param  string $middleware
+     * @return void
+     */
+    private function runMiddleware(string $middleware): void
+    {
+        switch($middleware)
+        {
+            case 'requireLogin':
+                $this->auth->requireLogin();
+                break;
+
+            case 'requireClient':
+                $this->auth->requireRole(Role::CLIENT);
+                break;
+                
+            case 'requireAdmin':
+                $this->auth->requireRole(Role::ADMIN);
+                break;
+
+            default:
+                throw new NotFoundException("Middleware inconnu: $middleware");
+        }
     }
 };

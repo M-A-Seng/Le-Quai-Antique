@@ -24,6 +24,16 @@ set_exception_handler(function (Throwable $e)
 
     echo "Une erreur interne est survenue.";
 
-    // Environnement dev
+    // Environnement dev, commentez en prod
     echo "<pre>" . $e . "</pre>";
 });
+
+# Paramètres session
+session_set_cookie_params([
+    'lifetime' => 0,
+    'path' => '/',
+    'domain' => '',
+    'httponly' => true,
+    'secure' => false,   // Mettre true en prod
+    'samesite' => 'Strict'
+]);

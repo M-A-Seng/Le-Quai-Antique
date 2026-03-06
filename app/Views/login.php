@@ -1,6 +1,7 @@
 <h1>Connexion</h1>
 
 <form action="/connexion" target="_self" method="POST">
+    <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
     <p>
         <label for="email">Email :</label>
         <input id="email" name="email" type="email">

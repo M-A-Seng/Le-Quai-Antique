@@ -8,7 +8,9 @@ use App\Controllers\GalleryController;
 use App\Controllers\HomeController;
 use App\Controllers\MenuController;
 use App\Controllers\RedirectController;
+use App\Controllers\UserController;
 use App\Models\UserModel;
+use App\Services\SessionService;
 use App\Services\UserService;
 
 /**
@@ -19,6 +21,9 @@ class DIContainer
     private DbConnection $frontConnection;
     private DbConnection $backConnection;
     private DbConnection $logsConnection;
+
+    private SessionService $sessionService;
+    private Auth $auth;
 
     private UserModel $userModel;
     private UserService $userService;
@@ -34,8 +39,21 @@ class DIContainer
         $this->backConnection = new DbConnection('back');
         $this->logsConnection = new DbConnection('logs');
 
+        $this->sessionService = new SessionService();
+        $this->auth = new Auth($this->sessionService);
+
         $this->userModel = new UserModel($this->frontConnection);
-        $this->userService = new UserService($this->userModel);
+        $this->userService = new UserService($this->userModel, $this->sessionService);
+    }
+    
+    /**
+     * getAuth retourne une instance de Auth.
+     *
+     * @return Auth
+     */
+    public function getAuth(): Auth
+    {
+        return $this->auth;
     }
     
     /**
@@ -75,9 +93,19 @@ class DIContainer
      */
     public function getAuthenticationController(): AuthenticationController
     {
-        return new AuthenticationController($this->userService);
+        return new AuthenticationController($this->userService, $this->auth);
     }
-    
+        
+    /**
+     * getClientController retourne une instance de ClientController.
+     *
+     * @return ClientController
+     */
+    public function getUserController(): UserController
+    {
+        return new UserController($this->auth);
+    }
+
     /**
      * getRedirectController retourne une instance de RedirectController.
      *

@@ -1,7 +1,15 @@
 <?php
 
+/* MIDDLEWARS:
+ * - requireLogin: Utilisateur connecté
+ * - requireClient: userRole client
+ * - requireAdmin: userRole administrateur
+*/
+
 return [
-#   ['HTTP', 'PATH',            'CONTROLLER NAME',              'CONTROLLER METHOD'],
+#   ['HTTP', 'PATH',            'CONTROLLER NAME',              'CONTROLLER METHOD',    ['MIDDLEWARE']],
+
+    # Routes publiques
     ['GET',  '/',               'HomeController',               'index'],
     ['GET',  '/la-carte',       'MenuController',               'index'],
     ['GET',  '/galerie',        'GalleryController',            'index'],
@@ -11,6 +19,11 @@ return [
     ['POST', '/inscription',    'RegistrationController',       'register'],
     ['GET',  '/reserver',       'ReservationController',        'book'],
     ['POST', '/reserver',       'ReservationController',        'reserve'],
+
+    # Routes réservées
+    ['GET',  '/profil',         'UserController',               'loginClient',          ['requireLogin', 'requireClient']],
+    ['GET',  '/admin',          'UserController',               'loginAdmin',           ['requireLogin', 'requireAdmin']],
+    ['POST', '/deconnexion',    'UserController',               'logout',               ['requireLogin']],
 
     # Redirection
     ['GET',  '/accueil',        'RedirectController',           'home'],

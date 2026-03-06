@@ -3,6 +3,8 @@
 namespace App\Controllers;
 
 use App\Core\AbstractController;
+use App\Core\Auth;
+use App\Enums\Role;
 use App\Exceptions\InvalidCredentialsException;
 use App\Services\UserService;
 use InvalidArgumentException;
@@ -14,16 +16,19 @@ use RuntimeException;
 class AuthenticationController extends AbstractController
 {
     private UserService $userService;
-    
+    private Auth $auth;
+      
     /**
      * __construct
      *
      * @param  UserService $userService
+     * @param  SessionService $session
      * @return void
      */
-    public function __construct(UserService $userService)
+    public function __construct(UserService $userService, Auth $auth)
     {
         $this->userService = $userService;
+        $this->auth = $auth;
     }
     
     /**
@@ -41,25 +46,34 @@ class AuthenticationController extends AbstractController
      *
      * @return void
      */
-    public function authenticate()
+    public function authenticate(): void
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             $this->render("login");
             return;
         }
+        if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+            throw new RuntimeException("Token CSRF invalide");
+        }
 
         try {
-            $userRole = $this->userService->authenticateUser($_POST);
+            $userData = $this->userService->authenticateUser($_POST);
 
-            if ($userRole === 'CLIENT') {
-                $this->render("profile");
-                return;
-            } 
-            if ($userRole === 'ADMIN') {
-                $this->render("admin");
-                return;
-            } 
-            throw new RuntimeException("Rôle utilisateur inconnu.");
+            if (empty($userData['id']) || empty($userData['role'])) {
+                throw new RuntimeException("Utilisateur invalide");
+            }
+            if ($userData['role'] !== 'CLIENT' && $userData['role'] !== 'ADMIN') {
+                throw new RuntimeException("Rôle utilisateur inconnu.");
+            }
+
+            $this->auth->login($userData);
+
+            $redirect = [
+                'CLIENT' => '/profil',
+                'ADMIN' => '/admin'
+            ];
+            header("location: " . $redirect[$userData['role']]);
+            exit;
         } 
         catch (InvalidArgumentException | InvalidCredentialsException $e) {
             $errorMessage = $e->getMessage();
