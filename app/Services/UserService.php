@@ -30,34 +30,39 @@ class UserService extends AbstractDataValidationService
     {
         $this->userModel = $userModel;
     }
-    
+        
+    /**
+     * emailCheck vérifie la validité et l'existence de l'email dans la db.
+     *
+     * @param  string $email
+     * @return void
+     */
+    public function emailCheck(string $email)
+    {
+        $domain = substr(strrchr($email, "@"), 1);
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL) || !checkdnsrr($domain, "MX")) {
+            throw new InvalidArgumentException("Email invalide.");
+        }
+        if ($this->userModel->getUserByEmail($email)) {
+            throw new InvalidArgumentException("Cet email est déjà utilisé par un utilisateur.");
+        }
+    }
+
     /**
      * signUserUp créer un nouvel utilisateur puis le connecte.
      *
      * @param  array $data
      * @return array
      */
-    public function signUserUp(array $data): array
+    public function signUserUp(array $data): void
     {
+        unset($data['csrf_token'], $data['password-confirm']);
         $this->validateNotNullKeys(static::class, $data, true);
-
-        if ($this->userModel->getUserByEmail($data['email'])) {
-            throw new InvalidArgumentException("Cet email existe déjà pour un utilisateur.");
-        }
-        $domain = substr(strrchr($data['email'], "@"), 1);
-        if (!filter_var($data['email'], FILTER_VALIDATE_EMAIL) || !checkdnsrr($domain, "MX")) {
-            throw new InvalidArgumentException("Email invalide.");
-        }
-
+        $this->emailCheck($data['email']);
+        $data['allergy'] = implode(', ', $data['allergy']);
         $data['password'] = password_hash($data['password'], PASSWORD_DEFAULT);
 
         $this->userModel->createUser($data);
-
-        $authenticationData = [
-            'email' => $data['email'],
-            'password' => $data['password']
-        ];
-        return $this->authenticateUser($authenticationData);
     }
     
     /**

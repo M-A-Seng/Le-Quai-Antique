@@ -8,6 +8,7 @@ use App\Controllers\GalleryController;
 use App\Controllers\HomeController;
 use App\Controllers\MenuController;
 use App\Controllers\RedirectController;
+use App\Controllers\RegistrationController;
 use App\Controllers\UserController;
 use App\Models\UserModel;
 use App\Services\SessionService;
@@ -94,6 +95,16 @@ class DIContainer
     public function getAuthenticationController(): AuthenticationController
     {
         return new AuthenticationController($this->userService, $this->auth);
+    }
+    
+    /**
+     * getRegistrationController retourne une instance de RegistrationController
+     *
+     * @return RegistrationController
+     */
+    public function getRegistrationController(): RegistrationController
+    {
+        return new RegistrationController($this->userService, $this->auth);
     }
         
     /**

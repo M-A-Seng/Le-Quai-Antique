@@ -22,4 +22,4 @@
 <?php endif; ?>
 
 <p><a href="#">J'ai oublié mon mot de passe</a></p>
-<p><a href="#">Créer un compte</a></p>
+<p><a href="/inscription">Créer un compte</a></p>

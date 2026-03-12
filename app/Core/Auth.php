@@ -25,16 +25,18 @@ class Auth
     }
         
     /**
-     * login connecte l'utilisateur.
+     * login enregistre les données de session de l'utilisateur.
      *
      * @param  array $userData
+     * @param  bool $newUser
      * @return void
      */
-    public function login(array $userData): void
+    public function login(array $userData, bool $newUser = false): void
     {
         session_regenerate_id(true);
         $this->session->set('id', $userData['id']);
         $this->session->set('role', Role::from($userData['role']));
+        $this->session->set('new_user', $newUser);
     }
 
     /**

@@ -36,7 +36,7 @@ class AuthenticationController extends AbstractController
      *
      * @return void
      */
-    public function login()
+    public function index()
     {
         $this->render("login");
     }
