@@ -82,7 +82,6 @@ document.getElementById('other-allergy').addEventListener('change', function()
 document.querySelector('form').addEventListener('input', function() 
 {
     const pswdMatch = password.value === passwordConfirm.value;
-    const submitButton = document.getElementById('submit-button');
-    submitButton.disabled = !(this.checkValidity() && pswdMatch);
+    document.getElementById('submit-button').disabled = !(this.checkValidity() && pswdMatch);
 });
 

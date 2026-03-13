@@ -103,4 +103,4 @@
 <p>Vous avez déjà un compte?</p>
 <p><a href="/connexion">Se connecter</a></p>
 
-<script src="/assets/js/signup-script.js" defer></script>
+<script src="/assets/js/signup.script.js" defer></script>

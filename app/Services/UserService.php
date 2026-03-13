@@ -37,7 +37,7 @@ class UserService extends AbstractDataValidationService
      * @param  string $email
      * @return void
      */
-    public function emailCheck(string $email)
+    public function emailCheck(string $email): void
     {
         $domain = substr(strrchr($email, "@"), 1);
         if (!filter_var($email, FILTER_VALIDATE_EMAIL) || !checkdnsrr($domain, "MX")) {
@@ -45,6 +45,20 @@ class UserService extends AbstractDataValidationService
         }
         if ($this->userModel->getUserByEmail($email)) {
             throw new InvalidArgumentException("Cet email est déjà utilisé par un utilisateur.");
+        }
+    }
+    
+    /**
+     * passwordCheck vérifie la solidité d'un nouveau mot de passe.
+     *
+     * @param  string $password
+     * @return void
+     */
+    public function passwordCheck(string $password): void
+    {
+        $regex = '/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,}$/';
+        if (!preg_match($regex, $password)) {
+            throw new InvalidArgumentException("Votre mot de passe n'est pas assez sécurisé, veuillez suivre les instructions affichées.");
         }
     }
 
@@ -59,6 +73,7 @@ class UserService extends AbstractDataValidationService
         unset($data['csrf_token'], $data['password-confirm']);
         $this->validateNotNullKeys(static::class, $data, true);
         $this->emailCheck($data['email']);
+        $this->passwordCheck($data['password']);
         $data['allergy'] = implode(', ', $data['allergy']);
         $data['password'] = password_hash($data['password'], PASSWORD_DEFAULT);
 
