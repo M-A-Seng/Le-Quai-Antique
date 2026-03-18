@@ -10,34 +10,51 @@ use App\Services\UserService;
 use InvalidArgumentException;
 use RuntimeException;
 
+/**
+ * RegistrationController
+ * 
+ * - index()
+ * - register()
+ * - checkEmail()
+ */
 class RegistrationController extends AbstractController
 {
     private UserService $userService;
     private Auth $auth;
-    
+        
+    /**
+     * __construct
+     *
+     * @param  UserService $userService
+     * @param  Auth $auth
+     * @return void
+     */
     public function __construct(UserService $userService, Auth $auth)
     {
         $this->userService = $userService;
         $this->auth = $auth;
     }
-
+    
+    /**
+     * index
+     *
+     * @return void
+     */
     public function index(): void
     {
         $this->render("signup");
     }
-
+    
+    /**
+     * register
+     *
+     * @return void
+     */
     public function register(): void
     {
+        $this->requirePostMethod();
+        $this->checkCsrfToken();
         $errorMessage = '';
-
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            $this->render("signup");
-            return;
-        }
-        if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
-            throw new RuntimeException("Token CSRF invalide");
-        }
-
         try {
             $this->userService->signUserUp($_POST);
             $user = [
@@ -57,13 +74,17 @@ class RegistrationController extends AbstractController
             $errorMessage = $e->getMessage();
         }
         catch (RuntimeException $e) {
-            $errorMessage = $e->getMessage();
-            # $errorMessage = "Erreur: Veuillez réessayer ou revenez plus tard.";
+            $errorMessage = "Erreur: Veuillez réessayer ou revenez plus tard.";
         }
 
         $this->render("signup", ["errorMessage" => $errorMessage]);
     }
-
+    
+    /**
+     * checkEmail vérifie si un email exist en db et communique avec AJAX.
+     *
+     * @return void
+     */
     public function checkEmail()
     {
         $data = json_decode(file_get_contents("php://input"), true);
@@ -83,6 +104,4 @@ class RegistrationController extends AbstractController
             'errorMessage' => $errorMessage
         ]);
     }
-
-
 }

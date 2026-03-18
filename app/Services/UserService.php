@@ -8,7 +8,14 @@ use App\Models\UserModel;
 use InvalidArgumentException;
 
 /**
- * UserService
+ * UserService implémenter les opérations utilisateur.
+ * 
+ * - emailCheck()
+ * - passwordCheck()
+ * - signUserUp()
+ * - authenticateUser()
+ * - updateUserProfile()
+ * - deleteUserAccount()
  */
 class UserService extends AbstractDataValidationService
 {
@@ -17,6 +24,11 @@ class UserService extends AbstractDataValidationService
         "last_name",
         "email",
         "password",
+    ];
+    protected const STRING_COLUMNS = [
+        "first_name",
+        "last_name",
+        "allergy"
     ];
     
     /**
@@ -49,16 +61,35 @@ class UserService extends AbstractDataValidationService
     }
     
     /**
-     * passwordCheck vérifie la solidité d'un nouveau mot de passe.
+     * passwordCheck vérifie REGEX du mot de passe + le champ de confirmation.
      *
      * @param  string $password
+     * @param  string $passwordConfirm
      * @return void
      */
-    public function passwordCheck(string $password): void
+    public function passwordCheck(string $password, string $passwordConfirm): void
     {
-        $regex = '/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,}$/';
-        if (!preg_match($regex, $password)) {
+        if (!preg_match(parent::REGEX['password'], $password)) {
             throw new InvalidArgumentException("Votre mot de passe n'est pas assez sécurisé, veuillez suivre les instructions affichées.");
+        }
+        if ($password !== $passwordConfirm) {
+            throw new InvalidArgumentException("Les mots de passe ne correspondent pas.");
+        }
+    }
+    
+    /**
+     * phoneNumberCheck vérifie la syntaxe du numéro de téléphone.
+     *
+     * @param  string $phoneNumber
+     * @return void
+     */
+    public function phoneNumberCheck(string $phoneNumber): void
+    {
+        $phoneNumber = trim($phoneNumber);
+        if (!empty($phoneNumber)) {
+            if (!preg_match(parent::REGEX['phone'], $phoneNumber)) {
+                throw new InvalidArgumentException("Numéro de téléphone invalide.");
+            }
         }
     }
 
@@ -70,11 +101,24 @@ class UserService extends AbstractDataValidationService
      */
     public function signUserUp(array $data): void
     {
-        unset($data['csrf_token'], $data['password-confirm']);
+        $data = $this->trimAllValuesInArray($data);
+
+        # champs obligatoires
         $this->validateNotNullKeys(static::class, $data, true);
         $this->emailCheck($data['email']);
-        $this->passwordCheck($data['password']);
-        $data['allergy'] = implode(', ', $data['allergy']);
+        $this->passwordCheck($data['password'], $data['password-confirm']);
+
+        # champs facultatifs
+        if (isset($data['tel']) && !empty($data['tel'])) {
+            $this->phoneNumberCheck($data['tel']);
+        }
+        if (isset($data['allergy']) && !empty($data['allergy']) && is_array($data['allergy'])) {
+            $data['allergy'] = implode(', ', $data['allergy']);
+        }
+
+        # ---
+        unset($data['csrf_token'], $data['password-confirm']);
+        $data = $this->sanitizeTextValuesInArray($data, self::STRING_COLUMNS);
         $data['password'] = password_hash($data['password'], PASSWORD_DEFAULT);
 
         $this->userModel->createUser($data);
@@ -119,18 +163,24 @@ class UserService extends AbstractDataValidationService
     public function updateUserProfile(array $data): void
     {
         $this->validateNotNullKeys(static::class, $data, false);
-
-        $user = $this->userModel->getUserById($data['id']);
-        $userId = (int) $user['id'];
-
+        $this->userModel->getUserById($_SESSION['id']); # S'assurer que l'utilisateur de la session existe en db
         unset($data['id'], $data['user_id']);
+        $data = $this->sanitizeTextValuesInArray($data, self::STRING_COLUMNS);
 
-        $this->userModel->updateUser($userId, $data);
+        $this->userModel->updateUser($_SESSION['id'], $data);
     }
-    
+        
+    /**
+     * deleteUserAccount supprime le compte utilisateur.
+     *
+     * @param  int $id
+     * @return void
+     */
     public function deleteUserAccount(int $id): void
     {
-        $this->userModel->getUserById($id);
-        $this->userModel->deleteUser($id);
+        $this->userModel->getUserById($_SESSION['id']); # S'assurer que l'utilisateur de la session existe en db
+        if ($id === (int)$_SESSION['id']) {
+            $this->userModel->deleteUser($id);
+        }
     }
 }

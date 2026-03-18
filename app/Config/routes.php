@@ -25,6 +25,9 @@ return [
     ['GET',  '/profil',                     'UserController',               'loginClient',          ['requireLogin', 'requireClient']],
     ['GET',  '/admin',                      'UserController',               'loginAdmin',           ['requireLogin', 'requireAdmin']],
     ['POST', '/deconnexion',                'UserController',               'logout',               ['requireLogin']],
+    # Admin
+    ['GET',  '/admin/settings/services',    'RestaurantController',         'index',                ['requireLogin', 'requireAdmin']],
+    ['POST', '/admin/settings/services',    'RestaurantController',         'updateRestaurant',     ['requireLogin', 'requireAdmin']],
 
     # Redirection
     ['GET',  '/accueil',                    'RedirectController',           'home'],

@@ -9,8 +9,11 @@ use App\Controllers\HomeController;
 use App\Controllers\MenuController;
 use App\Controllers\RedirectController;
 use App\Controllers\RegistrationController;
+use App\Controllers\RestaurantController;
 use App\Controllers\UserController;
+use App\Models\RestaurantModel;
 use App\Models\UserModel;
+use App\Services\RestaurantService;
 use App\Services\SessionService;
 use App\Services\UserService;
 
@@ -28,6 +31,9 @@ class DIContainer
 
     private UserModel $userModel;
     private UserService $userService;
+
+    private RestaurantModel $restaurantModel;
+    private RestaurantService $restaurantService;
     
     /**
      * __construct
@@ -45,6 +51,9 @@ class DIContainer
 
         $this->userModel = new UserModel($this->frontConnection);
         $this->userService = new UserService($this->userModel, $this->sessionService);
+
+        $this->restaurantModel = new RestaurantModel($this->backConnection);
+        $this->restaurantService = new RestaurantService($this->restaurantModel);
     }
     
     /**
@@ -106,15 +115,25 @@ class DIContainer
     {
         return new RegistrationController($this->userService, $this->auth);
     }
-        
+
     /**
-     * getClientController retourne une instance de ClientController.
+     * getUserController retourne une instance de UserController.
      *
-     * @return ClientController
+     * @return UserController
      */
     public function getUserController(): UserController
     {
         return new UserController($this->auth);
+    }
+        
+    /**
+     * getRestaurantController retourne une instance de RestaurantController.
+     *
+     * @return RestaurantController
+     */
+    public function getRestaurantController(): RestaurantController
+    {
+        return new RestaurantController($this->restaurantService);
     }
 
     /**

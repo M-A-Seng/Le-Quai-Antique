@@ -1,6 +1,6 @@
 <h1>Inscription</h1>
 
-<?php if (isset($errorMessage)): ?>
+<?php if (isset($errorMessage) && !empty($errorMessage)): ?>
     <div style="color:red">
         <?php echo htmlspecialchars($errorMessage); ?>
     </div>
@@ -23,7 +23,7 @@
     </label><br>
 
     <label for="tel">Téléphone :
-        <input id="tel" name="tel" type="text" pattern="^\+?[0-9\s\-]{7,20}$" placeholder="(Facultatif)">
+        <input id="tel" name="tel" type="text" $pattern = "/^(\+?[1-9]{1}[0-9\s\-]{6,15}|0[0-9\s\-]{6,15})$/"; placeholder="(Facultatif)">
     </label><br>
 
     <label for="password">Mot de passe* :

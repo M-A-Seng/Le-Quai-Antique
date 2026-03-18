@@ -11,6 +11,12 @@ use RuntimeException;
 
 /**
  * AbstractModel implémente CRUD et étend AbstractCheckersModel.
+ * 
+ * - insert()
+ * - findAll()
+ * - findBy()
+ * - update()
+ * - delete()
  */
 abstract class AbstractModel extends AbstractCheckersModel
 {

@@ -7,6 +7,11 @@ use App\Services\ConstantsCheckerService;
 
 /**
  * AbstractCheckersModel implémente la vérification des tables et des colonnes autorisées et étend la classe ConstantsCheckerService.
+ * 
+ * - getParentConstants()
+ * - filterAllowedTables()
+ * - filterAllowedColumns()
+ * - checkProtectedColumns()
  */
 abstract class AbstractCheckersModel extends ConstantsCheckerService
 {

@@ -6,7 +6,9 @@ use InvalidArgumentException;
 use LogicException;
 
 /**
- * ConstantsCheckerService vérifie la définition des constantes
+ * ConstantsCheckerService vérifie la définition des constantes.
+ * 
+ * - validateConstants()
  */
 class ConstantsCheckerService
 {

@@ -27,6 +27,12 @@ class Auth
     /**
      * login enregistre les données de session de l'utilisateur.
      *
+     * - login()
+     * - check()
+     * - requireLogin()
+     * - requireRole()
+     * - logout()
+     * 
      * @param  array $userData
      * @param  bool $newUser
      * @return void

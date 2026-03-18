@@ -3,7 +3,15 @@
 namespace App\Core;
 
 use App\Exceptions\NotFoundException;
+use RuntimeException;
 
+/**
+ * AbstractController
+ * 
+ * - render()
+ * - requirePostMethod()
+ * - checkCsrfToken()
+ */
 abstract class AbstractController
 {    
     /**
@@ -32,6 +40,31 @@ abstract class AbstractController
         require $viewPath;
         $content = ob_get_clean();
         require $layoutPath;
+    }
+        
+    /**
+     * requirePostMethod vérifie que la méthode http est POST, sinon recharge la page courante de l'utilisateur.
+     *
+     * @return void
+     */
+    protected function requirePostMethod(): void
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: ' . $_SERVER['REQUEST_URI']);
+            exit;
+        }
+    }
+
+    /**
+     * checkCsrfToken vérifie que l'utilisateur a un token csrf définit et que la requête http POST a le même token que la session.
+     *
+     * @return void
+     */
+    protected function checkCsrfToken(): void
+    {
+        if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+            throw new RuntimeException("Token CSRF invalide");
+        }
     }
 }
 

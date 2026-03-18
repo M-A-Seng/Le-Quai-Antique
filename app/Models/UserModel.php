@@ -7,6 +7,12 @@ use App\Exceptions\NotFoundException;
 
 /**
  * UserModel implémente un CRUD utilisateur.
+ * 
+ * - createUser()
+ * - getUserByEmail()
+ * - getUserById()
+ * - updateUser()
+ * - deleteUser()
  */
 class UserModel extends AbstractModel
 {
@@ -65,7 +71,6 @@ class UserModel extends AbstractModel
     public function getUserById(int $id)
     {
         $result = $this->findBy("id", $id);
-
         if (empty($result)) {
             throw new NotFoundException("Utilisateur non trouvé.");
         }
