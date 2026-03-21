@@ -3,7 +3,7 @@
 namespace App\Core;
 
 use App\Exceptions\NotFoundException;
-use RuntimeException;
+use App\Exceptions\ServerException;
 
 /**
  * AbstractController
@@ -30,10 +30,10 @@ abstract class AbstractController
         $layoutPath = __DIR__ . '/../Views/layouts/' . $layout . '.php';
 
         if (!file_exists($viewPath)) {
-            throw new NotFoundException("Vue introuvable : $view");
+            throw new NotFoundException(message: "Vue introuvable : $view");
         }
         if (!file_exists($layoutPath)) {
-            throw new NotFoundException("Layout introuvable : $layout");
+            throw new NotFoundException(message: "Layout introuvable : $layout");
         }
 
         ob_start();
@@ -63,7 +63,7 @@ abstract class AbstractController
     protected function checkCsrfToken(): void
     {
         if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
-            throw new RuntimeException("Token CSRF invalide");
+            throw new ServerException("Token CSRF invalide");
         }
     }
 }

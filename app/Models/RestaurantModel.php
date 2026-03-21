@@ -54,7 +54,7 @@ class RestaurantModel extends AbstractModel
     {
         $result = $this->findBy('admin_id', $adminId);
         if (empty($result)) {
-            throw new NotFoundException("Restaurant non trouvé.");
+            throw new NotFoundException(message: "Restaurant non trouvé dans la db.");
         }
         return $result[0];
     }

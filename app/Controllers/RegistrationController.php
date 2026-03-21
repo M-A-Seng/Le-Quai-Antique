@@ -4,11 +4,10 @@ namespace App\Controllers;
 
 use App\Core\AbstractController;
 use App\Core\Auth;
-use App\Exceptions\InvalidArrayForDbException;
-use App\Exceptions\InvalidCredentialsException;
+use App\Exceptions\AbstractBackendException;
+use App\Exceptions\AbstractFrontendException;
+use App\Exceptions\NotFoundException;
 use App\Services\UserService;
-use InvalidArgumentException;
-use RuntimeException;
 
 /**
  * RegistrationController
@@ -67,14 +66,13 @@ class RegistrationController extends AbstractController
             header("location: /profil");
             exit;
         } 
-        catch (InvalidArrayForDbException $e) {
-            $errorMessage = "Veuillez remplir les champs demandés.";
+        catch (AbstractFrontendException | NotFoundException $e) {
+            $errorMessage = $e->getUIMessage();
         }
-        catch (InvalidArgumentException | InvalidCredentialsException $e) {
-            $errorMessage = $e->getMessage();
-        }
-        catch (RuntimeException $e) {
-            $errorMessage = "Erreur: Veuillez réessayer ou revenez plus tard.";
+        catch (AbstractBackendException $e) {
+            http_response_code($e->getHttpCode());
+            $errorMessage = $e->getUIMessage();
+            error_log($e->getMessage());
         }
 
         $this->render("signup", ["errorMessage" => $errorMessage]);
@@ -95,9 +93,14 @@ class RegistrationController extends AbstractController
         try {
             $this->userService->emailCheck($email);
         } 
-        catch (InvalidArgumentException $e) {
-            $errorMessage = $e->getMessage();
+        catch (AbstractFrontendException | NotFoundException $e) {
+            $errorMessage = $e->getUIMessage();
             $isValid = false;
+        }
+        catch (AbstractBackendException $e) {
+            http_response_code($e->getHttpCode());
+            $errorMessage = $e->getUIMessage();
+            error_log($e->getMessage());
         }
         echo json_encode([
             'isValid' => $isValid,

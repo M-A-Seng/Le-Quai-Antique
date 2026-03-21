@@ -2,18 +2,17 @@
 
 namespace App\Services;
 
-use App\Core\AbstractDataValidationService;
-use App\Core\Auth;
-use App\Exceptions\ValidationException;
+use App\Core\AbstractDataProcessingService;
+use App\Exceptions\InvalidFieldException;
 use App\Models\RestaurantModel;
-use InvalidArgumentException;
 
 /**
  * RestaurantService implémente les opérations de gestion des horraires et du nombre de convives du restaurant.
  * 
  * - updateRestaurantServices()
+ * - getRestaurant()
  */
-class RestaurantService extends AbstractDataValidationService
+class RestaurantService extends AbstractDataProcessingService
 {
     private RestaurantModel $restaurantModel;
     protected const NOT_NULL_COLUMNS = [
@@ -54,10 +53,10 @@ class RestaurantService extends AbstractDataValidationService
         foreach ($data as $key => $value)
         {
             if (is_array($value)) {
-                throw new ValidationException("La valeur '$value' est invalide.");
+                throw new InvalidFieldException("La valeur '$value' est invalide.");
             }
             if (!in_array($key, static::NOT_NULL_COLUMNS, true)) {
-                throw new ValidationException("Le champ '$key' est invalide.");
+                throw new InvalidFieldException("Le champ '$key' est invalide.");
             }
 
             $lastWord = substr($key, strrpos($key, '_') + 1);

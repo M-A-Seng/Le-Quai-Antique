@@ -4,10 +4,10 @@ namespace App\Core;
 
 use App\Config\DbConnection;
 use App\Core\AbstractCheckersModel;
+use App\Exceptions\DataProcessingException;
+use App\Exceptions\DbFailureException;
 use PDO;
 use PDOException;
-use InvalidArgumentException;
-use RuntimeException;
 
 /**
  * AbstractModel implémente CRUD et étend AbstractCheckersModel.
@@ -49,7 +49,7 @@ abstract class AbstractModel extends AbstractCheckersModel
     protected function insert(array $data): int
     {
         if (empty($data)) {
-            throw new InvalidArgumentException("Tableau associatif attendu en paramètre.");
+            throw new DataProcessingException("Tableau associatif attendu en paramètre.");
         }
         $data = $this->filterAllowedColumns(static::class, $data);
 
@@ -64,7 +64,7 @@ abstract class AbstractModel extends AbstractCheckersModel
             return (int) $stmt->fetchColumn();
         } 
         catch (PDOException $e) {
-            throw new RuntimeException("Echec de l'opération insert(): " . $e->getMessage(), 0, $e);
+            throw new DbFailureException("Echec de l'opération insert(): " . $e->getMessage(), 0, $e);
         }
     }
     
@@ -83,7 +83,7 @@ abstract class AbstractModel extends AbstractCheckersModel
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } 
         catch (PDOException $e) {
-            throw new RuntimeException("Echec de l'opération findAll(): " . $e->getMessage(), 0, $e);
+            throw new DbFailureException("Echec de l'opération findAll(): " . $e->getMessage(), 0, $e);
         }
     }
     
@@ -106,7 +106,7 @@ abstract class AbstractModel extends AbstractCheckersModel
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } 
         catch (PDOException $e) {
-            throw new RuntimeException("Echec de l'opération findBy(): " . $e->getMessage(), 0, $e);
+            throw new DbFailureException("Echec de l'opération findBy(): " . $e->getMessage(), 0, $e);
         }
     }
     
@@ -120,7 +120,7 @@ abstract class AbstractModel extends AbstractCheckersModel
     protected function update(int $id, array $data): int
     {
         if (empty($data)) {
-            throw new InvalidArgumentException('Tableau associatif attendu en deuxième paramètre.');
+            throw new DataProcessingException('Tableau associatif attendu en deuxième paramètre.');
         }
         $this->filterAllowedColumns(static::class, array_keys($data));
 
@@ -139,7 +139,7 @@ abstract class AbstractModel extends AbstractCheckersModel
             return $stmt->rowCount();
         } 
         catch (PDOException $e) {
-            throw new RuntimeException("Échec de l'opération update(): " . $e->getMessage(), 0, $e);
+            throw new DbFailureException("Échec de l'opération update(): " . $e->getMessage(), 0, $e);
         }
     }
     
@@ -152,7 +152,7 @@ abstract class AbstractModel extends AbstractCheckersModel
     protected function delete(array $conditions): int
     {
         if (empty($conditions)) {
-            throw new InvalidArgumentException('Tableau associatif attendu en paramètre.');
+            throw new DataProcessingException('Tableau associatif attendu en paramètre.');
         }
         $this->filterAllowedColumns(static::class, array_keys($conditions));
 
@@ -170,7 +170,7 @@ abstract class AbstractModel extends AbstractCheckersModel
             return $stmt->rowCount();
         } 
         catch (PDOException $e) {
-            throw new RuntimeException("Echec de l'opération delete(): " . $e->getMessage(), 0, $e);
+            throw new DbFailureException("Echec de l'opération delete(): " . $e->getMessage(), 0, $e);
         }
     }
 }

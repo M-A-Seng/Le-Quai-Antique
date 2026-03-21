@@ -1,5 +1,11 @@
 <h1>Restaurant<br>Le Quai Antique</h1>
 
+<?php if (isset($errorMessage) && !empty($errorMessage)): ?>
+    <div style="color:red">
+        <?php echo htmlspecialchars($errorMessage); ?>
+    </div>
+<?php endif; ?>
+
 <?php if (isset($confirmationMessage) && !empty($confirmationMessage)): ?>
     <div style="color:green">
         <?php echo htmlspecialchars($confirmationMessage); ?>

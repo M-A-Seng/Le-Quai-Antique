@@ -2,9 +2,11 @@
 
 namespace App\Core;
 
+use App\Exceptions\DataProcessingException;
 use App\Exceptions\InvalidArrayForDbException;
+use App\Exceptions\InvalidFieldException;
 use App\Services\ConstantsCheckerService;
-use InvalidArgumentException;
+use DateTime;
 
 /**
  * AbstractDataValidationService implémente la validation de données et étend ConstantsCheckerService.
@@ -12,11 +14,12 @@ use InvalidArgumentException;
  * - validateNotNullKeys()
  * - validateTimeFormat()
  * - validateTimeInterval()
+ * - formatTimeToHHMM()
  * - validatePositiveInteger()
  * - trimAllValuesInArray()
  * - sanitizeTextValuesInArray()
  */
-abstract class AbstractDataValidationService extends ConstantsCheckerService
+abstract class AbstractDataProcessingService extends ConstantsCheckerService
 {
     protected const NOT_NULL_COLUMNS=[];
     protected const REGEX = [
@@ -73,7 +76,7 @@ abstract class AbstractDataValidationService extends ConstantsCheckerService
     }
     
     /**
-     * validateTimeFormat vérifie qu'un string contient une heure de format "hh:mm" 
+     * validateTimeFormat vérifie qu'un string contient une heure de format "hh:mm". À utiliser pour valider l'entrée utilisateur.
      *
      * @param  string $time
      * @return void
@@ -82,7 +85,7 @@ abstract class AbstractDataValidationService extends ConstantsCheckerService
     {
         $stringTime = trim($stringTime);
         if (!preg_match(self::REGEX['time'], $stringTime)) {
-            throw new InvalidArgumentException("Heure invalide.");
+            throw new InvalidFieldException("'$stringTime' est invalide, veuillez sélectionner une heure valide.");
         }
     }
 
@@ -108,8 +111,39 @@ abstract class AbstractDataValidationService extends ConstantsCheckerService
 
         $difference = $endMinutesTotal - $startMinutesTotal;
         if ($difference !== $minutesInterval) {
-            throw new InvalidArgumentException("L'intervalle entre l'heure de début et l'heure de fin est invalide. L'intervalle attendu est de {$minutesInterval} minutes.");
+            throw new InvalidFieldException("L'intervalle entre l'heure de début et l'heure de fin est invalide. L'intervalle attendu est de {$minutesInterval} minutes.");
         }
+    }
+    
+    /**
+     * formatTimeToHHMM transforme les données de type time ou datetime en string time de format hh:mm. À utiliser avant affichage d'une heure dans une view.
+     *
+     * @param  ?string $time
+     * @return string
+     */
+    public function formatTimeToHHMM(?string $time): string
+    {
+        if ($time === null || $time === '') {
+            throw new DataProcessingException("Une heure est attendue en argument.");
+        }
+        $formats = [
+            'H:i:s',
+            'H:i',
+            'Y-m-d H:i:s',
+            'Y-m-d H:i',
+            'H\hi',
+            'H\hi:s',
+        ];
+        foreach ($formats as $format) {
+            $date = DateTime::createFromFormat($format, $time);
+            if ($date !== false) {
+                $errors = DateTime::getLastErrors();
+                if ($errors['warning_count'] === 0 && $errors['error_count'] === 0) {
+                    return $date->format('H:i');
+                }
+            }
+        }
+        throw new DataProcessingException("Impossible de formater l'heure passée en argument: '$time' est invalide.");
     }
     
     /**
@@ -122,7 +156,7 @@ abstract class AbstractDataValidationService extends ConstantsCheckerService
     {
         $stringInteger = trim($stringInteger);
         if (!ctype_digit($stringInteger) || $stringInteger === '0') {
-            throw new InvalidArgumentException("'$stringInteger' n'est pas valide. Un nombre entier positif est attendu.");
+            throw new InvalidFieldException("'$stringInteger' n'est pas valide. Un nombre entier positif est attendu.");
         }
     }
     

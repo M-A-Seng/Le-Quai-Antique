@@ -3,12 +3,10 @@
 namespace App\Controllers;
 
 use App\Core\AbstractController;
-use App\Exceptions\InvalidArrayForDbException;
+use App\Exceptions\AbstractBackendException;
+use App\Exceptions\AbstractFrontendException;
 use App\Exceptions\NotFoundException;
-use App\Exceptions\ValidationException;
 use App\Services\RestaurantService;
-use InvalidArgumentException;
-use RuntimeException;
 
 /**
  * RestaurantController
@@ -34,20 +32,41 @@ class RestaurantController extends AbstractController
     /**
      * index charge la page de gestion des horraires et du nombre de convives du restaurant.
      *
+     * @param  array $extraData
      * @return void
      */
     public function index(array $extraData = []): void
     {
-        $restaurant = $this->restaurantService->getRestaurant();
-        $viewData = [
-            "lunchOpeningTime" => substr($restaurant['lunch_opening_time'], 0, 5),
-            "lunchClosingTime" => substr($restaurant['lunch_closing_time'], 0, 5),
-            "lunchMaxGuests" => $restaurant['lunch_max_guests'],
-            "eveningOpeningTime" => substr($restaurant['evening_opening_time'], 0, 5),
-            "eveningClosingTime" => substr($restaurant['evening_closing_time'], 0, 5),
-            "eveningMaxGuests" => $restaurant['evening_max_guests']
-        ];
-        $data = array_merge($viewData, $extraData);
+        $data = [];
+        $errorMessage = null;
+        try {
+            $restaurant = $this->restaurantService->getRestaurant();
+            $times = [
+                'lunchOpeningTime' => 'lunch_opening_time',
+                'lunchClosingTime' => 'lunch_closing_time',
+                'eveningOpeningTime' => 'evening_opening_time',
+                'eveningClosingTime' => 'evening_closing_time'
+            ];
+            foreach ($times as $key => $column) {
+                $times[$key] = $this->restaurantService->formatTimeToHHMM($restaurant[$column]);
+            }
+            $maxGuests = [
+                "lunchMaxGuests" => $restaurant['lunch_max_guests'],
+                "eveningMaxGuests" => $restaurant['evening_max_guests']
+            ];
+            $data = array_merge($times, $maxGuests, $extraData);
+        }
+        catch (AbstractFrontendException | NotFoundException $e) {
+            $errorMessage = $e->getUIMessage();
+        }
+        catch (AbstractBackendException $e) {
+            http_response_code($e->getHttpCode());
+            $errorMessage = $e->getUIMessage();
+            error_log($e->getMessage());
+        }
+        if (!is_null($errorMessage)) {
+            $data['errorMessage'] = $errorMessage;
+        }
         $this->render("admin.restaurant", $data);
     }
     
@@ -67,14 +86,13 @@ class RestaurantController extends AbstractController
             $this->restaurantService->updateRestaurantServices($_POST);
             $confirmationMessage = "Modifications enregistrées avec succès!";
         } 
-        catch (ValidationException | NotFoundException | RuntimeException $e) {
-            $errorMessage = "Une erreur est survenue, veuillez réessayer ou revenez plus tard.";
+        catch (AbstractFrontendException | NotFoundException $e) {
+            $errorMessage = $e->getUIMessage();
         }
-        catch (InvalidArrayForDbException $e) {
-            $errorMessage = "Veuillez remplir les champs demandés.";
-        }
-        catch (InvalidArgumentException $e) {
-            $errorMessage = $e->getMessage();
+        catch (AbstractBackendException $e) {
+            http_response_code($e->getHttpCode());
+            $errorMessage = $e->getUIMessage();
+            error_log($e->getMessage());
         }
         $data = [
             "confirmationMessage" => $confirmationMessage,

@@ -2,10 +2,10 @@
 
 namespace App\Services;
 
-use App\Core\AbstractDataValidationService;
+use App\Core\AbstractDataProcessingService;
 use App\Exceptions\InvalidCredentialsException;
+use App\Exceptions\InvalidFieldException;
 use App\Models\UserModel;
-use InvalidArgumentException;
 
 /**
  * UserService implémenter les opérations utilisateur.
@@ -17,7 +17,7 @@ use InvalidArgumentException;
  * - updateUserProfile()
  * - deleteUserAccount()
  */
-class UserService extends AbstractDataValidationService
+class UserService extends AbstractDataProcessingService
 {
     private UserModel $userModel;
     protected const NOT_NULL_COLUMNS = [
@@ -53,10 +53,10 @@ class UserService extends AbstractDataValidationService
     {
         $domain = substr(strrchr($email, "@"), 1);
         if (!filter_var($email, FILTER_VALIDATE_EMAIL) || !checkdnsrr($domain, "MX")) {
-            throw new InvalidArgumentException("Email invalide.");
+            throw new InvalidFieldException("Email invalide.");
         }
         if ($this->userModel->getUserByEmail($email)) {
-            throw new InvalidArgumentException("Cet email est déjà utilisé par un utilisateur.");
+            throw new InvalidFieldException("Cet email est déjà utilisé par un utilisateur.");
         }
     }
     
@@ -70,10 +70,10 @@ class UserService extends AbstractDataValidationService
     public function passwordCheck(string $password, string $passwordConfirm): void
     {
         if (!preg_match(parent::REGEX['password'], $password)) {
-            throw new InvalidArgumentException("Votre mot de passe n'est pas assez sécurisé, veuillez suivre les instructions affichées.");
+            throw new InvalidFieldException("Votre mot de passe n'est pas assez sécurisé, veuillez suivre les instructions affichées.");
         }
         if ($password !== $passwordConfirm) {
-            throw new InvalidArgumentException("Les mots de passe ne correspondent pas.");
+            throw new InvalidFieldException("Les mots de passe ne correspondent pas.");
         }
     }
     
@@ -88,7 +88,7 @@ class UserService extends AbstractDataValidationService
         $phoneNumber = trim($phoneNumber);
         if (!empty($phoneNumber)) {
             if (!preg_match(parent::REGEX['phone'], $phoneNumber)) {
-                throw new InvalidArgumentException("Numéro de téléphone invalide.");
+                throw new InvalidFieldException("Numéro de téléphone invalide.");
             }
         }
     }
@@ -135,7 +135,7 @@ class UserService extends AbstractDataValidationService
         $expectedKeys = ['email', 'password', 'csrf_token'];
         $unknownKeys = array_diff(array_keys($data), $expectedKeys);
         if ($unknownKeys) {
-            throw new InvalidArgumentException("Vous ne pouvez entrer qu'un email et un mot de passe.");
+            throw new InvalidFieldException("Vous ne pouvez entrer qu'un email et un mot de passe.");
         }
 
         $this->validateNotNullKeys(static::class, $data, false);

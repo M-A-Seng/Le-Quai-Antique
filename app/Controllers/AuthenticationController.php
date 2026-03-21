@@ -4,11 +4,12 @@ namespace App\Controllers;
 
 use App\Core\AbstractController;
 use App\Core\Auth;
-use App\Enums\Role;
-use App\Exceptions\InvalidCredentialsException;
+use App\Exceptions\AbstractBackendException;
+use App\Exceptions\AbstractFrontendException;
+use App\Exceptions\ForbiddenException;
+use App\Exceptions\NotFoundException;
+use App\Exceptions\ServerException;
 use App\Services\UserService;
-use InvalidArgumentException;
-use RuntimeException;
 
 /**
  * AuthenticationController gère le système de connexion utilisateur.
@@ -53,17 +54,17 @@ class AuthenticationController extends AbstractController
             return;
         }
         if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
-            throw new RuntimeException("Token CSRF invalide");
+            throw new ServerException("Token CSRF invalide");
         }
 
         try {
             $userData = $this->userService->authenticateUser($_POST);
 
             if (empty($userData['id']) || empty($userData['role'])) {
-                throw new RuntimeException("Utilisateur invalide");
+                throw new ForbiddenException("Utilisateur non reconnu.");
             }
             if ($userData['role'] !== 'CLIENT' && $userData['role'] !== 'ADMIN') {
-                throw new RuntimeException("Rôle utilisateur inconnu.");
+                throw new ForbiddenException("Rôle utilisateur inconnu.");
             }
 
             $this->auth->login($userData);
@@ -75,11 +76,13 @@ class AuthenticationController extends AbstractController
             header("location: " . $redirect[$userData['role']]);
             exit;
         } 
-        catch (InvalidArgumentException | InvalidCredentialsException $e) {
-            $errorMessage = $e->getMessage();
-        } 
-        catch (RuntimeException $e) {
-            $errorMessage = "Erreur: Veuillez réessayer ou revenez plus tard.";
+        catch (AbstractFrontendException | NotFoundException $e) {
+            $errorMessage = $e->getUIMessage();
+        }
+        catch (AbstractBackendException $e) {
+            http_response_code($e->getHttpCode());
+            $errorMessage = $e->getUIMessage();
+            error_log($e->getMessage());
         }
         
         $this->render("login", ["errorMessage" => $errorMessage]);

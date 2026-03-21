@@ -14,7 +14,7 @@
     <button type="submit" id="submit-button" disabled>Se connecter</button>
 </form>
 
-<?php if (isset($errorMessage)): ?>
+<?php if (isset($errorMessage) && !empty($errorMessage)): ?>
     <div style="color:red">
         <?php echo htmlspecialchars($errorMessage); ?>
     </div>

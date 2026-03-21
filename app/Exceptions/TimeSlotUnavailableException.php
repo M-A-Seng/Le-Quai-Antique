@@ -2,9 +2,21 @@
 
 namespace App\Exceptions;
 
-use DomainException;
-
 /**
- * TimeSlotUnavailableException, Créneau complet, HTTP 409
+ * TimeSlotUnavailableException
+ * 
+ * - getUIMessage() 
+ * 
+ * Default message: "Créneau indisponible, veuillez sélectionner un heure différente."
  */
-class TimeSlotUnavailableException extends DomainException {}
+class TimeSlotUnavailableException extends AbstractFrontendException
+{
+    public function __construct(string $message = "Créneau indisponible, veuillez sélectionner un heure différente.")
+    {
+        parent::__construct($message);
+    }
+
+    public function getUIMessage(): string {
+        return $this->getMessage();
+    }
+}

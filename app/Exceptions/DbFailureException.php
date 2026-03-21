@@ -3,14 +3,13 @@
 namespace App\Exceptions;
 
 /**
- * InvalidArrayForDbException
+ * DbFailureException
  * 
  * - getHttpCode()
  */
-class InvalidArrayForDbException extends DataProcessingException
+class DbFailureException extends ServerException
 {
     public function getHttpCode(): int {
-        return 422;
+        return 500;
     }
 }
-

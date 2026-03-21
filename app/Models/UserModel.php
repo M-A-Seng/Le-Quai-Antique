@@ -72,7 +72,7 @@ class UserModel extends AbstractModel
     {
         $result = $this->findBy("id", $id);
         if (empty($result)) {
-            throw new NotFoundException("Utilisateur non trouvé.");
+            throw new NotFoundException(message: "Utilisateur non trouvé en db.");
         }
         return $result[0];
     }

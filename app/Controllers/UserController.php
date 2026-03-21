@@ -4,7 +4,7 @@ namespace App\Controllers;
 
 use App\Core\AbstractController;
 use App\Core\Auth;
-use RuntimeException;
+use App\Exceptions\ServerException;
 
 class UserController extends AbstractController
 {
@@ -28,7 +28,7 @@ class UserController extends AbstractController
     public function logout() 
     {
         if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
-            throw new RuntimeException("Token CSRF invalide");
+            throw new ServerException("Token CSRF invalide");
         }
         $this->auth->logout();
         header("location: /");

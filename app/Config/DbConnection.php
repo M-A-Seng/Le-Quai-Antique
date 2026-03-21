@@ -2,9 +2,9 @@
 
 namespace App\Config;
 
+use App\Exceptions\DbFailureException;
 use PDO;
 use PDOException;
-use App\Exceptions\ValidationException;
 use RuntimeException;
 
 /**
@@ -41,7 +41,7 @@ class DbConnection
         ];
 
         if (!isset($users[$userType])) {
-            throw new ValidationException("Utilisateur DB non valide");
+            throw new DbFailureException("Utilisateur DB non valide");
         }
 
         $user = $users[$userType]['user'];
