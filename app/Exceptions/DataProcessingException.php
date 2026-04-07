@@ -6,7 +6,7 @@ namespace App\Exceptions;
  * DataProcessingException
  * 
  * - getUIMessage() return "Données invalides. Veuillez respecter les informations requises."
- * - getHttpCode()
+ * - getHttpCode(), 422
  */
 class DataProcessingException extends AbstractBackendException
 {

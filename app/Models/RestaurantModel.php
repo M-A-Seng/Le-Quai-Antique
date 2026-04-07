@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Core\AbstractModel;
+use App\Core\Abstract\AbstractModel;
 use App\Exceptions\NotFoundException;
 
 /**

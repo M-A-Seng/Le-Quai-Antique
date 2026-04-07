@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Core;
+namespace App\Core\Abstract;
 
 use App\Exceptions\DataProcessingException;
 use App\Exceptions\InvalidArrayForDbException;
@@ -16,8 +16,7 @@ use DateTime;
  * - validateTimeInterval()
  * - formatTimeToHHMM()
  * - validatePositiveInteger()
- * - trimAllValuesInArray()
- * - sanitizeTextValuesInArray()
+ * - trimStringValuesInArray()
  */
 abstract class AbstractDataProcessingService extends ConstantsCheckerService
 {
@@ -30,8 +29,8 @@ abstract class AbstractDataProcessingService extends ConstantsCheckerService
 
     public function __construct()
     {
-        $constantsToCheck = ['NOT_NULL_COLUMNS' => 'is_array'];
-        $this->validateConstants(static::class, $constantsToCheck);
+        $constantsToCheck = ['NOT_NULL_COLUMNS' => 'array'];
+        $this->validateConstants($constantsToCheck);
     }
 
     /**
@@ -97,7 +96,7 @@ abstract class AbstractDataProcessingService extends ConstantsCheckerService
      * @param  int $minutesInterval nombre en minutes
      * @return void
      */
-    public function validateTimeInterval(string $startTime, string $endTime, int $minutesInterval): void
+    protected function validateTimeInterval(string $startTime, string $endTime, int $minutesInterval): void
     {
         // Convertir les heures en minutes
         list($startHours, $startMinutes) = explode(":", $startTime);
@@ -121,26 +120,28 @@ abstract class AbstractDataProcessingService extends ConstantsCheckerService
      * @param  ?string $time
      * @return string
      */
-    public function formatTimeToHHMM(?string $time): string
+    public function formatTimeToHHMM(string $time): string
     {
+        $time = trim($time);
         if ($time === null || $time === '') {
             throw new DataProcessingException("Une heure est attendue en argument.");
         }
         $formats = [
             'H:i:s',
+            'H:i:s.u',
             'H:i',
             'Y-m-d H:i:s',
+            'Y-m-d H:i:s.u',
             'Y-m-d H:i',
             'H\hi',
             'H\hi:s',
+            'H\hi:s.u',
         ];
         foreach ($formats as $format) {
             $date = DateTime::createFromFormat($format, $time);
-            if ($date !== false) {
-                $errors = DateTime::getLastErrors();
-                if ($errors['warning_count'] === 0 && $errors['error_count'] === 0) {
-                    return $date->format('H:i');
-                }
+            $errors = DateTime::getLastErrors();
+            if ($date !== false && ($errors === false || ($errors['warning_count'] === 0 && $errors['error_count'] === 0))) {
+                return $date->format('H:i');
             }
         }
         throw new DataProcessingException("Impossible de formater l'heure passée en argument: '$time' est invalide.");
@@ -152,40 +153,29 @@ abstract class AbstractDataProcessingService extends ConstantsCheckerService
      * @param  string $guests
      * @return void
      */
-    protected function validatePositiveInteger(string $stringInteger): void
+    protected function validatePositiveInteger(string $stringInteger): string
     {
         $stringInteger = trim($stringInteger);
         if (!ctype_digit($stringInteger) || $stringInteger === '0') {
             throw new InvalidFieldException("'$stringInteger' n'est pas valide. Un nombre entier positif est attendu.");
         }
+        return $stringInteger;
     }
     
     /**
-     * trimAllValuesInArray retire les espaces au début et à la fin de toutes les valeurs qui sont des chaînes.
+     * trimAllValuesInArray retire les espaces au début et à la fin de toutes les chaînes de caractères dans un tableau.
      *
      * @param  array $data
      * @return array
      */
-    protected function trimAllValuesInArray(array $data): array
+    protected function trimStringValuesInArray(array $data): array
     {
-        foreach ($data as $key => $value){
-            $data[$key] = trim($value);
-        }
-        return $data;
-    }
-    
-    /**
-     * sanitizeTextValueInArray applique strip_tags() et htmlspecialchars() à toutes les valeurs spécifiées.
-     *
-     * @param  array $data
-     * @param  array $keysToSanitize
-     * @return array
-     */
-    protected function sanitizeTextValuesInArray(array $data, array $keysToSanitize): array
-    {
-        foreach ($data as $key => $value){
-            if (in_array($key, $keysToSanitize)) {
-                $data[$key] = htmlspecialchars(strip_tags($data[$key], '<p><br>'), ENT_QUOTES, 'UTF-8');
+        foreach ($data as $key => $value)
+        {
+            if (is_string($value)) {
+                $data[$key] = trim($value);
+            } else {
+                $data[$key] = $value;
             }
         }
         return $data;

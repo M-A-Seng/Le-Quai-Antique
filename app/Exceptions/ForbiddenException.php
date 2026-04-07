@@ -6,7 +6,7 @@ namespace App\Exceptions;
  * ForbiddenException
  * 
  * - getUIMessage() return "Nous n'avons pas pu traiter votre demande. Veuillez réessayer ou revenir plus tard."
- * - getHttpCode()
+ * - getHttpCode(), 403
  */
 class ForbiddenException extends AbstractBackendException
 {

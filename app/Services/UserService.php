@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Core\AbstractDataProcessingService;
+use App\Core\Abstract\AbstractDataProcessingService;
 use App\Exceptions\InvalidCredentialsException;
 use App\Exceptions\InvalidFieldException;
 use App\Models\UserModel;
@@ -25,11 +25,6 @@ class UserService extends AbstractDataProcessingService
         "email",
         "password",
     ];
-    protected const STRING_COLUMNS = [
-        "first_name",
-        "last_name",
-        "allergy"
-    ];
     
     /**
      * __construct
@@ -42,22 +37,25 @@ class UserService extends AbstractDataProcessingService
     {
         $this->userModel = $userModel;
     }
-        
+
     /**
      * emailCheck vérifie la validité et l'existence de l'email dans la db.
      *
      * @param  string $email
-     * @return void
+     * @param  bool $forNewUser || True = signup / False = login
+     * @return bool
      */
-    public function emailCheck(string $email): void
+    public function emailCheck(string $email, bool $forNewUser): bool
     {
+        $email = strtolower($email);
         $domain = substr(strrchr($email, "@"), 1);
         if (!filter_var($email, FILTER_VALIDATE_EMAIL) || !checkdnsrr($domain, "MX")) {
             throw new InvalidFieldException("Email invalide.");
         }
-        if ($this->userModel->getUserByEmail($email)) {
+        if ($forNewUser && !empty($this->userModel->getUserByEmail($email))) {
             throw new InvalidFieldException("Cet email est déjà utilisé par un utilisateur.");
         }
+        return true;
     }
     
     /**
@@ -83,14 +81,16 @@ class UserService extends AbstractDataProcessingService
      * @param  string $phoneNumber
      * @return void
      */
-    public function phoneNumberCheck(string $phoneNumber): void
+    public function phoneNumberCheckAndSanitize(string $phoneNumber): string|null
     {
         $phoneNumber = trim($phoneNumber);
+        $phoneNumber = empty($phoneNumber) ? NULL : $phoneNumber;
         if (!empty($phoneNumber)) {
-            if (!preg_match(parent::REGEX['phone'], $phoneNumber)) {
+            if (!preg_match(parent::REGEX['phone'], $phoneNumber) || trim($phoneNumber, '0') === '') {
                 throw new InvalidFieldException("Numéro de téléphone invalide.");
             }
         }
+        return $phoneNumber;
     }
 
     /**
@@ -101,16 +101,17 @@ class UserService extends AbstractDataProcessingService
      */
     public function signUserUp(array $data): void
     {
-        $data = $this->trimAllValuesInArray($data);
+        $data = $this->trimStringValuesInArray($data);
 
         # champs obligatoires
         $this->validateNotNullKeys(static::class, $data, true);
-        $this->emailCheck($data['email']);
+        $this->emailCheck($data['email'], true);
         $this->passwordCheck($data['password'], $data['password-confirm']);
 
         # champs facultatifs
         if (isset($data['tel']) && !empty($data['tel'])) {
-            $this->phoneNumberCheck($data['tel']);
+            $phoneNumber = $this->phoneNumberCheckAndSanitize($data['tel']);
+            $data['tel'] = $phoneNumber;
         }
         if (isset($data['allergy']) && !empty($data['allergy']) && is_array($data['allergy'])) {
             $data['allergy'] = implode(', ', $data['allergy']);
@@ -118,7 +119,6 @@ class UserService extends AbstractDataProcessingService
 
         # ---
         unset($data['csrf_token'], $data['password-confirm']);
-        $data = $this->sanitizeTextValuesInArray($data, self::STRING_COLUMNS);
         $data['password'] = password_hash($data['password'], PASSWORD_DEFAULT);
 
         $this->userModel->createUser($data);
@@ -132,15 +132,15 @@ class UserService extends AbstractDataProcessingService
      */
     public function authenticateUser(array $data): array
     {
-        $expectedKeys = ['email', 'password', 'csrf_token'];
-        $unknownKeys = array_diff(array_keys($data), $expectedKeys);
-        if ($unknownKeys) {
-            throw new InvalidFieldException("Vous ne pouvez entrer qu'un email et un mot de passe.");
+        $expectedKeys = ['email', 'password', 'csrf_token']; sort($expectedKeys);
+        $keysData = array_keys($data); sort($keysData);
+        if ($expectedKeys !== $keysData) {
+            throw new InvalidFieldException("Veuillez entrer uniquement une adresse e-mail et un mot de passe.");
         }
 
         $this->validateNotNullKeys(static::class, $data, false);
 
-        if (filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
+        if ($this->emailCheck($data['email'], false)) {
             $result = $this->userModel->getUserByEmail($data['email']);
         }
         if (empty($result) || !password_verify($data['password'], $result['password'])) {
@@ -162,11 +162,25 @@ class UserService extends AbstractDataProcessingService
      */
     public function updateUserProfile(array $data): void
     {
+        $data = $this->trimStringValuesInArray($data);
         $this->validateNotNullKeys(static::class, $data, false);
         $this->userModel->getUserById($_SESSION['id']); # S'assurer que l'utilisateur de la session existe en db
-        unset($data['id'], $data['user_id']);
-        $data = $this->sanitizeTextValuesInArray($data, self::STRING_COLUMNS);
 
+        if (isset($data['password']) && !empty($data['password'])) {
+            $this->passwordCheck($data['password'], $data['password-confirm']);
+        }
+        if (isset($data['email']) && !empty($data['email'])) {
+            $this->emailCheck($data['email'], false);
+        }
+        if (isset($data['tel']) && !empty($data['tel'])) {
+            $phoneNumber = $this->phoneNumberCheckAndSanitize($data['tel']);
+            $data['tel'] = $phoneNumber;
+        }
+        if (isset($data['allergy']) && !empty($data['allergy']) && is_array($data['allergy'])) {
+            $data['allergy'] = implode(', ', $data['allergy']);
+        }
+
+        unset($data['id'], $data['user_id']);
         $this->userModel->updateUser($_SESSION['id'], $data);
     }
         

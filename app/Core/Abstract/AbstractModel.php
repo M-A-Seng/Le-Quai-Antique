@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Core;
+namespace App\Core\Abstract;
 
 use App\Config\DbConnection;
-use App\Core\AbstractCheckersModel;
+use App\Core\Abstract\AbstractCheckersModel;
 use App\Exceptions\DataProcessingException;
 use App\Exceptions\DbFailureException;
 use PDO;
@@ -31,10 +31,8 @@ abstract class AbstractModel extends AbstractCheckersModel
      */
     public function __construct (DbConnection $connection)
     {
-        $constantsToCheck = array_merge(
-            $this->getParentConstants(), ['TABLE' => 'is_string']
-        );
-        $this->validateConstants(static::class, $constantsToCheck);
+        $constantsToCheck = array_merge($this->getParentConstants(), ['TABLE' => 'string']);
+        $this->validateConstants($constantsToCheck);
 
         $this->filterAllowedTables(static::class, static::TABLE);
         $this->pdo = $connection->getConnection();
@@ -49,7 +47,7 @@ abstract class AbstractModel extends AbstractCheckersModel
     protected function insert(array $data): int
     {
         if (empty($data)) {
-            throw new DataProcessingException("Tableau associatif attendu en paramètre.");
+            throw new DataProcessingException("Tableau associatif attendu en paramètre de insert().");
         }
         $data = $this->filterAllowedColumns(static::class, $data);
 
@@ -96,6 +94,9 @@ abstract class AbstractModel extends AbstractCheckersModel
      */
     protected function findBy(string $column, mixed $value): array
     {
+        if (empty($column) || empty($value)) {
+            throw new DataProcessingException("Veuillez passer les arguments demandés en paramètre de findBy().");
+        }
         $this->filterAllowedColumns(static::class, $column);
 
         $sql = "SELECT * FROM \"" . static::TABLE . "\" WHERE \"$column\" = :value";
@@ -119,8 +120,8 @@ abstract class AbstractModel extends AbstractCheckersModel
      */
     protected function update(int $id, array $data): int
     {
-        if (empty($data)) {
-            throw new DataProcessingException('Tableau associatif attendu en deuxième paramètre.');
+        if (empty($data) || empty($id)) {
+            throw new DataProcessingException("Veuillez passer les arguments demandés en paramètre de update().");
         }
         $this->filterAllowedColumns(static::class, array_keys($data));
 
@@ -152,7 +153,7 @@ abstract class AbstractModel extends AbstractCheckersModel
     protected function delete(array $conditions): int
     {
         if (empty($conditions)) {
-            throw new DataProcessingException('Tableau associatif attendu en paramètre.');
+            throw new DataProcessingException('Tableau associatif attendu en paramètre de delete().');
         }
         $this->filterAllowedColumns(static::class, array_keys($conditions));
 

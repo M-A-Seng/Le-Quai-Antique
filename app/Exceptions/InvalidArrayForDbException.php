@@ -5,7 +5,7 @@ namespace App\Exceptions;
 /**
  * InvalidArrayForDbException
  * 
- * - getHttpCode()
+ * - getHttpCode(), 422
  */
 class InvalidArrayForDbException extends DataProcessingException
 {

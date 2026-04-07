@@ -13,7 +13,7 @@ use OutOfBoundsException;
  * 
  * - `getUIMessage()` pour les retours utilisateurs (retourne la variable $UIMessage si définit, sinon un message par défaut)
  * - `getDebugMessage()` pour le débogage (retourne la variable $message. Interchangeable avec getMessage())
- * - `getHttpCode()`
+ * - `getHttpCode()`, 404
  * 
  * Message UI par défaut: "*Votre demande n'a pas pu être traitée correctement en raison d'une ressource manquante.*"
  * 

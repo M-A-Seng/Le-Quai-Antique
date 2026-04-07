@@ -3,7 +3,9 @@
 namespace App\Core;
 
 use App\Enums\Role;
+use App\Exceptions\DataProcessingException;
 use App\Exceptions\ForbiddenException;
+use App\Exceptions\RequireLoginException;
 use App\Services\SessionService;
 
 /**
@@ -39,6 +41,9 @@ class Auth
      */
     public function login(array $userData, bool $newUser = false): void
     {
+        if (empty($userData['id']) || empty($userData['role'])) {
+            throw new DataProcessingException("Argument manquant: L'id et le rôle doivent obligatoirement être fournis.");
+        }
         session_regenerate_id(true);
         $this->session->set('id', $userData['id']);
         $this->session->set('role', Role::from($userData['role']));
@@ -63,8 +68,7 @@ class Auth
     public function requireLogin(): void
     {
         if (!$this->check()) {
-            header('Location: /connexion');
-            exit;
+            throw new RequireLoginException("Utilisateur non identifié.");
         }
     }
     
@@ -76,8 +80,8 @@ class Auth
      */
     public function requireRole(Role $role): void
     {
+        $this->requireLogin();
         $userRole = $this->session->get('role');
-
         if ($role !== $userRole) {
             throw new ForbiddenException("Impossible d'accéder à cette page.");
         };

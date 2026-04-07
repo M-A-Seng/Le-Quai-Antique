@@ -2,38 +2,43 @@
 
 namespace App\Controllers;
 
+use App\Core\Abstract\AbstractController;
+use App\Core\Logger;
+use App\Core\Response;
+use App\Services\RenderService;
+
 /**
  * RedirectController renvoie un code http 301 pour rediriger l'utilisateur vers l'url officiel du site
  */
-class RedirectController
+class RedirectController extends AbstractController
 {
-    public function home(): void
+    public function __construct(RenderService $renderService, Logger $logger)
     {
-        header('Location: /', true, 301);
-        exit;
+        parent::__construct($renderService, $logger);
+    }
+    
+    public function home(): Response
+    {
+        return $this->redirect('/');
     }
 
-    public function menu(): void
+    public function menu(): Response
     {
-        header('Location: /la-carte', true, 301);
-        exit;
+        return $this->redirect('/la-carte');
     }
 
-    public function gallery(): void
+    public function gallery(): Response
     {
-        header('Location: /galerie', true, 301);
-        exit;
+        return $this->redirect('/galerie');
     }
 
-    public function signup(): void
+    public function signup(): Response
     {
-        header('Location: /inscription', true, 301);
-        exit;
+        return $this->redirect('/inscription');
     }
 
-    public function login(): void
+    public function login(): Response
     {
-        header('Location: /connexion', true, 301);
-        exit;
+        return $this->redirect('/connexion');
     }
 }

@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Core\AbstractDataProcessingService;
+use App\Core\Abstract\AbstractDataProcessingService;
 use App\Exceptions\InvalidFieldException;
 use App\Models\RestaurantModel;
 
@@ -36,7 +36,35 @@ class RestaurantService extends AbstractDataProcessingService
      */
     public function getRestaurant()
     {
-        return $this->restaurantModel->getRestaurantByAdmin($_SESSION['id']);
+        $adminId = $_SESSION['id'] ?? 0;
+        return $this->restaurantModel->getRestaurantByAdmin((int)$adminId);
+    }
+    
+    /**
+     * getRestaurantServices retourne les heures d'ouverture et de fermeture ainsi que le nombre de convives du restaurant.
+     *
+     * @return array
+     */
+    public function getRestaurantServices(): array
+    {
+        $restaurant = $this->getRestaurant();
+        $times = [
+            'lunchOpeningTime' => 'lunch_opening_time',
+            'lunchClosingTime' => 'lunch_closing_time',
+            'eveningOpeningTime' => 'evening_opening_time',
+            'eveningClosingTime' => 'evening_closing_time',
+        ];
+        foreach ($times as $key => $column) {
+            $times[$key] = $this->formatTimeToHHMM((string)$restaurant[$column]);
+        }
+        $maxGuests = [
+            "lunchMaxGuests" => 'lunch_max_guests',
+            "eveningMaxGuests" => 'evening_max_guests',
+        ];
+        foreach ($maxGuests as $key => $column) {
+            $maxGuests[$key] = $this->validatePositiveInteger((string)$restaurant[$column]);
+        }
+        return array_merge($times, $maxGuests);
     }
 
     /**
@@ -48,12 +76,13 @@ class RestaurantService extends AbstractDataProcessingService
     public function updateRestaurantServices(array $data): void
     {
         $this->validateNotNullKeys(static::class, $data, false);
-        $this->trimAllValuesInArray($data);
+        $this->trimStringValuesInArray($data);
 
         foreach ($data as $key => $value)
         {
             if (is_array($value)) {
-                throw new InvalidFieldException("La valeur '$value' est invalide.");
+                $array = print_r($value, true);
+                throw new InvalidFieldException("La valeur de '$key' est invalide : " . $array . "\nUne chaîne de caractères est attendue.");
             }
             if (!in_array($key, static::NOT_NULL_COLUMNS, true)) {
                 throw new InvalidFieldException("Le champ '$key' est invalide.");

@@ -2,36 +2,37 @@
 
 namespace App\Controllers;
 
-use App\Core\AbstractController;
+use App\Core\Abstract\AbstractController;
 use App\Core\Auth;
-use App\Exceptions\ServerException;
+use App\Core\Logger;
+use App\Core\Response;
+use App\Services\RenderService;
 
 class UserController extends AbstractController
 {
     private Auth $auth;
 
-    public function __construct(Auth $auth)
+    public function __construct(Auth $auth, RenderService $renderService, Logger $logger)
     {
+        parent::__construct($renderService, $logger);
         $this->auth = $auth;
     }
 
-    public function loginClient() 
+    public function loginClient(): Response
     {
-        $this->render("profile");
+        $content = $this->renderService->render("profile");
+        return $this->html($content);
     }
 
-    public function loginAdmin() 
+    public function loginAdmin(): Response
     {
-        $this->render("admin");
+        $content = $this->renderService->render("admin");
+        return $this->html($content);
     }
 
-    public function logout() 
+    public function logout(): Response
     {
-        if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
-            throw new ServerException("Token CSRF invalide");
-        }
         $this->auth->logout();
-        header("location: /");
-        exit;
+        return $this->redirect('/');
     }
 }

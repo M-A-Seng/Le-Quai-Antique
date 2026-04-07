@@ -13,6 +13,7 @@ use App\Controllers\RestaurantController;
 use App\Controllers\UserController;
 use App\Models\RestaurantModel;
 use App\Models\UserModel;
+use App\Services\RenderService;
 use App\Services\RestaurantService;
 use App\Services\SessionService;
 use App\Services\UserService;
@@ -22,6 +23,9 @@ use App\Services\UserService;
  */
 class DIContainer 
 {
+    private Logger $logger;
+
+    private PdoFactory $pdoFactory;
     private DbConnection $frontConnection;
     private DbConnection $backConnection;
     private DbConnection $logsConnection;
@@ -40,11 +44,14 @@ class DIContainer
      *
      * @return void
      */
-    public function __construct()
+    public function __construct(private RenderService $renderService)
     {
-        $this->frontConnection = new DbConnection('front');
-        $this->backConnection = new DbConnection('back');
-        $this->logsConnection = new DbConnection('logs');
+        $this->logger = new Logger('app.log');
+
+        $this->pdoFactory = new PdoFactory();
+        $this->frontConnection = new DbConnection('front', $this->pdoFactory, $this->logger);
+        $this->backConnection = new DbConnection('back', $this->pdoFactory, $this->logger);
+        $this->logsConnection = new DbConnection('logs', $this->pdoFactory, $this->logger);
 
         $this->sessionService = new SessionService();
         $this->auth = new Auth($this->sessionService);
@@ -55,7 +62,19 @@ class DIContainer
         $this->restaurantModel = new RestaurantModel($this->backConnection);
         $this->restaurantService = new RestaurantService($this->restaurantModel);
     }
-    
+        
+    /**
+     * getRouter retourne une instance du Router.
+     *
+     * @param  array $routes
+     * @param  DIContainer $diContainer
+     * @return Router
+     */
+    public function getRouter($routes, $diContainer): Router
+    {
+        return new Router($routes, $diContainer, $this->renderService, $_ENV['APP_ENV']);
+    }
+
     /**
      * getAuth retourne une instance de Auth.
      *
@@ -73,7 +92,7 @@ class DIContainer
      */
     public function getHomeController(): HomeController
     {
-        return new HomeController();
+        return new HomeController($this->renderService, $this->logger);
     }
     
     /**
@@ -81,9 +100,9 @@ class DIContainer
      *
      * @return MenuController
      */
-    public function getMenuController()
+    public function getMenuController(): MenuController
     {
-        return new MenuController();
+        return new MenuController($this->renderService, $this->logger);
     }
     
     /**
@@ -91,9 +110,9 @@ class DIContainer
      *
      * @return GalleryController
      */
-    public function getGalleryController()
+    public function getGalleryController(): GalleryController
     {
-        return new GalleryController();
+        return new GalleryController($this->renderService, $this->logger);
     }
     
     /**
@@ -103,7 +122,7 @@ class DIContainer
      */
     public function getAuthenticationController(): AuthenticationController
     {
-        return new AuthenticationController($this->userService, $this->auth);
+        return new AuthenticationController($this->userService, $this->auth, $this->renderService, $this->logger);
     }
     
     /**
@@ -113,7 +132,7 @@ class DIContainer
      */
     public function getRegistrationController(): RegistrationController
     {
-        return new RegistrationController($this->userService, $this->auth);
+        return new RegistrationController($this->userService, $this->auth, $this->renderService, $this->logger);
     }
 
     /**
@@ -123,7 +142,7 @@ class DIContainer
      */
     public function getUserController(): UserController
     {
-        return new UserController($this->auth);
+        return new UserController($this->auth, $this->renderService, $this->logger);
     }
         
     /**
@@ -133,7 +152,7 @@ class DIContainer
      */
     public function getRestaurantController(): RestaurantController
     {
-        return new RestaurantController($this->restaurantService);
+        return new RestaurantController($this->restaurantService, $this->renderService, $this->logger);
     }
 
     /**
@@ -143,6 +162,6 @@ class DIContainer
      */
     public function getRedirectController(): RedirectController
     {
-        return new RedirectController();
+        return new RedirectController($this->renderService, $this->logger);
     }
 }

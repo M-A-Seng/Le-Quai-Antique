@@ -14,20 +14,20 @@ return [
     ['GET',  '/la-carte',                   'MenuController',               'index'],
     ['GET',  '/galerie',                    'GalleryController',            'index'],
     ['GET',  '/connexion',                  'AuthenticationController',     'index'],
-    ['POST', '/connexion',                  'AuthenticationController',     'authenticate'],
+    ['POST', '/connexion',                  'AuthenticationController',     'authenticate',         ['requirePost&Csrf']],
     ['GET',  '/inscription',                'RegistrationController',       'index'],
-    ['POST', '/inscription',                'RegistrationController',       'register'],
-    ['POST', '/inscription/check-email',    'RegistrationController',       'checkEmail'],
+    ['POST', '/inscription',                'RegistrationController',       'register',             ['requirePost&Csrf']],
+    ['POST', '/inscription/check-email',    'RegistrationController',       'checkEmail',           ['requirePost&Csrf']],
     ['GET',  '/reserver',                   'ReservationController',        'index'],
-    ['POST', '/reserver',                   'ReservationController',        'reserve'],
+    ['POST', '/reserver',                   'ReservationController',        'reserve',              ['requirePost&Csrf']],
 
     # Routes réservées
     ['GET',  '/profil',                     'UserController',               'loginClient',          ['requireLogin', 'requireClient']],
     ['GET',  '/admin',                      'UserController',               'loginAdmin',           ['requireLogin', 'requireAdmin']],
-    ['POST', '/deconnexion',                'UserController',               'logout',               ['requireLogin']],
+    ['POST', '/deconnexion',                'UserController',               'logout',               ['requireLogin', 'requirePost&Csrf']],
     # Admin
     ['GET',  '/admin/settings/services',    'RestaurantController',         'index',                ['requireLogin', 'requireAdmin']],
-    ['POST', '/admin/settings/services',    'RestaurantController',         'updateRestaurant',     ['requireLogin', 'requireAdmin']],
+    ['POST', '/admin/settings/services',    'RestaurantController',         'updateRestaurant',     ['requireLogin', 'requireAdmin', 'requirePost&Csrf']],
 
     # Redirection
     ['GET',  '/accueil',                    'RedirectController',           'home'],

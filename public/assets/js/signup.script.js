@@ -27,6 +27,7 @@ const regex = {
     length: (valeur) => valeur.length >= 8,
     total: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,}$/
 };
+
 // Validation des critères de mot de passe
 password.addEventListener('input', function() 
 {
@@ -52,6 +53,7 @@ password.addEventListener('input', function()
         element.prepend(symbol);
     });
 });
+
 // Validation input mot de passe
 password.addEventListener('blur', function() 
 {

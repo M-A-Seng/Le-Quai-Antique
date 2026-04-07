@@ -64,5 +64,9 @@ composer.phar
 *.odt.bak
 *.ods
 *.ods.bak
+*.xml.bak
 diagram_activites_quai-antique.pdf
 info.php
+
+AdminController.php
+ServiceModel.php

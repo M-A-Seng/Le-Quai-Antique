@@ -2,10 +2,14 @@
 
 namespace App\Controllers;
 
-use App\Core\AbstractController;
+use App\Core\Abstract\AbstractController;
+use App\Core\Logger;
+use App\Core\Response;
 use App\Exceptions\AbstractBackendException;
 use App\Exceptions\AbstractFrontendException;
+use App\Exceptions\DbFailureException;
 use App\Exceptions\NotFoundException;
+use App\Services\RenderService;
 use App\Services\RestaurantService;
 
 /**
@@ -24,8 +28,9 @@ class RestaurantController extends AbstractController
      * @param  RestaurantService $restaurantService
      * @return void
      */
-    public function __construct(RestaurantService $restaurantService)
+    public function __construct(RestaurantService $restaurantService, RenderService $renderService, Logger $logger)
     {
+        parent::__construct($renderService, $logger);
         $this->restaurantService = $restaurantService;
     }
     
@@ -35,39 +40,32 @@ class RestaurantController extends AbstractController
      * @param  array $extraData
      * @return void
      */
-    public function index(array $extraData = []): void
+    public function index(array $extraData = [], int $http = 200): Response
     {
         $data = [];
         $errorMessage = null;
+        $http = $http === 200 ? $http : $http;
         try {
-            $restaurant = $this->restaurantService->getRestaurant();
-            $times = [
-                'lunchOpeningTime' => 'lunch_opening_time',
-                'lunchClosingTime' => 'lunch_closing_time',
-                'eveningOpeningTime' => 'evening_opening_time',
-                'eveningClosingTime' => 'evening_closing_time'
-            ];
-            foreach ($times as $key => $column) {
-                $times[$key] = $this->restaurantService->formatTimeToHHMM($restaurant[$column]);
-            }
-            $maxGuests = [
-                "lunchMaxGuests" => $restaurant['lunch_max_guests'],
-                "eveningMaxGuests" => $restaurant['evening_max_guests']
-            ];
-            $data = array_merge($times, $maxGuests, $extraData);
+            $servicesData = $this->restaurantService->getRestaurantServices();
+            $data = array_merge($servicesData, $extraData);
         }
         catch (AbstractFrontendException | NotFoundException $e) {
             $errorMessage = $e->getUIMessage();
         }
         catch (AbstractBackendException $e) {
-            http_response_code($e->getHttpCode());
             $errorMessage = $e->getUIMessage();
-            error_log($e->getMessage());
+            $http = $e->getHttpCode();
+            if ($e instanceof DbFailureException) {
+                $this->logger->dbError($e->getMessage());
+            } else {
+                $this->logger->error($e->getMessage());
+            }
         }
         if (!is_null($errorMessage)) {
             $data['errorMessage'] = $errorMessage;
         }
-        $this->render("admin.restaurant", $data);
+        $content = $this->renderService->render("admin.restaurant", $data);
+        return $this->html($content, $http);
     }
     
     /**
@@ -75,12 +73,11 @@ class RestaurantController extends AbstractController
      *
      * @return void
      */
-    public function updateRestaurant(): void
+    public function updateRestaurant()
     {
-        $this->requirePostMethod();
-        $this->checkCsrfToken();
-        $confirmationMessage = '';
-        $errorMessage = '';
+        $confirmationMessage = null;
+        $errorMessage = null;
+        $http = 200;
         try {
             unset($_POST['csrf_token']);
             $this->restaurantService->updateRestaurantServices($_POST);
@@ -90,14 +87,18 @@ class RestaurantController extends AbstractController
             $errorMessage = $e->getUIMessage();
         }
         catch (AbstractBackendException $e) {
-            http_response_code($e->getHttpCode());
             $errorMessage = $e->getUIMessage();
-            error_log($e->getMessage());
+            $http = $e->getHttpCode();
+            if ($e instanceof DbFailureException) {
+                $this->logger->dbError($e->getMessage());
+            } else {
+                $this->logger->error($e->getMessage());
+            }
         }
         $data = [
             "confirmationMessage" => $confirmationMessage,
             "errorMessage" => $errorMessage
         ];
-        $this->index($data);
+        return $this->index($data, $http);
     }
 }

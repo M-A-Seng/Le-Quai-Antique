@@ -6,7 +6,7 @@ namespace App\Exceptions;
  * ServerException
  * 
  * - getUIMessage() return "Une erreur interne est survenue. Veuillez réessayer ou revenir plus tard."
- * - getHttpCode()
+ * - getHttpCode(), 500
  */
 class ServerException extends AbstractBackendException
 {

@@ -11,11 +11,6 @@
         <?php echo htmlspecialchars($confirmationMessage); ?>
     </div>
 <?php endif; ?>
-<?php if (isset($errorMessage) && !empty($errorMessage)): ?>
-    <div style="color:red">
-        <?php echo htmlspecialchars($errorMessage); ?>
-    </div>
-<?php endif; ?>
 
 <h2>Service du midi</h2>
 

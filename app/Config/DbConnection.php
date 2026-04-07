@@ -2,10 +2,11 @@
 
 namespace App\Config;
 
+use App\Core\Logger;
+use App\Core\PdoFactory;
 use App\Exceptions\DbFailureException;
 use PDO;
 use PDOException;
-use RuntimeException;
 
 /**
  * Connection à la base de données postgresql
@@ -13,18 +14,16 @@ use RuntimeException;
 class DbConnection
 {
     private PDO $pdo;
-    
     /**
      * __construct
      *
      * @param  string $userType
      * @return void
      */
-    public function __construct(string $userType)
+    public function __construct(string $userType, private PdoFactory $pdoFactory, private Logger $logger)
     {
-        $host = $_ENV['DB_HOST'] ?? throw new RuntimeException('DB Host manquant');
-        $dbName = $_ENV['DB_NAME'] ?? throw new RuntimeException('DB Name manquant');
-
+        $host = $_ENV['DB_HOST'] ?? throw new DbFailureException('DB Host manquant');
+        $dbName = $_ENV['DB_NAME'] ?? throw new DbFailureException('DB Name manquant');
         $users = [
             'front' => [
                 'user' => $_ENV['DB_USER_FRONT'],
@@ -44,19 +43,15 @@ class DbConnection
             throw new DbFailureException("Utilisateur DB non valide");
         }
 
+        $dsn = "pgsql:host=$host;dbname=$dbName";
         $user = $users[$userType]['user'];
         $password = $users[$userType]['password'];
 
         try {
-            $dsn = "pgsql:host=$host;dbname=$dbName";
-            $this->pdo = new PDO($dsn, $user, $password, [
-                PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
-                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-                PDO::ATTR_EMULATE_PREPARES   => false,
-            ]);
+            $this->pdo = $this->pdoFactory->create($dsn, $user, $password);
         } 
         catch (PDOException $e) {
-            error_log($e->getMessage());
+            $this->logger->dbError($e->getMessage());
             throw new PDOException("Erreur de connexion à la base de données.");
         }
     }

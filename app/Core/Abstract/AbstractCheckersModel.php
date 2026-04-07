@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Core;
+namespace App\Core\Abstract;
 
 use App\Exceptions\InvalidArrayForDbException;
 use App\Services\ConstantsCheckerService;
@@ -30,8 +30,8 @@ abstract class AbstractCheckersModel extends ConstantsCheckerService
     protected function getParentConstants(): array
     {
         return [
-            'ALLOWED_TABLES' => 'is_array',
-            'ALLOWED_COLUMNS' => 'is_array',
+            'ALLOWED_TABLES' => 'array',
+            'ALLOWED_COLUMNS' => 'array',
         ];
     }
 
@@ -46,6 +46,9 @@ abstract class AbstractCheckersModel extends ConstantsCheckerService
      */
     protected function filterAllowedTables(string $className, array|string $table): array|string
     {
+        if (empty($table)) {
+            throw new InvalidArrayForDbException("Le deuxième argument est vide: Au moins une table est attendue.");
+        }
         $tables = is_string($table) ? [$table] : $table;
 
         $tables = array_map('strtolower', $tables);
@@ -72,6 +75,9 @@ abstract class AbstractCheckersModel extends ConstantsCheckerService
      */
     protected function filterAllowedColumns(string $className, array|string $data): array|string
     {
+        if (empty($data)) {
+            throw new InvalidArrayForDbException("Le deuxième argument est vide: Au moins une colonne est attendue.");
+        }
         $columns = is_string($data) ? [$data] : (array_is_list($data) ? $data : array_keys($data));
 
         $columns = array_map('strtolower', $columns);
@@ -95,7 +101,7 @@ abstract class AbstractCheckersModel extends ConstantsCheckerService
      * @param  array $protectedColumns
      * @return void
      */
-    public function checkProtectedColumns(array $data, array $protectedColumns): void
+    protected function checkProtectedColumns(array $data, array $protectedColumns): void
     {
         $forbiddenColumns = array_intersect(array_keys($data), $protectedColumns);
 
@@ -103,6 +109,5 @@ abstract class AbstractCheckersModel extends ConstantsCheckerService
             throw new InvalidArrayForDbException("Accès refusé pour les colonnes : " . implode(", ", $forbiddenColumns));
         }
     }
-    
 }
 

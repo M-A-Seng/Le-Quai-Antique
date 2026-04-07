@@ -6,7 +6,7 @@ namespace App\Exceptions;
  * AccountDisabledException
  * 
  * - getUIMessage() return "Votre compte est actuellement suspendu."
- * - getHttpCode()
+ * - getHttpCode(), 403
  */
 class AccountDisabledException extends ForbiddenException 
 {

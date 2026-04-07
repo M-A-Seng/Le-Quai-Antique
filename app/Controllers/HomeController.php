@@ -2,12 +2,21 @@
 
 namespace App\Controllers;
 
-use App\Core\AbstractController;
+use App\Core\Abstract\AbstractController;
+use App\Core\Logger;
+use App\Core\Response;
+use App\Services\RenderService;
 
 class HomeController extends AbstractController
 {
-    public function index()
+    public function __construct(RenderService $renderService, Logger $logger)
     {
-        $this -> render("home");
+        parent::__construct($renderService, $logger);
+    }
+    
+    public function index(): Response
+    {
+        $content = $this->renderService->render("home");
+        return $this->html($content);
     }
 }

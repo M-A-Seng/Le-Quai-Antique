@@ -1,18 +1,21 @@
 <?php
 
-require __DIR__ . '/../app/Config/config.php';
+use App\Core\Response;
 
-use App\Core\DIContainer;
-use App\Core\Router;
+define('DIR_ROOT', dirname(__DIR__));
 
-session_start();
-if (!isset($_SESSION['csrf_token'])) {
-    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+require_once __DIR__ . '/../app/Config/config.php';
+require_once __DIR__ . '/../app/Config/bootstrap.php';
+
+$method = $_SERVER['REQUEST_METHOD'];
+$uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+
+try {
+    $response = $router->dispatch($method, $uri);
+} 
+catch (Throwable $e) {
+    $content = $renderService->render('500', [], 'error');
+    $response = new Response($content, 500, ['Content-Type' => 'text/html']);
 }
 
-$uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-$method = $_SERVER['REQUEST_METHOD'];
-
-$diContainer = new DIContainer;
-$router = new Router($routes, $diContainer);
-$router->dispatch($method, $uri);
+$response->send();

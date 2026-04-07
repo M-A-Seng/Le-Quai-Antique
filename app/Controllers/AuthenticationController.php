@@ -2,17 +2,24 @@
 
 namespace App\Controllers;
 
-use App\Core\AbstractController;
+use App\Core\Abstract\AbstractController;
 use App\Core\Auth;
+use App\Core\Logger;
+use App\Core\Response;
 use App\Exceptions\AbstractBackendException;
 use App\Exceptions\AbstractFrontendException;
+use App\Exceptions\DbFailureException;
 use App\Exceptions\ForbiddenException;
 use App\Exceptions\NotFoundException;
-use App\Exceptions\ServerException;
+use App\Services\RenderService;
 use App\Services\UserService;
+use PDOException;
 
 /**
  * AuthenticationController gère le système de connexion utilisateur.
+ * 
+ * - index()
+ * - authenticate()
  */
 class AuthenticationController extends AbstractController
 {
@@ -26,8 +33,9 @@ class AuthenticationController extends AbstractController
      * @param  SessionService $session
      * @return void
      */
-    public function __construct(UserService $userService, Auth $auth)
+    public function __construct(UserService $userService, Auth $auth, RenderService $renderService, Logger $logger)
     {
+        parent::__construct($renderService, $logger);
         $this->userService = $userService;
         $this->auth = $auth;
     }
@@ -37,9 +45,10 @@ class AuthenticationController extends AbstractController
      *
      * @return void
      */
-    public function index()
+    public function index(): Response
     {
-        $this->render("login");
+        $content = $this->renderService->render("login");
+        return $this->html($content);
     }
     
     /**
@@ -47,16 +56,9 @@ class AuthenticationController extends AbstractController
      *
      * @return void
      */
-    public function authenticate(): void
+    public function authenticate(): Response
     {
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            $this->render("login");
-            return;
-        }
-        if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
-            throw new ServerException("Token CSRF invalide");
-        }
-
+        $http = 200;
         try {
             $userData = $this->userService->authenticateUser($_POST);
 
@@ -64,27 +66,28 @@ class AuthenticationController extends AbstractController
                 throw new ForbiddenException("Utilisateur non reconnu.");
             }
             if ($userData['role'] !== 'CLIENT' && $userData['role'] !== 'ADMIN') {
-                throw new ForbiddenException("Rôle utilisateur inconnu.");
+                throw new ForbiddenException("Rôle utilisateur inconnu : " . $userData['role']);
             }
 
             $this->auth->login($userData);
 
-            $redirect = [
-                'CLIENT' => '/profil',
-                'ADMIN' => '/admin'
-            ];
-            header("location: " . $redirect[$userData['role']]);
-            exit;
+            $redirect = ['CLIENT' => '/profil',
+                        'ADMIN' => '/admin'];
+            return $this->redirect($redirect[$userData['role']]);
         } 
         catch (AbstractFrontendException | NotFoundException $e) {
             $errorMessage = $e->getUIMessage();
         }
         catch (AbstractBackendException $e) {
-            http_response_code($e->getHttpCode());
             $errorMessage = $e->getUIMessage();
-            error_log($e->getMessage());
+            $http = $e->getHttpCode();
+            if ($e instanceof DbFailureException) {
+                $this->logger->dbError($e->getMessage());
+            } else {
+                $this->logger->error($e->getMessage());
+            }
         }
-        
-        $this->render("login", ["errorMessage" => $errorMessage]);
+        $content = $this->renderService->render("login", ["errorMessage" => $errorMessage]);
+        return $this->html($content, $http);
     }
 }

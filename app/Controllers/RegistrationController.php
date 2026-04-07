@@ -2,11 +2,15 @@
 
 namespace App\Controllers;
 
-use App\Core\AbstractController;
+use App\Core\Abstract\AbstractController;
 use App\Core\Auth;
+use App\Core\Logger;
+use App\Core\Response;
 use App\Exceptions\AbstractBackendException;
 use App\Exceptions\AbstractFrontendException;
+use App\Exceptions\DbFailureException;
 use App\Exceptions\NotFoundException;
+use App\Services\RenderService;
 use App\Services\UserService;
 
 /**
@@ -28,8 +32,9 @@ class RegistrationController extends AbstractController
      * @param  Auth $auth
      * @return void
      */
-    public function __construct(UserService $userService, Auth $auth)
+    public function __construct(UserService $userService, Auth $auth, RenderService $renderService, Logger $logger)
     {
+        parent::__construct($renderService, $logger);
         $this->userService = $userService;
         $this->auth = $auth;
     }
@@ -39,9 +44,10 @@ class RegistrationController extends AbstractController
      *
      * @return void
      */
-    public function index(): void
+    public function index(): Response
     {
-        $this->render("signup");
+        $content = $this->renderService->render("signup");
+        return $this->html($content);
     }
     
     /**
@@ -49,11 +55,10 @@ class RegistrationController extends AbstractController
      *
      * @return void
      */
-    public function register(): void
+    public function register(): Response
     {
-        $this->requirePostMethod();
-        $this->checkCsrfToken();
         $errorMessage = '';
+        $http = 200;
         try {
             $this->userService->signUserUp($_POST);
             $user = [
@@ -63,19 +68,24 @@ class RegistrationController extends AbstractController
             ];
             $userData = $this->userService->authenticateUser($user);
             $this->auth->login($userData, true);
-            header("location: /profil");
-            exit;
+
+            return $this->redirect('/profil');
         } 
         catch (AbstractFrontendException | NotFoundException $e) {
             $errorMessage = $e->getUIMessage();
         }
         catch (AbstractBackendException $e) {
-            http_response_code($e->getHttpCode());
             $errorMessage = $e->getUIMessage();
-            error_log($e->getMessage());
+            $http = $e->getHttpCode();
+            if ($e instanceof DbFailureException) {
+                $this->logger->dbError($e->getMessage());
+            } else {
+                $this->logger->error($e->getMessage());
+            }
         }
 
-        $this->render("signup", ["errorMessage" => $errorMessage]);
+        $content = $this->renderService->render("signup", ["errorMessage" => $errorMessage]);
+        return $this->html($content, $http);
     }
     
     /**
@@ -83,28 +93,33 @@ class RegistrationController extends AbstractController
      *
      * @return void
      */
-    public function checkEmail()
+    public function checkEmail(): Response
     {
         $data = json_decode(file_get_contents("php://input"), true);
         $email = $data['email'] ?? '';
         $isValid = true;
-        $errorMessage = '';
+        $errorMessage = null;
+        $http = 200;
 
         try {
-            $this->userService->emailCheck($email);
+            $this->userService->emailCheck($email, true);
         } 
         catch (AbstractFrontendException | NotFoundException $e) {
             $errorMessage = $e->getUIMessage();
             $isValid = false;
         }
         catch (AbstractBackendException $e) {
-            http_response_code($e->getHttpCode());
             $errorMessage = $e->getUIMessage();
-            error_log($e->getMessage());
+            $http = $e->getHttpCode();
+            if ($e instanceof DbFailureException) {
+                $this->logger->dbError($e->getMessage());
+            } else {
+                $this->logger->error($e->getMessage());
+            }
         }
-        echo json_encode([
-            'isValid' => $isValid,
-            'errorMessage' => $errorMessage
-        ]);
+
+        $data = ['isValid' => $isValid, 
+                'errorMessage' => $errorMessage];
+        return $this->json($data, $http);
     }
 }

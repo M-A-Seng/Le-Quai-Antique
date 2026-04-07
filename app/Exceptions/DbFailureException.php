@@ -5,7 +5,7 @@ namespace App\Exceptions;
 /**
  * DbFailureException
  * 
- * - getHttpCode()
+ * - getHttpCode(), 500
  */
 class DbFailureException extends ServerException
 {

@@ -5,28 +5,31 @@ namespace App\Core;
 use App\Core\DIContainer;
 use App\Core\Auth;
 use App\Enums\Role;
+use App\Exceptions\ForbiddenException;
 use App\Exceptions\NotFoundException;
+use App\Exceptions\RequireLoginException;
+use App\Exceptions\ServerException;
+use App\Services\RenderService;
 
 /**
  * Router 
  */
 class Router
 {
-    private array $routes;
-    private DIContainer $diContainer;
     private Auth $auth;
-    
     /**
      * __construct
      *
      * @param  array $routes
      * @param  DIContainer $diContainer
+     * @param string $env (dev / prod)
      * @return void
      */
-    public function __construct(array $routes, DIContainer $diContainer)
+    public function __construct(private array $routes, 
+                                private DIContainer $diContainer, 
+                                private RenderService $renderService, 
+                                private string $env)
     {
-        $this->routes = $routes; 
-        $this->diContainer = $diContainer;
         $this->auth = $this->diContainer->getAuth(); 
     }
         
@@ -37,7 +40,7 @@ class Router
      * @param  string $uri
      * @return void
      */
-    public function dispatch(string $method, string $uri): void
+    public function dispatch(string $method, string $uri): Response
     {
         foreach ($this->routes as $route)
         {
@@ -46,28 +49,57 @@ class Router
 
             if ($method === $httpMethod && $uri === $path)
             {
-                if ($middlewares) {
-                    foreach ($middlewares as $middleware) {
-                        $this->runMiddleware($middleware);
-                    }   
+                try {
+                    if (!empty($middlewares)) {
+                        foreach ($middlewares as $middleware) {
+                            $this->runMiddleware($middleware);
+                        }   
+                    }
+                } 
+                catch (RequireLoginException $e) {
+                    return new Response('', 302, ['Location' => '/connexion']);
+                } 
+                catch (ForbiddenException | ServerException $e) {
+                    $content = $this->renderService->render((string)$e->getHttpCode(), [], 'error');
+                    return new Response($content, $e->getHttpCode(), ['Content-Type' => 'text/html']);
                 }
 
                 $getController = "get" . $controllerName;
 
                 if (!method_exists($this->diContainer, $getController)) {
-                    http_response_code(500);
-                    # Retirer echo en prod
-                    echo "Erreur : méthode $getController non trouvée dans le container";
-                    return;
+                    if ($this->env === 'dev') {
+                        throw new NotFoundException("Erreur : méthode '$getController' non trouvée dans le container");
+                    } else {
+                        $content = $this->renderService->render('404', [], 'error');
+                        return new Response($content, 404, ['Content-Type' => 'text/html']);
+                    }
                 }
-
                 $controller = $this->diContainer->$getController();
-                $controller->$controllerMethod();
-                return;
+                $response = $controller->$controllerMethod();
+                if (!$response instanceof Response) {
+                    throw new ServerException("Le controller '$controller' doit retourner une instance de 'Response'");
+                }
+                return $response;
             }
         }
-        http_response_code(404);
-        echo '404 - Page non trouvée';
+        $content = $this->renderService->render('404', [], 'error');
+        return new Response($content, 404, ['Content-Type' => 'text/html']);
+    }
+
+    /**
+     * validatePostAndCsrf vérifie que méthode HTTP = POST && que le token CSRF est valide.
+     *
+     * @return void
+     */
+    private function validatePostAndCsrf(): void
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: ' . $_SERVER['REQUEST_URI']);
+            exit;
+        }
+        if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+            throw new ServerException("Token CSRF invalide");
+        }
     }
     
     /**
@@ -92,8 +124,12 @@ class Router
                 $this->auth->requireRole(Role::ADMIN);
                 break;
 
+            case 'requirePost&Csrf':
+                $this->validatePostAndCsrf();
+                break;
+
             default:
-                throw new NotFoundException("Middleware inconnu: $middleware");
+                throw new ServerException("Middleware inconnu: $middleware");
         }
     }
 };
