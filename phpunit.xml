@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit bootstrap="vendor/autoload.php" colors="true" cacheDirectory="./cache/.phpunit.cache">
+  <testsuites>
+    <testsuite name="Tests">
+      <directory>tests</directory>
+    </testsuite>
+  </testsuites>
+
+  <php>
+    <ini name="display_errors" value="0"/>
+    <ini name="display_startup_errors" value="0"/>
+    <ini name="error_reporting" value="E_ALL"/>
+    <ini name="log_errors" value="1"/>
+    <ini name="error_log" value="./logs/phpunit_php.log"/>
+  </php>
+</phpunit>
