@@ -14,7 +14,6 @@ use App\Models\RestaurantModel;
  */
 class RestaurantService extends AbstractDataProcessingService
 {
-    private RestaurantModel $restaurantModel;
     protected const NOT_NULL_COLUMNS = [
         "lunch_opening_time",
         "lunch_closing_time",
@@ -24,10 +23,7 @@ class RestaurantService extends AbstractDataProcessingService
         "evening_max_guests"
     ];
     
-    public function __construct(RestaurantModel $restaurantModel)
-    {
-        $this->restaurantModel = $restaurantModel;
-    }
+    public function __construct(private RestaurantModel $restaurantModel) {}
         
     /**
      * getRestaurant retourne le restaurant associé à l'administrateur connecté.

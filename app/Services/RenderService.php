@@ -27,9 +27,9 @@ class RenderService
         extract($data, EXTR_SKIP);
 
         $viewPath = $layout === 'error' ? 
-            __DIR__ . '/../Views/errors/' . $view . '.php'
-            : __DIR__ . '/../Views/' . $view . '.php';
-        $layoutPath = __DIR__ . '/../Views/layouts/' . $layout . '.php';
+            DIR_ROOT . '/app/Views/errors/' . $view . '.php'
+            : DIR_ROOT . '/app/Views/' . $view . '.php';
+        $layoutPath = DIR_ROOT . '/app/Views/layouts/' . $layout . '.php';
 
         if (!file_exists($viewPath)) {
             throw new NotFoundException(message: "Vue introuvable : $view");

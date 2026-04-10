@@ -24,12 +24,12 @@ set_exception_handler(function (Throwable $e)
     $logFile = DIR_ROOT . '/logs/errors.log';
     error_log($logMessage, 3, $logFile);
 
-    if ($_ENV['APP_ENV'] === 'dev') {
+    if (APPENV === 'dev') {
         echo "Une erreur interne est survenue. <br>";
         echo "<pre>" . $e . "</pre>";
     }
     else {
-        $content = __DIR__ . '/../Views/errors/500.php';
+        $content = file_get_contents(DIR_ROOT . '/app/Views/errors/500.php');
         $response = new Response($content, 500, ['Content-Type' => 'text/html']);
         $response->send();
     }

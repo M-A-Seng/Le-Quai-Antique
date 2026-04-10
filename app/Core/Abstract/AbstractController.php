@@ -50,6 +50,8 @@ abstract class AbstractController
      */
     protected function json(mixed $data, int $status = 200): Response
     {
-        return new Response(json_encode($data), $status, ['Content-Type' => 'application/json']);
+        return new Response(json_encode($data, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE), 
+                            $status, 
+                            ['Content-Type' => 'application/json; charset=utf-8']);
     }
 }

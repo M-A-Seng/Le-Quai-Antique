@@ -19,7 +19,6 @@ use App\Models\UserModel;
  */
 class UserService extends AbstractDataProcessingService
 {
-    private UserModel $userModel;
     protected const NOT_NULL_COLUMNS = [
         "last_name",
         "email",
@@ -33,10 +32,7 @@ class UserService extends AbstractDataProcessingService
      * @param  SessionService $session
      * @return void
      */
-    public function __construct(UserModel $userModel)
-    {
-        $this->userModel = $userModel;
-    }
+    public function __construct(private UserModel $userModel) {}
 
     /**
      * emailCheck vérifie la validité et l'existence de l'email dans la db.

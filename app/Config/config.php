@@ -20,3 +20,9 @@ session_set_cookie_params([
     'secure' => false,   // Mettre true en prod
     'samesite' => 'Strict'
 ]);
+
+# Variable globale, chemin racine du projet
+define('DIR_ROOT', dirname(__DIR__, 2));
+
+# Variable globale, environnement dev ou prod
+define('APPENV', getenv('APP_ENV') ?: ($_ENV['APP_ENV'] ?? null));

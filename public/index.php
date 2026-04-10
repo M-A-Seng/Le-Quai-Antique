@@ -2,8 +2,6 @@
 
 use App\Core\Response;
 
-define('DIR_ROOT', dirname(__DIR__));
-
 require_once __DIR__ . '/../app/Config/config.php';
 require_once __DIR__ . '/../app/Config/bootstrap.php';
 
@@ -14,6 +12,10 @@ try {
     $response = $router->dispatch($method, $uri);
 } 
 catch (Throwable $e) {
+    if (APPENV === 'dev') {
+        echo $e->getMessage() . "\n" . $e->getTraceAsString();
+    }
+    error_log($e->getMessage() . "\n" . $e->getTraceAsString());
     $content = $renderService->render('500', [], 'error');
     $response = new Response($content, 500, ['Content-Type' => 'text/html']);
 }

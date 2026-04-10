@@ -42,7 +42,7 @@ class RegistrationController extends AbstractController
     /**
      * index
      *
-     * @return void
+     * @return Response
      */
     public function index(): Response
     {
@@ -53,7 +53,7 @@ class RegistrationController extends AbstractController
     /**
      * register
      *
-     * @return void
+     * @return Response
      */
     public function register(): Response
     {
@@ -91,11 +91,17 @@ class RegistrationController extends AbstractController
     /**
      * checkEmail vérifie si un email exist en db et communique avec AJAX.
      *
-     * @return void
+     * @return Response
      */
     public function checkEmail(): Response
     {
         $data = json_decode(file_get_contents("php://input"), true);
+        if (!is_array($data)) {
+            return $this->json([
+                'isValid' => false,
+                'errorMessage' => 'Requête invalide'
+            ], 400);
+        }
         $email = $data['email'] ?? '';
         $isValid = true;
         $errorMessage = null;

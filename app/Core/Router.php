@@ -67,7 +67,7 @@ class Router
                 $getController = "get" . $controllerName;
 
                 if (!method_exists($this->diContainer, $getController)) {
-                    if ($this->env === 'dev') {
+                    if (APPENV === 'dev') {
                         throw new NotFoundException("Erreur : méthode '$getController' non trouvée dans le container");
                     } else {
                         $content = $this->renderService->render('404', [], 'error');
@@ -97,8 +97,10 @@ class Router
             header('Location: ' . $_SERVER['REQUEST_URI']);
             exit;
         }
-        if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
-            throw new ServerException("Token CSRF invalide");
+        if (!isset($_POST['csrf_token']) || ($_POST['csrf_token'] !== $_SESSION['csrf_token'])) {
+            if (!isset($_SERVER['HTTP_X_CSRF_TOKEN']) || ($_SERVER['HTTP_X_CSRF_TOKEN'] !== $_SESSION['csrf_token'])) {
+                throw new ServerException("Token CSRF invalide");
+            }
         }
     }
     

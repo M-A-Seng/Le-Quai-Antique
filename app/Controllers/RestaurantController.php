@@ -44,7 +44,6 @@ class RestaurantController extends AbstractController
     {
         $data = [];
         $errorMessage = null;
-        $http = $http === 200 ? $http : $http;
         try {
             $servicesData = $this->restaurantService->getRestaurantServices();
             $data = array_merge($servicesData, $extraData);
