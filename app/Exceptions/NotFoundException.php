@@ -19,13 +19,11 @@ use OutOfBoundsException;
  */
 class NotFoundException extends OutOfBoundsException implements UIMessageProviderExceptionInterface
 {
-    private string $UIMessage = "";
     private string $defaultUIMessage = "Votre demande n'a pas pu être traitée correctement en raison d'une ressource manquante.";
     
-    public function __construct(string $message = "", string $UIMessage = "")
+    public function __construct(string $message = "", private string $UIMessage = "")
     {
         parent::__construct($message);
-        $this->UIMessage = $UIMessage;
     }
 
     public function getUIMessage(): string {

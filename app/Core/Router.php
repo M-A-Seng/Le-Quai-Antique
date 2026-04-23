@@ -46,41 +46,61 @@ class Router
             [$httpMethod, $path, $controllerName, $controllerMethod] = $route;
             $middlewares = $route[4] ?? [];
 
-            if ($method === $httpMethod && $uri === $path)
-            {
-                try {
-                    if (!empty($middlewares)) {
-                        foreach ($middlewares as $middleware) {
-                            $this->runMiddleware($middleware);
-                        }   
-                    }
-                }
-                catch (RequireLoginException $e) {
-                    $content = $this->renderService->render('login', ["error_message" => "Votre session a expiré. Veuillez vous reconnecter."]);
-                    return new Response($content, 302, ['Content-Type' => 'text/html']);
-                } 
-                catch (ForbiddenException | ServerException $e) {
-                    $content = $this->renderService->render((string)$e->getHttpCode(), [], 'error');
-                    return new Response($content, $e->getHttpCode(), ['Content-Type' => 'text/html']);
-                }
-
-                $getController = "get" . $controllerName;
-
-                if (!method_exists($this->diContainer, $getController)) {
-                    if (APPENV === 'dev') {
-                        throw new NotFoundException("Erreur : méthode '$getController' non trouvée dans le container");
-                    } else {
-                        $content = $this->renderService->render('404', [], 'error');
-                        return new Response($content, 404, ['Content-Type' => 'text/html']);
-                    }
-                }
-                $controller = $this->diContainer->$getController();
-                $response = $controller->$controllerMethod();
-                if (!$response instanceof Response) {
-                    throw new ServerException("Le controller '$controller' doit retourner une instance de 'Response'");
-                }
-                return $response;
+            if ($method !== $httpMethod) {
+                continue; // saute les méthodes http qui ne correspondent pas
             }
+
+            $paramNames = [];
+            # remplace les paramètres {?} dans $path par un regex
+            $regex = preg_replace_callback(
+                '#\{([^}]+)\}#', # Cherche ce regex dans $path
+                function ($matches) use (&$paramNames) {
+                    $paramNames[] = $matches[1]; # Récupère le nom du paramètre dans $paramNames
+                    return '([^/]+)'; # Remplace le paramètre par regex
+                },
+                $path
+            );
+            $regex = '#^' . $regex . '/?$#'; # regex strict, /path/{param} devient #^/path/([^/]+)/?$#
+
+            # Compare $path et $uri et extrait les valeurs du regex->paramètre dans $matches
+            if (!preg_match($regex, $uri, $matches)) {
+                continue; # Route suivante si ça ne marche pas
+            }
+            array_shift($matches); // retire $matches[0] (chemin complet de $uri)
+            $params = array_combine($paramNames, $matches); # Tableau associatif 'param' => 'value'
+
+            try {
+                if (!empty($middlewares)) {
+                    foreach ($middlewares as $middleware) {
+                        $this->runMiddleware($middleware);
+                    }   
+                }
+            }
+            catch (RequireLoginException $e) {
+                $content = $this->renderService->render('login', ["error_message" => "Votre session a expiré. Veuillez vous reconnecter."]);
+                return new Response($content, 302, ['Content-Type' => 'text/html']);
+            } 
+            catch (ForbiddenException | ServerException $e) {
+                $content = $this->renderService->render((string)$e->getHttpCode(), [], 'error');
+                return new Response($content, $e->getHttpCode(), ['Content-Type' => 'text/html']);
+            }
+
+            $getController = "get" . $controllerName;
+
+            if (!method_exists($this->diContainer, $getController)) {
+                if (APPENV === 'dev') {
+                    throw new NotFoundException("Erreur : méthode '$getController' non trouvée dans le container");
+                } else {
+                    $content = $this->renderService->render('404', [], 'error');
+                    return new Response($content, 404, ['Content-Type' => 'text/html']);
+                }
+            }
+            $controller = $this->diContainer->$getController();
+            $response = $controller->$controllerMethod($params);
+            if (!$response instanceof Response) {
+                throw new ServerException("Le controller '$controller' doit retourner une instance de 'Response'");
+            }
+            return $response;
         }
         $content = $this->renderService->render('404', [], 'error');
         return new Response($content, 404, ['Content-Type' => 'text/html']);

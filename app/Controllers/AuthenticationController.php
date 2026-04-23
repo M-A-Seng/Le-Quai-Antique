@@ -71,8 +71,8 @@ class AuthenticationController extends AbstractController
 
             $this->auth->login($userData);
 
-            $redirect = ['CLIENT' => '/profil',
-                        'ADMIN' => '/admin'];
+            $redirect = ['CLIENT' => '/profil/' . $userData['id'],
+                        'ADMIN' => '/admin/' . $userData['id']];
             return $this->redirect($redirect[$userData['role']]);
         } 
         catch (AbstractFrontendException | NotFoundException $e) {

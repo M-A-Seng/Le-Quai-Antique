@@ -22,8 +22,8 @@ return [
     ['POST', '/reserver',                   'ReservationController',        'reserve',              ['requirePost&Csrf']],
 
     # Routes réservées
-    ['GET',  '/profil',                     'UserController',               'loginClient',          ['requireLogin', 'requireClient']],
-    ['GET',  '/admin',                      'UserController',               'loginAdmin',           ['requireLogin', 'requireAdmin']],
+    ['GET',  '/profil/{id}',                'UserController',               'loginClient',          ['requireLogin', 'requireClient']],
+    ['GET',  '/admin/{id}',                 'UserController',               'loginAdmin',           ['requireLogin', 'requireAdmin']],
     ['POST', '/deconnexion',                'UserController',               'logout',               ['requireLogin', 'requirePost&Csrf']],
     # Admin
     ['GET',  '/admin/settings/services',    'RestaurantServiceController',  'index',                ['requireLogin', 'requireAdmin']],
