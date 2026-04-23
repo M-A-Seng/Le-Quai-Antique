@@ -3,7 +3,7 @@
 namespace App\Exceptions;
 
 /**
- * InvalidCredentialsException
+ * InvalidCredentialsException PAS DE MESSAGE TECHNIQUE DANS LE MESSAGE D'EXCEPTION (affichage client)
  * 
  * - getUIMessage()
  * 

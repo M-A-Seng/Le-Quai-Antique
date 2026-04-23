@@ -57,14 +57,14 @@ class RegistrationController extends AbstractController
      */
     public function register(): Response
     {
-        $errorMessage = '';
+        $error_message = '';
         $http = 200;
         try {
+            unset($_POST['csrf_token']);
             $this->userService->signUserUp($_POST);
             $user = [
                 'email' => $_POST['email'],
                 'password' => $_POST['password'],
-                'csrf_token' => $_POST['csrf_token']
             ];
             $userData = $this->userService->authenticateUser($user);
             $this->auth->login($userData, true);
@@ -72,10 +72,10 @@ class RegistrationController extends AbstractController
             return $this->redirect('/profil');
         } 
         catch (AbstractFrontendException | NotFoundException $e) {
-            $errorMessage = $e->getUIMessage();
+            $error_message = $e->getUIMessage();
         }
         catch (AbstractBackendException $e) {
-            $errorMessage = $e->getUIMessage();
+            $error_message = $e->getUIMessage();
             $http = $e->getHttpCode();
             if ($e instanceof DbFailureException) {
                 $this->logger->dbError($e->getMessage());
@@ -84,7 +84,7 @@ class RegistrationController extends AbstractController
             }
         }
 
-        $content = $this->renderService->render("signup", ["errorMessage" => $errorMessage]);
+        $content = $this->renderService->render("signup", ["error_message" => $error_message]);
         return $this->html($content, $http);
     }
     
@@ -99,23 +99,23 @@ class RegistrationController extends AbstractController
         if (!is_array($data)) {
             return $this->json([
                 'isValid' => false,
-                'errorMessage' => 'Requête invalide'
+                'error_message' => 'Requête invalide'
             ], 400);
         }
         $email = $data['email'] ?? '';
         $isValid = true;
-        $errorMessage = null;
+        $error_message = null;
         $http = 200;
 
         try {
             $this->userService->emailCheck($email, true);
         } 
         catch (AbstractFrontendException | NotFoundException $e) {
-            $errorMessage = $e->getUIMessage();
+            $error_message = $e->getUIMessage();
             $isValid = false;
         }
         catch (AbstractBackendException $e) {
-            $errorMessage = $e->getUIMessage();
+            $error_message = $e->getUIMessage();
             $http = $e->getHttpCode();
             if ($e instanceof DbFailureException) {
                 $this->logger->dbError($e->getMessage());
@@ -125,7 +125,7 @@ class RegistrationController extends AbstractController
         }
 
         $data = ['isValid' => $isValid, 
-                'errorMessage' => $errorMessage];
+                'error_message' => $error_message];
         return $this->json($data, $http);
     }
 }

@@ -1,13 +1,8 @@
+<?php use function App\html; ?>
 <h1>Inscription</h1>
 
-<?php if (isset($errorMessage) && !empty($errorMessage)): ?>
-    <div style="color:red">
-        <?php echo htmlspecialchars($errorMessage); ?>
-    </div>
-<?php endif; ?>
-
 <form method="POST" action="/inscription" target="_self">
-    <input type="hidden" id="csrf_token" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+    <input type="hidden" id="csrf_token" name="csrf_token" value="<?= html($_SESSION['csrf_token']) ?>">
     
     <label for="last_name">Nom* :
         <input id="last_name" name="last_name" type="text" pattern="^[A-Za-zÀ-ÖØ-öø-ÿ' \-]{2,50}$" required>
@@ -33,7 +28,7 @@
             <li id="password-lowercase">Minimum 1 lettre majuscule.</li>
             <li id="password-uppercase">Minimum 1 lettre minuscule.</li>
             <li id="password-number">Minimum 1 chiffre.</li>
-            <li id="password-special-char">Minimum 1 caractères spécial.</li>
+            <li id="password-special-char">Minimum 1 caractère spécial.</li>
             <li id="password-length">Au moins 8 caractères.</li>
         </ul>
     </label><br>

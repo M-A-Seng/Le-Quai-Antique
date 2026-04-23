@@ -23,7 +23,8 @@ class RenderService
      */
     public function render(string $view, array $data = [], string $layout = "main"): string
     {
-        $data = $this->sanitizeStringForView($data);
+        $data['error_message'] = $this->getFlashMessage('error_message') ?? $data['error_message'] ?? null;
+        
         extract($data, EXTR_SKIP);
 
         $viewPath = $layout === 'error' ? 
@@ -32,10 +33,10 @@ class RenderService
         $layoutPath = DIR_ROOT . '/app/Views/layouts/' . $layout . '.php';
 
         if (!file_exists($viewPath)) {
-            throw new NotFoundException(message: "Vue introuvable : $view");
+            throw new NotFoundException(message: __METHOD__ . ": Vue introuvable : $view");
         }
         if (!file_exists($layoutPath)) {
-            throw new NotFoundException(message: "Layout introuvable : $layout");
+            throw new NotFoundException(message: __METHOD__ . ": Layout introuvable : $layout");
         }
 
         ob_start();
@@ -48,20 +49,21 @@ class RenderService
 
         return $html;
     }
-    
+        
     /**
-     * sanitizeStringForView applique htmlspecialchars à tous les string d'un tableau
+     * getFlashMessage Retourne le message flash stocké dans la session de l'utilisateur.
      *
-     * @param  array $data
-     * @return array
+     * @param  string $key
+     * @return string
      */
-    private function sanitizeStringForView(array $data): array
+    private function getFlashMessage(string $key): ?string
     {
-        array_walk_recursive($data, function (&$item) {
-            if (is_string($item)) {
-                $item = htmlspecialchars($item, ENT_QUOTES, 'UTF-8');
-            }
-        });
-        return $data;
+        if (!empty($_SESSION[$key])) 
+        {
+            $value = $_SESSION[$key];
+            unset($_SESSION[$key]);
+            return $value;
+        }
+        return null;
     }
 }

@@ -1,3 +1,4 @@
+<?php use function App\html; ?>
 <h1>Connexion</h1>
 
 <form action="/connexion" target="_self" method="POST">
@@ -13,12 +14,6 @@
 
     <button type="submit" id="submit-button" disabled>Se connecter</button>
 </form>
-
-<?php if (isset($errorMessage) && !empty($errorMessage)): ?>
-    <div style="color:red">
-        <?php echo htmlspecialchars($errorMessage); ?>
-    </div>
-<?php endif; ?>
 
 <p><a href="#">J'ai oublié mon mot de passe</a></p>
 <p><a href="/inscription">Créer un compte</a></p>

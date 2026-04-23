@@ -10,11 +10,15 @@ use App\Controllers\MenuController;
 use App\Controllers\RedirectController;
 use App\Controllers\RegistrationController;
 use App\Controllers\RestaurantController;
+use App\Controllers\RestaurantServiceController;
 use App\Controllers\UserController;
 use App\Models\RestaurantModel;
+use App\Models\RestaurantServiceModel;
 use App\Models\UserModel;
+use App\Services\DatetimeService;
 use App\Services\RenderService;
 use App\Services\RestaurantService;
+use App\Services\RestaurantServiceService;
 use App\Services\SessionService;
 use App\Services\UserService;
 
@@ -24,6 +28,7 @@ use App\Services\UserService;
 class DIContainer 
 {
     private Logger $logger;
+    private DatetimeService $datetimeService;
 
     private PdoFactory $pdoFactory;
     private DbConnection $frontConnection;
@@ -36,8 +41,8 @@ class DIContainer
     private UserModel $userModel;
     private UserService $userService;
 
-    private RestaurantModel $restaurantModel;
-    private RestaurantService $restaurantService;
+    private RestaurantServiceModel $restaurantServiceModel;
+    private RestaurantServiceService $restaurantServiceService;
     
     /**
      * __construct
@@ -47,6 +52,7 @@ class DIContainer
     public function __construct(private RenderService $renderService)
     {
         $this->logger = new Logger('app.log');
+        $this->datetimeService = new DatetimeService();
 
         $this->pdoFactory = new PdoFactory();
         $this->frontConnection = new DbConnection('front', $this->pdoFactory, $this->logger);
@@ -59,8 +65,8 @@ class DIContainer
         $this->userModel = new UserModel($this->frontConnection);
         $this->userService = new UserService($this->userModel, $this->sessionService);
 
-        $this->restaurantModel = new RestaurantModel($this->backConnection);
-        $this->restaurantService = new RestaurantService($this->restaurantModel);
+        $this->restaurantServiceModel = new RestaurantServiceModel($this->backConnection);
+        $this->restaurantServiceService = new RestaurantServiceService($this->restaurantServiceModel, $this->datetimeService);
     }
         
     /**
@@ -150,9 +156,9 @@ class DIContainer
      *
      * @return RestaurantController
      */
-    public function getRestaurantController(): RestaurantController
+    public function getRestaurantServiceController(): RestaurantServiceController
     {
-        return new RestaurantController($this->restaurantService, $this->renderService, $this->logger);
+        return new RestaurantServiceController($this->restaurantServiceService, $this->renderService, $this->logger);
     }
 
     /**

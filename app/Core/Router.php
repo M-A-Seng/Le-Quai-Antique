@@ -27,8 +27,7 @@ class Router
      */
     public function __construct(private array $routes, 
                                 private DIContainer $diContainer, 
-                                private RenderService $renderService, 
-                                private string $env)
+                                private RenderService $renderService)
     {
         $this->auth = $this->diContainer->getAuth(); 
     }
@@ -55,9 +54,10 @@ class Router
                             $this->runMiddleware($middleware);
                         }   
                     }
-                } 
+                }
                 catch (RequireLoginException $e) {
-                    return new Response('', 302, ['Location' => '/connexion']);
+                    $content = $this->renderService->render('login', ["error_message" => "Votre session a expiré. Veuillez vous reconnecter."]);
+                    return new Response($content, 302, ['Content-Type' => 'text/html']);
                 } 
                 catch (ForbiddenException | ServerException $e) {
                     $content = $this->renderService->render((string)$e->getHttpCode(), [], 'error');
@@ -91,17 +91,22 @@ class Router
      *
      * @return void
      */
-    private function validatePostAndCsrf(): void
+    private function validatePostAndCsrf(): ?Response
     {
+        $error_message = "Votre session a expiré ou la requête est invalide. Veuillez réessayer.";
+
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            header('Location: ' . $_SERVER['REQUEST_URI']);
-            exit;
+            $_SESSION['error_message'] = $error_message;
+            return new Response('', 303, ['Location' => $_SERVER['REQUEST_URI']]);
         }
-        if (!isset($_POST['csrf_token']) || ($_POST['csrf_token'] !== $_SESSION['csrf_token'])) {
-            if (!isset($_SERVER['HTTP_X_CSRF_TOKEN']) || ($_SERVER['HTTP_X_CSRF_TOKEN'] !== $_SESSION['csrf_token'])) {
-                throw new ServerException("Token CSRF invalide");
-            }
+
+        $csrfToken = $_POST['csrf_token'] ?? $_SERVER['HTTP_X_CSRF_TOKEN'] ?? null;
+
+        if (!$csrfToken || $csrfToken !== $_SESSION['csrf_token']) {
+            $_SESSION['error_message'] = $error_message;
+            return new Response('', 303, ['Location' => $_SERVER['REQUEST_URI']]);
         }
+        return null;
     }
     
     /**

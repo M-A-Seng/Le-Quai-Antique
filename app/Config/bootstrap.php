@@ -7,6 +7,9 @@ use App\Core\Response;
 use App\Services\RenderService;
 use Throwable;
 
+# Fonctions d'aide (helpers)
+require_once DIR_ROOT . '/app/helpers.php';
+
 # Session
 session_start();
 if (!isset($_SESSION['csrf_token'])) {

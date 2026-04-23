@@ -13,7 +13,6 @@ use App\Exceptions\ForbiddenException;
 use App\Exceptions\NotFoundException;
 use App\Services\RenderService;
 use App\Services\UserService;
-use PDOException;
 
 /**
  * AuthenticationController gère le système de connexion utilisateur.
@@ -60,6 +59,7 @@ class AuthenticationController extends AbstractController
     {
         $http = 200;
         try {
+            unset($_POST['csrf_token']);
             $userData = $this->userService->authenticateUser($_POST);
 
             if (empty($userData['id']) || empty($userData['role'])) {
@@ -76,10 +76,10 @@ class AuthenticationController extends AbstractController
             return $this->redirect($redirect[$userData['role']]);
         } 
         catch (AbstractFrontendException | NotFoundException $e) {
-            $errorMessage = $e->getUIMessage();
+            $error_message = $e->getUIMessage();
         }
         catch (AbstractBackendException $e) {
-            $errorMessage = $e->getUIMessage();
+            $error_message = $e->getUIMessage();
             $http = $e->getHttpCode();
             if ($e instanceof DbFailureException) {
                 $this->logger->dbError($e->getMessage());
@@ -87,7 +87,7 @@ class AuthenticationController extends AbstractController
                 $this->logger->error($e->getMessage());
             }
         }
-        $content = $this->renderService->render("login", ["errorMessage" => $errorMessage]);
+        $content = $this->renderService->render("login", ["error_message" => $error_message]);
         return $this->html($content, $http);
     }
 }

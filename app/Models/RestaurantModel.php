@@ -13,63 +13,70 @@ use App\Exceptions\NotFoundException;
  */
 class RestaurantModel extends AbstractModel
 {
-    # Les constantes sont utilisées dans AbstractModel.
-    protected const ALLOWED_TABLES = ["restaurant"];
+    # Constantes utilisées dans AbstractModel.
+    protected const TABLE = "restaurant";
     protected const ALLOWED_COLUMNS = [
         "id",
         "restaurant_id",
+        "siret",
         "name",
         "address",
         "tel",
         "admin_id",
-        "lunch_opening_time",
-        "lunch_closing_time",
-        "lunch_max_guests",
-        "evening_opening_time",
-        "evening_closing_time",
-        "evening_max_guests",
-        "service_duration"
     ];
-    protected const TABLE = "restaurant";
 
+    # Restaurant unique à l'heure actuelle avec données non modifiables (cahier des charges).
     private $readOnlyColumns = [
         "id",
         "restaurant_id",
+        "siret",
         "name",
         "address",
         "tel",
         "admin_id",
-        "service_duration"
     ];
     
     /**
      * getRestaurantByAdmin trouve le restaurant associé au compte administrateur.
      * 
-     * NOTE: Fonctionne que si l'administrateur n'est associé qu'à un seul restaurant.
+     * Exception si non trouvé.
+     * 
+     * NOTE: Fonctionne que si l'administrateur est associé qu'à un seul restaurant.
      *
      * @param  int $adminId
-     * @return void
+     * @return array
      */
-    public function getRestaurantByAdmin(int $adminId)
+    public function getRestaurantByAdmin(int $adminId): array
     {
-        $result = $this->findBy('admin_id', $adminId);
+        $restaurant = $this->findBy(['admin_id' => $adminId]);
+        if (empty($restaurant)) {
+            throw new NotFoundException(message: __METHOD__ . ": Administrateur non reconnu.");
+        }
+        return $restaurant[0];
+    }
+    
+    /**
+     * getRestaurantById retourne les données du restaurant correspondant à l'id.
+     * 
+     * Exception si non trouvé.
+     *
+     * @param  int $id
+     * @return array
+     */
+    public function getRestaurantById(int $id): array
+    {
+        $result = $this->findBy(['id' => $id]);
         if (empty($result)) {
-            throw new NotFoundException(message: "Restaurant non trouvé dans la db.");
+            throw new NotFoundException(message: __METHOD__ . ": Restaurant non trouvé dans la db.");
         }
         return $result[0];
     }
     
-    /**
-     * updateRestaurant met à jour les horraires d'ouverture et le nombre de convives du restaurant.
-     *
-     * @param  array $data
-     * @return void
-     */
-    public function updateRestaurant(array $data)
-    {
-        $this->getRestaurantByAdmin($_SESSION['id']); # Actuellement qu'un seul restaurant/admin
-        $this->checkProtectedColumns($data, $this->readOnlyColumns);
-        
-        return $this->update($_SESSION['id'], $data);
-    }
+    # La modification des données du restaurant n'est pas demandée dans le cahier des charges.
+    // public function updateRestaurant(array $data): array
+    // {
+    //     $this->getRestaurantByAdmin($_SESSION['id']); 
+    //     $this->checkProtectedColumns($data, $this->readOnlyColumns);
+    //     return $this->update($_SESSION['id'], $data);
+    // }
 }

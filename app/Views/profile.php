@@ -1,3 +1,4 @@
+<?php use function App\html; ?>
 <h1>Mon profil client</h1>
 
 <?php if ($_SESSION['new_user']): ?>
@@ -8,6 +9,6 @@
 <?php endif; ?>
 
 <form action="/deconnexion" target="_self" method="POST">
-    <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+    <input type="hidden" name="csrf_token" value="<?= html($_SESSION['csrf_token']) ?>">
     <button type="submit">Se déconnecter</button>
 </form>

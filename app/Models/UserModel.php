@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Core\Abstract\AbstractModel;
 use App\Exceptions\NotFoundException;
+use App\Exceptions\ServerException;
 
 /**
  * UserModel implémente un CRUD utilisateur.
@@ -16,8 +17,8 @@ use App\Exceptions\NotFoundException;
  */
 class UserModel extends AbstractModel
 {
-    # Les constantes sont utilisées dans AbstractModel.
-    protected const ALLOWED_TABLES = ["users"];
+    # Constantes utilisées dans AbstractModel.
+    protected const TABLE = "users";
     protected const ALLOWED_COLUMNS = [
         "id",
         "user_id",
@@ -29,7 +30,6 @@ class UserModel extends AbstractModel
         "allergy",
         "default_guest_count", 
     ];
-    protected const TABLE = "users";
 
     private $readOnlyColumns = [
         "id",
@@ -39,10 +39,10 @@ class UserModel extends AbstractModel
     /**
      * createUser créer un nouvel utilisateur dans la base de données.
      *
-     * @param  mixed $data
-     * @return void
+     * @param  array $data
+     * @return array
      */
-    public function createUser(array $data)
+    public function createUser(array $data): array
     {
         $this->checkProtectedColumns($data, $this->readOnlyColumns);
         return $this->insert($data);
@@ -51,12 +51,12 @@ class UserModel extends AbstractModel
     /**
      * getUserByEmail cherche l'existance d'un email dans la base de données.
      *
-     * @param  mixed $email
-     * @return void
+     * @param  string $email
+     * @return array|null
      */
-    public function getUserByEmail(string $email)
+    public function getUserByEmail(string $email): array|null
     {
-        $result = $this->findBy("email", $email);
+        $result = $this->findBy(["email" => $email]);
         return $result[0] ?? NULL;
     }
     
@@ -65,14 +65,14 @@ class UserModel extends AbstractModel
      * 
      * Lance une exception si non trouvé.
      *
-     * @param  mixed $id
-     * @return void
+     * @param  int $id
+     * @return array
      */
-    public function getUserById(int $id)
+    public function getUserById(int $id): array
     {
-        $result = $this->findBy("id", $id);
+        $result = $this->findBy(["id" => $id]);
         if (empty($result)) {
-            throw new NotFoundException(message: "Utilisateur non trouvé en db.");
+            throw new NotFoundException(message: __METHOD__ . ": Utilisateur '$id' non trouvé en db.", UIMessage:"Utilisateur non trouvé.");
         }
         return $result[0];
     }
@@ -82,9 +82,9 @@ class UserModel extends AbstractModel
      *
      * @param  int $id
      * @param  array $data
-     * @return void
+     * @return array
      */
-    public function updateUser(int $id, array $data)
+    public function updateUser(int $id, array $data): array
     {
         $this->checkProtectedColumns($data, $this->readOnlyColumns);
         $this->getUserById($id);
@@ -96,11 +96,16 @@ class UserModel extends AbstractModel
      * deleteUser supprime un utilisateur de la base de données.
      *
      * @param  int $id
-     * @return void
+     * @param string $email
+     * @return int
      */
-    public function deleteUser(int $id)
+    public function deleteUser(int $id, string $email): int
     {
-        $this->getUserById($id);
-        return $this->delete(["id" => $id]);
+        $userById = $this->getUserById($id);
+        $userByEmail = $this->getUserByEmail($email);
+        if ($userById["email"] !== $email || $userByEmail["id"] !== $id) {
+            throw new ServerException(__METHOD__ . ": Echec de suppression utilisateur. L'email '$email' ne correspond pas à l'utilisateur $id.");
+        }
+        return $this->delete(["id" => $id, "email" => $email]);
     }
 }

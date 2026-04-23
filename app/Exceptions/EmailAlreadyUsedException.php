@@ -3,7 +3,7 @@
 namespace App\Exceptions;
 
 /**
- * EmailAlreadyUsedException
+ * EmailAlreadyUsedException PAS DE MESSAGE TECHNIQUE DANS LE MESSAGE D'EXCEPTION (affichage client)
  * 
  * - getUIMessage() 
  * 

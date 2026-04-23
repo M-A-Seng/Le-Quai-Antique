@@ -2,7 +2,8 @@
 
 namespace App\Services;
 
-use App\Core\Abstract\AbstractDataProcessingService;
+use App\Core\Abstract\AbstractService;
+use App\Exceptions\DataProcessingException;
 use App\Exceptions\InvalidCredentialsException;
 use App\Exceptions\InvalidFieldException;
 use App\Models\UserModel;
@@ -17,10 +18,28 @@ use App\Models\UserModel;
  * - updateUserProfile()
  * - deleteUserAccount()
  */
-class UserService extends AbstractDataProcessingService
+class UserService extends AbstractService
 {
+    private const REGEX = [
+        'password' => '/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,}$/',
+        'phone' => '/^(\+?[1-9]{1}[0-9\s\-]{6,15}|0[0-9\s\-]{6,15})$/'
+    ];
     protected const NOT_NULL_COLUMNS = [
         "last_name",
+        "email",
+        "password",
+    ];
+    private array $signupExpectedInputs = [
+        "first_name",
+        "last_name",
+        "email",
+        "tel",
+        "password",
+        "password-confirm",
+        "default_guest_count",
+        "allergy"
+    ];
+    private array $loginExpectedInputs = [
         "email",
         "password",
     ];
@@ -63,7 +82,7 @@ class UserService extends AbstractDataProcessingService
      */
     public function passwordCheck(string $password, string $passwordConfirm): void
     {
-        if (!preg_match(parent::REGEX['password'], $password)) {
+        if (!preg_match(self::REGEX['password'], $password)) {
             throw new InvalidFieldException("Votre mot de passe n'est pas assez sécurisé, veuillez suivre les instructions affichées.");
         }
         if ($password !== $passwordConfirm) {
@@ -82,7 +101,7 @@ class UserService extends AbstractDataProcessingService
         $phoneNumber = trim($phoneNumber);
         $phoneNumber = empty($phoneNumber) ? NULL : $phoneNumber;
         if (!empty($phoneNumber)) {
-            if (!preg_match(parent::REGEX['phone'], $phoneNumber) || trim($phoneNumber, '0') === '') {
+            if (!preg_match(self::REGEX['phone'], $phoneNumber) || trim($phoneNumber, '0') === '') {
                 throw new InvalidFieldException("Numéro de téléphone invalide.");
             }
         }
@@ -97,6 +116,10 @@ class UserService extends AbstractDataProcessingService
      */
     public function signUserUp(array $data): void
     {
+        if (empty($data) || array_is_list($data)) {
+            throw new DataProcessingException(__METHOD__ . ": Un tableau associatif est attendu en paramètre.");
+        }
+        $this->checkExpectedKeys($this->signupExpectedInputs, $data);
         $data = $this->trimStringValuesInArray($data);
 
         # champs obligatoires
@@ -114,7 +137,7 @@ class UserService extends AbstractDataProcessingService
         }
 
         # ---
-        unset($data['csrf_token'], $data['password-confirm']);
+        unset($data['password-confirm']);
         $data['password'] = password_hash($data['password'], PASSWORD_DEFAULT);
 
         $this->userModel->createUser($data);
@@ -128,12 +151,10 @@ class UserService extends AbstractDataProcessingService
      */
     public function authenticateUser(array $data): array
     {
-        $expectedKeys = ['email', 'password', 'csrf_token']; sort($expectedKeys);
-        $keysData = array_keys($data); sort($keysData);
-        if ($expectedKeys !== $keysData) {
-            throw new InvalidFieldException("Veuillez entrer uniquement une adresse e-mail et un mot de passe.");
+        if (empty($data) || array_is_list($data)) {
+            throw new DataProcessingException(__METHOD__ . ": Un tableau associatif est attendu en paramètre.");
         }
-
+        $this->checkExpectedKeys($this->loginExpectedInputs, $data);
         $this->validateNotNullKeys(static::class, $data, false);
 
         if ($this->emailCheck($data['email'], false)) {
@@ -142,7 +163,6 @@ class UserService extends AbstractDataProcessingService
         if (empty($result) || !password_verify($data['password'], $result['password'])) {
             throw new InvalidCredentialsException("Email ou mot de passe invalide.");
         }
-
         $userData = [
             'id' => $result['id'],
             'role' => $result['role'],
@@ -156,11 +176,14 @@ class UserService extends AbstractDataProcessingService
      * @param  array $data
      * @return void
      */
-    public function updateUserProfile(array $data): void
+    public function updateUserProfile(array $data): array
     {
+        if (empty($data) || array_is_list($data)) {
+            throw new DataProcessingException(__METHOD__ . ": Un tableau associatif est attendu en paramètre.");
+        }
         $data = $this->trimStringValuesInArray($data);
         $this->validateNotNullKeys(static::class, $data, false);
-        $this->userModel->getUserById($_SESSION['id']); # S'assurer que l'utilisateur de la session existe en db
+        $this->userModel->getUserById($_SESSION['id']); # S'assurer qu'il n'y a pas de not found
 
         if (isset($data['password']) && !empty($data['password'])) {
             $this->passwordCheck($data['password'], $data['password-confirm']);
@@ -177,7 +200,7 @@ class UserService extends AbstractDataProcessingService
         }
 
         unset($data['id'], $data['user_id']);
-        $this->userModel->updateUser($_SESSION['id'], $data);
+        return $this->userModel->updateUser($_SESSION['id'], $data);
     }
         
     /**
@@ -188,9 +211,9 @@ class UserService extends AbstractDataProcessingService
      */
     public function deleteUserAccount(int $id): void
     {
-        $this->userModel->getUserById($_SESSION['id']); # S'assurer que l'utilisateur de la session existe en db
+        $user = $this->userModel->getUserById($_SESSION['id']);
         if ($id === (int)$_SESSION['id']) {
-            $this->userModel->deleteUser($id);
+            $this->userModel->deleteUser($id, $user['email']);
         }
     }
 }

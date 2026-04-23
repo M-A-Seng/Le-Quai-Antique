@@ -11,7 +11,7 @@ document.getElementById('email').addEventListener('blur', function()
     .then(response => response.json())
     .then(data => {
         let message = document.getElementById("email-message");
-        message.textContent = data.isValid ? " ✔" : data.errorMessage;
+        message.textContent = data.isValid ? " ✔" : ` ✖ ${data.error_message}`;
         message.style.color = data.isValid ? "green" : "red";
     })
     .catch(error => {
