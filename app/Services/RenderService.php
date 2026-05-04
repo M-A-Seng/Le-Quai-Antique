@@ -24,6 +24,7 @@ class RenderService
     public function render(string $view, array $data = [], string $layout = "main"): string
     {
         $data['error_message'] = $this->getFlashMessage('error_message') ?? $data['error_message'] ?? null;
+        $data['confirmation_message'] = $this->getFlashMessage('confirmation_message') ?? $data['confirmation_message'] ?? null;
         
         extract($data, EXTR_SKIP);
 

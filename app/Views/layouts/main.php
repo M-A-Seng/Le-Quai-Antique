@@ -1,5 +1,7 @@
 <?php use function App\html; ?>
-<h1>Layout</h1>
+LAYOUT
+
+<script src="/assets/js/session-cleanup.js"></script>
 
 <?php require_once __DIR__.'/../components/header.php' ?>
 

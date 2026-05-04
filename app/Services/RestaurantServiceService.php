@@ -3,18 +3,24 @@
 namespace App\Services;
 
 use App\Core\Abstract\AbstractService;
+use App\Enums\DayOfWeek;
+use App\Enums\Role;
 use App\Exceptions\DataProcessingException;
 use App\Exceptions\ServerException;
 use App\Models\RestaurantServiceModel;
+use DateTimeImmutable;
 
 /**
  * RestaurantServiceService
  * 
  * - getRestaurantServices()
+ * - getRestaurantServiceByTime()
+ * - getServiceTimeSlotsByDate()
  * - updateRestaurantService()
  */
 class RestaurantServiceService extends AbstractService
 {
+    # Constante utilisée par AbstractService
     protected const NOT_NULL_COLUMNS = [
         "id",
         "opening_time",
@@ -35,7 +41,8 @@ class RestaurantServiceService extends AbstractService
      * @param DatetimeService $datetimeService
      * @return void
      */
-    public function __construct(private RestaurantServiceModel $restaurantServiceModel, 
+    public function __construct(private RestaurantServiceModel $restaurantServiceModel,
+                                private ServiceService $serviceService, 
                                 private DatetimeService $datetimeService) {}
     
     /**
@@ -46,18 +53,73 @@ class RestaurantServiceService extends AbstractService
      */
     public function getRestaurantServices(int $restaurantId): array
     {
+        $this->checkUserLegitimacy(roles:[Role::ADMIN]);
+        
         if (empty($restaurantId)) {
             throw new DataProcessingException(__METHOD__ . ": Veuillez entrer l'id du restaurant en paramètre.");
         }
-        $result = $this->restaurantServiceModel->getRestaurantServicesByRestaurantId($restaurantId);
-        $result = array_map(fn($rows) => $rows[0], $result); # Retirer une couche de array inutile
-
+        $result = $this->restaurantServiceModel->findRestaurantServicesByRestaurantId($restaurantId);
+        $restaurantServices = [];
+        # logique adaptée pour 1 service_type/restaurant uniquement
         foreach ($result as &$data) {
             $data['opening_time'] = $this->datetimeService->formatTimeToHHMM($data['opening_time']);
             $data['closing_time'] = $this->datetimeService->formatTimeToHHMM($data['closing_time']);
+
+            if (isset($restaurantServices[$data['service_type']])) {
+                throw new ServerException(__METHOD__ . ": Duplicate service_type détecté : " . $data['service_type']);
+            }
+            $restaurantServices[$data['service_type']] = $data;
         }
         unset($data);
-        return $result;
+        return $restaurantServices;
+    }
+    
+    /**
+     * getRestaurantServiceByTime retourne le service dont la plage horaire inclue l'heure donnée.
+     *
+     * @param  int $restaurantId
+     * @param  string $time
+     * @return array
+     */
+    public function getRestaurantServiceByTime(int $restaurantId, string $time): array
+    {
+        $this->validatePositiveInteger($restaurantId);
+        if ($this->datetimeService->validateTimeFormat($time, return:true) === false) {
+            $time = $this->datetimeService->formatTimeToHHMM($time) . ":00";
+        }
+        return $this->restaurantServiceModel->findRestaurantServiceByTime($restaurantId, $time);
+    }
+    
+    /**
+     * getServiceTimeSlot retourne les plages horaires d'ouverture pour le jour donnée et indique si la plage est complète ou pas.
+     *
+     * @param  int $restaurantId
+     * @param  string $date | Y-m-d
+     * @return ?array
+     */
+    public function getServiceTimeSlotsByDate(int $restaurantId, string $date): ?array
+    {
+        $this->validatePositiveInteger($restaurantId);
+        $this->datetimeService->validateDateYmdFormat($date);
+
+        $day = new DateTimeImmutable($date)->format('l');
+        $result = $this->restaurantServiceModel->findRestaurantServicesByOpeningDay($restaurantId, DayOfWeek::from(strtoupper($day)));
+        $data = [];
+        if ($result) {
+            foreach ($result as $restaurantService) {
+                $service = $this->serviceService->findServiceByDateTime(1, $date, $restaurantService['opening_time']);
+                $capacity = $service['max_guests'] ?? $restaurantService['max_guests'];
+                $remaining = $service === null 
+                             ? $capacity # service non trouvé = 100% places disponibles (création service automatisée par ReservationService::addReservation())
+                             : $this->serviceService->getRemainingPlacesInService($service['id']);
+                $data[] = [
+                    'start' => $this->datetimeService->formatTimeToHHMM($restaurantService['opening_time']),
+                    'end'   => $this->datetimeService->formatTimeToHHMM($restaurantService['closing_time']),
+                    'complete' => (int)$remaining <= 0
+                ];
+            }
+        }
+        return $data;
     }
     
     /**
@@ -70,14 +132,17 @@ class RestaurantServiceService extends AbstractService
      */
     public function updateRestaurantService(int $serviceId, int $restaurantId, array $data): array
     {
-        $this->trimStringValuesInArray($data);
         # valider paramètres
-        if (empty($serviceId) || empty($restaurantId) || empty($data) || array_is_list($data)) {
-            throw new DataProcessingException(__METHOD__ . ": Veuillez fournir l'id du service, du restaurant, et un tableau associatif en paramètre.");
-        }
-        $this->checkExpectedKeys($this->expectedInputs, $data);
+        $this->validatePositiveInteger($data['user_id'] ?? 0);
+        $this->checkUserLegitimacy($data['user_id'], [Role::ADMIN]);
+
         $this->validatePositiveInteger($serviceId);
         $this->validatePositiveInteger($restaurantId);
+        if (empty($data) || array_is_list($data)) {
+            throw new DataProcessingException(__METHOD__ . ": Tableau assotiatif attendu en troisième paramètre.");
+        }
+        $this->checkExpectedKeys($this->expectedInputs, $data);
+        $this->trimStringValuesInArray($data);
 
         # valider data
         $this->validateNotNullKeys(static::class, $data, true);
@@ -86,7 +151,7 @@ class RestaurantServiceService extends AbstractService
         $this->validatePositiveInteger($data['max_guests']);
 
         # valider service
-        $service = $this->restaurantServiceModel->getRestaurantServiceByServiceId($serviceId);
+        $service = $this->restaurantServiceModel->findRestaurantServiceByServiceId($serviceId);
         if ((int)$service["restaurant_id"] !== $restaurantId) {
             throw new ServerException(__METHOD__ . ": Le service '$serviceId' n'existe pas dans le restaurant '$restaurantId'.");
         }
@@ -96,8 +161,8 @@ class RestaurantServiceService extends AbstractService
         $serviceDuration = $this->datetimeService->toMinutes($service['service_duration']);
         $this->datetimeService->validateTimeInterval($data['opening_time'], $data['closing_time'], $serviceDuration);
 
-        unset($data['id']);
-        return $this->restaurantServiceModel->updateRestaurantService((int)$service['id'], $data);
+        unset($data['id'], $date['user_id']);
+        return $this->restaurantServiceModel->updateRestaurantService($serviceId, $data);
     }
 
     # La création/suppression de services de restauration n'est pas demandée dans le cahier des charges.

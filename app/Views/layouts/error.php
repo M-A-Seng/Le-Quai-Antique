@@ -1,5 +1,5 @@
 <?php use function App\html; ?>
-<h1>Layout for error page</h1>
+LAYOUT ERROR PAGE
 
 <?php require_once __DIR__.'/../components/header.php' ?>
 

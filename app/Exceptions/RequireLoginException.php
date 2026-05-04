@@ -22,9 +22,9 @@ class RequireLoginException extends ForbiddenException
     }
 
     public function getUIMessage(): string {
-        return empty($this->UIMessage) ?
-            $this->UIMessage
-            : $this->defaultUIMessage;
+        return  !empty($this->UIMessage) 
+                ? $this->UIMessage 
+                : $this->defaultUIMessage;
     }
 
     public function getHttpCode(): int {

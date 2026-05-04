@@ -41,7 +41,6 @@ composer.phar
 # VS Code
 ############################
 .vscode/*
-!.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
@@ -50,6 +49,7 @@ composer.phar
 *.vsix
 .history
 .ionide
+/ide-stubs/
 
 ############################
 # Tests / couverture
@@ -67,6 +67,3 @@ composer.phar
 *.xml.bak
 diagram_activites_quai-antique.pdf
 info.php
-
-AdminController.php
-ServiceModel.php

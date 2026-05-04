@@ -64,7 +64,6 @@ abstract class AbstractModel extends ConstantsCheckerService
                 __METHOD__ . 'Colonnes inconnues ou invalides: ' . implode(', ', $unknownColumns)
             );
         }
-
         return $data;
     }
     
@@ -102,13 +101,12 @@ abstract class AbstractModel extends ConstantsCheckerService
 
         $sql = "INSERT INTO \"" . static::TABLE . "\" ($columns) VALUES ($placeholders) RETURNING *";
         $stmt = $this->pdo->prepare($sql);
-
         try {
             $stmt->execute($data);
             return $stmt->fetch(PDO::FETCH_ASSOC);
         } 
         catch (PDOException $e) {
-            throw new DbFailureException(__METHOD__ . "Echec de l'opération insert(): " . $e->getMessage(), 0, $e);
+            throw new DbFailureException(__METHOD__ . "Echec de l'opération: " . $e->getMessage(), 0, $e);
         }
     }
     
@@ -121,13 +119,12 @@ abstract class AbstractModel extends ConstantsCheckerService
     {
         $sql = "SELECT * FROM \"" . static::TABLE . "\"";
         $stmt = $this->pdo->prepare($sql);
-
         try {
             $stmt->execute();
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } 
         catch (PDOException $e) {
-            throw new DbFailureException(__METHOD__ . "Echec de l'opération findAll(): " . $e->getMessage(), 0, $e);
+            throw new DbFailureException(__METHOD__ . "Echec de l'opération: " . $e->getMessage(), 0, $e);
         }
     }
     
@@ -159,14 +156,13 @@ abstract class AbstractModel extends ConstantsCheckerService
             }
         }
         $sql .= implode(" AND ", $clauses);
-
         $stmt = $this->pdo->prepare($sql);
         try {
             $stmt->execute($params);
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } 
         catch (PDOException $e) {
-            throw new DbFailureException(__METHOD__ . "Echec de l'opération findBy(): " . $e->getMessage(), 0, $e);
+            throw new DbFailureException(__METHOD__ . "Echec de l'opération: " . $e->getMessage(), 0, $e);
         }
     }
     
@@ -180,10 +176,10 @@ abstract class AbstractModel extends ConstantsCheckerService
     protected function update(int $id, array $data): array
     {
         if (empty($data) || empty($id)) {
-            throw new DataProcessingException(__METHOD__ . "Veuillez passer les arguments demandés en paramètre de update().");
+            throw new DataProcessingException(__METHOD__ . "Veuillez passer les arguments demandés en paramètre.");
         }
         if (array_is_list($data)) {
-            throw new DataProcessingException(__METHOD__ . "Un tableau associatif est attentdu en deuxième paramètre de update().");
+            throw new DataProcessingException(__METHOD__ . "Tableau associatif attentdu en deuxième paramètre.");
         }
         $this->filterAllowedColumns(static::class, array_keys($data));
 
@@ -196,13 +192,12 @@ abstract class AbstractModel extends ConstantsCheckerService
         $sql = "UPDATE \"" . static::TABLE . "\" SET $setClause WHERE id = :id RETURNING *";
         $stmt = $this->pdo->prepare($sql);
         $data['id'] = $id;
-
         try {
             $stmt->execute($data);
             return $stmt->fetch(PDO::FETCH_ASSOC);
         } 
         catch (PDOException $e) {
-            throw new DbFailureException(__METHOD__ . "Échec de l'opération update(): " . $e->getMessage(), 0, $e);
+            throw new DbFailureException(__METHOD__ . "Échec de l'opération: " . $e->getMessage(), 0, $e);
         }
     }
     
@@ -227,13 +222,12 @@ abstract class AbstractModel extends ConstantsCheckerService
 
         $sql = "DELETE FROM \"" . static::TABLE . "\" WHERE $whereClause";
         $stmt = $this->pdo->prepare($sql);
-
         try {
             $stmt->execute($conditions);
             return $stmt->rowCount();
         } 
         catch (PDOException $e) {
-            throw new DbFailureException(__METHOD__ . "Echec de l'opération delete(): " . $e->getMessage(), 0, $e);
+            throw new DbFailureException(__METHOD__ . "Echec de l'opération: " . $e->getMessage(), 0, $e);
         }
     }
 }

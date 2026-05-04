@@ -4,7 +4,7 @@
 <?php if ($_SESSION['new_user']): ?>
     <div>
         <p>Bienvenue au Quai Antique !</p>
-        <p>Compte créé avec succès ! Vous pouvez maintenant réservez votre table et plonger dans l'univers culinaire de la Savoie !</p>
+        <p>Compte créé avec succès ! Vous pouvez maintenant réserver votre table et plonger dans l'univers culinaire de la Savoie !</p>
     </div>
 <?php endif; ?>
 

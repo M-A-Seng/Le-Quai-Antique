@@ -9,16 +9,20 @@ use App\Controllers\HomeController;
 use App\Controllers\MenuController;
 use App\Controllers\RedirectController;
 use App\Controllers\RegistrationController;
-use App\Controllers\RestaurantController;
+use App\Controllers\ReservationController;
 use App\Controllers\RestaurantServiceController;
 use App\Controllers\UserController;
-use App\Models\RestaurantModel;
+use App\Models\OpeningDayModel;
+use App\Models\ReservationModel;
 use App\Models\RestaurantServiceModel;
+use App\Models\ServiceModel;
 use App\Models\UserModel;
 use App\Services\DatetimeService;
+use App\Services\OpeningDayService;
 use App\Services\RenderService;
-use App\Services\RestaurantService;
+use App\Services\ReservationService;
 use App\Services\RestaurantServiceService;
+use App\Services\ServiceService;
 use App\Services\SessionService;
 use App\Services\UserService;
 
@@ -41,8 +45,16 @@ class DIContainer
     private UserModel $userModel;
     private UserService $userService;
 
+    private ServiceModel $serviceModel;
+    private ServiceService $serviceService;
     private RestaurantServiceModel $restaurantServiceModel;
     private RestaurantServiceService $restaurantServiceService;
+
+    private OpeningDayModel $openingDayModel;
+    private OpeningDayService $openingDayService;
+
+    private ReservationModel $reservationModel;
+    private ReservationService $reservationService;
     
     /**
      * __construct
@@ -63,10 +75,18 @@ class DIContainer
         $this->auth = new Auth($this->sessionService);
 
         $this->userModel = new UserModel($this->frontConnection);
-        $this->userService = new UserService($this->userModel, $this->sessionService);
+        $this->userService = new UserService($this->userModel);
 
+        $this->serviceModel = new ServiceModel($this->backConnection);
         $this->restaurantServiceModel = new RestaurantServiceModel($this->backConnection);
-        $this->restaurantServiceService = new RestaurantServiceService($this->restaurantServiceModel, $this->datetimeService);
+        $this->serviceService = new ServiceService($this->serviceModel, $this->restaurantServiceModel, $this->datetimeService);
+        $this->restaurantServiceService = new RestaurantServiceService($this->restaurantServiceModel, $this->serviceService, $this->datetimeService);
+        
+        $this->openingDayModel = new OpeningDayModel($this->backConnection);
+        $this->openingDayService = new OpeningDayService($this->openingDayModel, $this->datetimeService);
+
+        $this->reservationModel = new ReservationModel($this->frontConnection);
+        $this->reservationService = new ReservationService($this->reservationModel, $this->datetimeService, $this->serviceService, $this->restaurantServiceModel, $this->openingDayService);
     }
         
     /**
@@ -78,7 +98,7 @@ class DIContainer
      */
     public function getRouter($routes, $diContainer): Router
     {
-        return new Router($routes, $diContainer, $this->renderService, $_ENV['APP_ENV']);
+        return new Router($routes, $diContainer, $this->renderService);
     }
 
     /**
@@ -154,11 +174,21 @@ class DIContainer
     /**
      * getRestaurantController retourne une instance de RestaurantController.
      *
-     * @return RestaurantController
+     * @return RestaurantServiceController
      */
     public function getRestaurantServiceController(): RestaurantServiceController
     {
         return new RestaurantServiceController($this->restaurantServiceService, $this->renderService, $this->logger);
+    }
+    
+    /**
+     * getReservationController retourne une instance de ReservationController
+     *
+     * @return ReservationController
+     */
+    public function getReservationController(): ReservationController
+    {
+        return new ReservationController($this->reservationService, $this->userService, $this->renderService, $this->logger);
     }
 
     /**

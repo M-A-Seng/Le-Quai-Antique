@@ -3,9 +3,12 @@
 namespace App\Services;
 
 use App\Core\Abstract\AbstractService;
+use App\Enums\Role;
 use App\Exceptions\DataProcessingException;
 use App\Exceptions\InvalidCredentialsException;
 use App\Exceptions\InvalidFieldException;
+use App\Exceptions\NotFoundException;
+use App\Exceptions\ServerException;
 use App\Models\UserModel;
 
 /**
@@ -16,14 +19,12 @@ use App\Models\UserModel;
  * - signUserUp()
  * - authenticateUser()
  * - updateUserProfile()
+ * - getUserParameters()
  * - deleteUserAccount()
  */
 class UserService extends AbstractService
 {
-    private const REGEX = [
-        'password' => '/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,}$/',
-        'phone' => '/^(\+?[1-9]{1}[0-9\s\-]{6,15}|0[0-9\s\-]{6,15})$/'
-    ];
+    # Constante utilisée par AbstractService
     protected const NOT_NULL_COLUMNS = [
         "last_name",
         "email",
@@ -44,13 +45,6 @@ class UserService extends AbstractService
         "password",
     ];
     
-    /**
-     * __construct
-     *
-     * @param  UserModel $userModel
-     * @param  SessionService $session
-     * @return void
-     */
     public function __construct(private UserModel $userModel) {}
 
     /**
@@ -82,7 +76,7 @@ class UserService extends AbstractService
      */
     public function passwordCheck(string $password, string $passwordConfirm): void
     {
-        if (!preg_match(self::REGEX['password'], $password)) {
+        if (!preg_match('/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,}$/', $password)) {
             throw new InvalidFieldException("Votre mot de passe n'est pas assez sécurisé, veuillez suivre les instructions affichées.");
         }
         if ($password !== $passwordConfirm) {
@@ -91,28 +85,10 @@ class UserService extends AbstractService
     }
     
     /**
-     * phoneNumberCheck vérifie la syntaxe du numéro de téléphone.
-     *
-     * @param  string $phoneNumber
-     * @return void
-     */
-    public function phoneNumberCheckAndSanitize(string $phoneNumber): string|null
-    {
-        $phoneNumber = trim($phoneNumber);
-        $phoneNumber = empty($phoneNumber) ? NULL : $phoneNumber;
-        if (!empty($phoneNumber)) {
-            if (!preg_match(self::REGEX['phone'], $phoneNumber) || trim($phoneNumber, '0') === '') {
-                throw new InvalidFieldException("Numéro de téléphone invalide.");
-            }
-        }
-        return $phoneNumber;
-    }
-
-    /**
      * signUserUp créer un nouvel utilisateur puis le connecte.
      *
      * @param  array $data
-     * @return array
+     * @return void
      */
     public function signUserUp(array $data): void
     {
@@ -152,9 +128,9 @@ class UserService extends AbstractService
     public function authenticateUser(array $data): array
     {
         if (empty($data) || array_is_list($data)) {
-            throw new DataProcessingException(__METHOD__ . ": Un tableau associatif est attendu en paramètre.");
+            throw new DataProcessingException(__METHOD__ . ": Tableau associatif attendu en paramètre.");
         }
-        $this->checkExpectedKeys($this->loginExpectedInputs, $data);
+        $this->checkExpectedKeys($this->loginExpectedInputs, $data, true);
         $this->validateNotNullKeys(static::class, $data, false);
 
         if ($this->emailCheck($data['email'], false)) {
@@ -174,16 +150,19 @@ class UserService extends AbstractService
      * updateUserProfile met à jour les données de l'utilisateur.
      *
      * @param  array $data
-     * @return void
+     * @return array
      */
     public function updateUserProfile(array $data): array
     {
+        $this->checkUserLegitimacy($data['user_id'], [Role::CLIENT]);
+
         if (empty($data) || array_is_list($data)) {
             throw new DataProcessingException(__METHOD__ . ": Un tableau associatif est attendu en paramètre.");
         }
         $data = $this->trimStringValuesInArray($data);
+        $this->checkExpectedKeys($this->signupExpectedInputs, $data);
         $this->validateNotNullKeys(static::class, $data, false);
-        $this->userModel->getUserById($_SESSION['id']); # S'assurer qu'il n'y a pas de not found
+        $this->userModel->getUserById($_SESSION['id']) ?? throw new NotFoundException(UIMessage:"Impossible de mettre à jour le profil utilisateur. Veuillez réessayer.");
 
         if (isset($data['password']) && !empty($data['password'])) {
             $this->passwordCheck($data['password'], $data['password-confirm']);
@@ -195,12 +174,43 @@ class UserService extends AbstractService
             $phoneNumber = $this->phoneNumberCheckAndSanitize($data['tel']);
             $data['tel'] = $phoneNumber;
         }
-        if (isset($data['allergy']) && !empty($data['allergy']) && is_array($data['allergy'])) {
-            $data['allergy'] = implode(', ', $data['allergy']);
+        if (isset($data['allergy']) && !empty($data['allergy'])) {
+            if (is_array($data['allergy'])) {
+                $data['allergy'] = implode(', ', $data['allergy']);
+            }
+            elseif (!is_string($data['allergy'])) {
+                throw new InvalidFieldException("Allergies invalides.");
+            }
         }
 
         unset($data['id'], $data['user_id']);
         return $this->userModel->updateUser($_SESSION['id'], $data);
+    }
+    
+    /**
+     * getUserParameters retourne les données de l'utilisateur demandé.
+     *
+     * @param  int $userId
+     * @return ?array
+     */
+    public function getUserParameters(int $userId): ?array
+    {
+        $this->validatePositiveInteger($userId);
+        $this->checkUserLegitimacy($userId);
+        $user = $this->userModel->getUserById($userId);
+        if (!$user) {
+            return null;
+        }
+        $allergy = [];
+        if (!empty($result['allergy'])) {
+            $allergy = explode(', ', $result['allergy']);
+        }
+        return [
+            'guest_count' => $user['default_guest_count'],
+            'client_name' => $user['last_name'],
+            'client_tel' => $user['tel'] ?? null,
+            'allergy_array' => $allergy,
+        ];
     }
         
     /**
@@ -211,7 +221,10 @@ class UserService extends AbstractService
      */
     public function deleteUserAccount(int $id): void
     {
-        $user = $this->userModel->getUserById($_SESSION['id']);
+        $this->validatePositiveInteger($id);
+        $this->checkUserLegitimacy($id, [Role::CLIENT]);
+        
+        $user = $this->userModel->getUserById($_SESSION['id']) ?? throw new ServerException(__METHOD__ . ": Tentative de supprimer un user inexistant.");
         if ($id === (int)$_SESSION['id']) {
             $this->userModel->deleteUser($id, $user['email']);
         }

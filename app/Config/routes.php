@@ -17,17 +17,35 @@ return [
     ['POST', '/connexion',                  'AuthenticationController',     'authenticate',         ['requirePost&Csrf']],
     ['GET',  '/inscription',                'RegistrationController',       'index'],
     ['POST', '/inscription',                'RegistrationController',       'register',             ['requirePost&Csrf']],
-    ['POST', '/inscription/check-email',    'RegistrationController',       'checkEmail',           ['requirePost&Csrf']],
     ['GET',  '/reserver',                   'ReservationController',        'index'],
-    ['POST', '/reserver',                   'ReservationController',        'reserve',              ['requirePost&Csrf']],
-
-    # Routes réservées
+    ['POST', '/check/reservation',          'ReservationController',        'validateReservation',  ['requirePost&Csrf']],
+    
+    ## Routes réservées
+    ['GET',  '/reserver/confirmation',      'ReservationController',        'validateReservation',  ['requireLogin']],
+    ['POST', '/reserver',                   'ReservationController',        'reserve',              ['requireLogin', 'requirePost&Csrf']],
     ['GET',  '/profil/{id}',                'UserController',               'loginClient',          ['requireLogin', 'requireClient']],
     ['GET',  '/admin/{id}',                 'UserController',               'loginAdmin',           ['requireLogin', 'requireAdmin']],
     ['POST', '/deconnexion',                'UserController',               'logout',               ['requireLogin', 'requirePost&Csrf']],
+    # Client
+    ['GET',  '/profil/{id}/mes-réservations',                       'ReservationController',    'userReservation',  ['requireLogin', 'requireClient']],
+    ['GET',  '/profil/{id}/reservation/{reservation_id}',           'ReservationController',    'read',             ['requireLogin', 'requireClient']],
+    ['GET',  '/profil/{id}/reservation/{reservation_id}/modifier',  'ReservationController',    'edit',             ['requireLogin', 'requireClient']],
+    ['POST', '/profil/{id}/reservation/{reservation_id}/modifier',  'ReservationController',    'update',           ['requireLogin', 'requireClient', 'requirePost&Csrf']],
+    ['POST', '/profil/{id}/reservation/{reservation_id}/annuler',   'ReservationController',    'cancel',           ['requireLogin', 'requireClient', 'requirePost&Csrf']],
     # Admin
-    ['GET',  '/admin/settings/services',    'RestaurantServiceController',  'index',                ['requireLogin', 'requireAdmin']],
-    ['POST', '/admin/settings/services',    'RestaurantServiceController',  'updateRestaurantService',['requireLogin', 'requireAdmin', 'requirePost&Csrf']],
+    ['GET',  '/admin/{id}/settings/services',                       'RestaurantServiceController',  'index',    ['requireLogin', 'requireAdmin']],
+    ['POST', '/admin/{id}/settings/services',                       'RestaurantServiceController',  'update',   ['requireLogin', 'requireAdmin', 'requirePost&Csrf']],
+    ['GET',  '/admin/{id}/reservations',                            'AdminReservationController',   'index',    ['requireLogin', 'requireAdmin']],
+    ['GET',  '/admin/{id}/reservations/{date}',                     'AdminReservationController',   'index',    ['requireLogin', 'requireAdmin']],
+    ['GET',  '/admin/{id}/reservation/{reservation_id}',            'AdminReservationController',   'read',     ['requireLogin', 'requireAdmin']],
+    ['GET',  '/admin/{id}/reservation/{reservation_id}/modifier',   'AdminReservationController',   'edit',     ['requireLogin', 'requireAdmin']],
+    ['POST', '/admin/{id}/reservation/{reservation_id}/modifier',   'AdminReservationController',   'update',   ['requireLogin', 'requireAdmin', 'requirePost&Csrf']],
+    ['POST', '/admin/{id}/reservation/{reservation_id}/annuler',    'ReservationController',        'cancel',   ['requireLogin', 'requireAdmin', 'requirePost&Csrf']],
+    
+    # routes utilisées par AJAX
+    ['POST', '/check/email',                'RegistrationController',       'checkEmail',           ['requirePost&Csrf']],
+    ['POST', '/get/restaurant-services',    'RestaurantServiceController',  'getTimeSlots',         ['requirePost&Csrf']],
+    ['POST', '/check/availability',         'ReservationController',        'canReserve',           ['requirePost&Csrf']],
 
     # Redirection
     ['GET',  '/accueil',                    'RedirectController',           'home'],
@@ -38,4 +56,6 @@ return [
     ['GET',  '/login',                      'RedirectController',           'login'],
     ['GET',  '/s-inscrire',                 'RedirectController',           'signup'],
     ['GET',  '/signup',                     'RedirectController',           'signup'],
+    ['GET',  '/réserver',                   'RedirectController',           'reserve'],
+    ['GET',  '/book',                       'RedirectController',           'reserve'],
 ];

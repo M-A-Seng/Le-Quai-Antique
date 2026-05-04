@@ -17,14 +17,7 @@ use App\Services\RenderService;
 class Router
 {
     private Auth $auth;
-    /**
-     * __construct
-     *
-     * @param  array $routes
-     * @param  DIContainer $diContainer
-     * @param string $env (dev / prod)
-     * @return void
-     */
+
     public function __construct(private array $routes, 
                                 private DIContainer $diContainer, 
                                 private RenderService $renderService)
@@ -37,7 +30,7 @@ class Router
      *
      * @param  string $method
      * @param  string $uri
-     * @return void
+     * @return Response
      */
     public function dispatch(string $method, string $uri): Response
     {
@@ -89,7 +82,7 @@ class Router
 
             if (!method_exists($this->diContainer, $getController)) {
                 if (APPENV === 'dev') {
-                    throw new NotFoundException("Erreur : méthode '$getController' non trouvée dans le container");
+                    throw new NotFoundException(__METHOD__ . ": Erreur : méthode '$getController' non trouvée dans le container");
                 } else {
                     $content = $this->renderService->render('404', [], 'error');
                     return new Response($content, 404, ['Content-Type' => 'text/html']);
@@ -98,7 +91,7 @@ class Router
             $controller = $this->diContainer->$getController();
             $response = $controller->$controllerMethod($params);
             if (!$response instanceof Response) {
-                throw new ServerException("Le controller '$controller' doit retourner une instance de 'Response'");
+                throw new ServerException(__METHOD__ . ": Le controller '$controller' doit retourner une instance de 'Response'");
             }
             return $response;
         }
@@ -109,7 +102,7 @@ class Router
     /**
      * validatePostAndCsrf vérifie que méthode HTTP = POST && que le token CSRF est valide.
      *
-     * @return void
+     * @return ?Response
      */
     private function validatePostAndCsrf(): ?Response
     {
@@ -156,7 +149,7 @@ class Router
                 break;
 
             default:
-                throw new ServerException("Middleware inconnu: $middleware");
+                throw new ServerException(__METHOD__ . ": Middleware inconnu: $middleware");
         }
     }
 };

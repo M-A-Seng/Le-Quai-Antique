@@ -2,9 +2,12 @@
 
 namespace App\Core\Abstract;
 
+use App\Enums\Role;
 use App\Exceptions\DataProcessingException;
+use App\Exceptions\ForbiddenException;
 use App\Exceptions\InvalidArrayForDbException;
 use App\Exceptions\InvalidFieldException;
+use App\Exceptions\RequireLoginException;
 use App\Services\ConstantsCheckerService;
 
 /**
@@ -13,6 +16,9 @@ use App\Services\ConstantsCheckerService;
  * - validateNotNullKeys()
  * - validatePositiveInteger()
  * - trimStringValuesInArray()
+ * - checkExpectedKeys()
+ * - phoneNumberCheckAndSanitize
+ * - checkUserLegitimacy()
  */
 abstract class AbstractService extends ConstantsCheckerService
 {
@@ -70,15 +76,19 @@ abstract class AbstractService extends ConstantsCheckerService
     /**
      * validateGuestsNumber vérifie qu'un string contient un nombre entier positif.
      * 
-     * Exception si entier invalide.
+     * Exception ou bool si entier invalide.
      *
-     * @param  string|int $number
-     * @return string|int
+     * @param   string|int $number
+     * @param   bool $return | true pour ne pas lancer d'exception
+     * @return  bool|string|int
      */
-    protected function validatePositiveInteger(string|int $number): string|int
+    protected function validatePositiveInteger(string|int $number, bool $return = false): bool|string|int
     {
         $n = is_string($number) ? trim($number) : $number;
         if (filter_var($n, FILTER_VALIDATE_INT, ["options" => ["min_range" => 1]]) === false || (string)(int)$n !== (string)$n) {
+            if ($return) {
+                return false;
+            }
             throw new InvalidFieldException(__METHOD__ . ": '$number' est invalide. Un nombre entier positif est attendu.");
         }
         return $n;
@@ -92,12 +102,9 @@ abstract class AbstractService extends ConstantsCheckerService
      */
     protected function trimStringValuesInArray(array $data): array
     {
-        foreach ($data as $key => $value)
-        {
+        foreach ($data as $key => $value) {
             if (is_string($value)) {
                 $data[$key] = trim($value);
-            } else {
-                $data[$key] = $value;
             }
         }
         return $data;
@@ -110,27 +117,78 @@ abstract class AbstractService extends ConstantsCheckerService
      *
      * @param  array $expectedKeys | liste
      * @param  array $data | tableau associatif
+     * @param bool $strict | true pour vérifier les clés manquantes
      * @return void
      */
-    protected function checkExpectedKeys(array $expectedKeys, array $data): void
+    protected function checkExpectedKeys(array $expectedKeys, array $data, bool $strict = false): void
     {
         if (!array_is_list($expectedKeys)) {
-            throw new DataProcessingException(__METHOD__ . "Une liste est attendue en premier paramètre de checkExpectedInputs().");
-        } else {
-            sort($expectedKeys);
+            throw new DataProcessingException(__METHOD__ . ": Liste attendue en premier paramètre.");
         }
-
         if (array_is_list($data)) {
-            throw new DataProcessingException(__METHOD__ . "Un tableau associatif est attendu en deuxième paramètre de checkExpectedInputs().");
-        } else {
-            $inputs = array_keys($data);
-            sort($inputs);
+            throw new DataProcessingException(__METHOD__ . ": Tableau associatif est attendu en deuxième paramètre.");
         }
+        $keys = array_keys($data);
+        $unknownKeys = array_diff($keys, $expectedKeys);
+        $missingKeys = array_diff($expectedKeys, $keys);
 
-        $unlknownInputs = array_diff($inputs, $expectedKeys);
-        if (!empty($unlknownInputs)) {
-            $debug = print_r($unlknownInputs, true);
-            throw new DataProcessingException(__METHOD__ . ": Clés invalides: " . $debug);
+        if (!empty($unknownKeys)) {
+            throw new DataProcessingException(__METHOD__ . ": Clés invalides: " . implode(', ', $unknownKeys));
+        }
+        if ($strict && !empty($missingKeys)) {
+            throw new DataProcessingException(__METHOD__ . ": Clés manquantes: " . implode(', ', $missingKeys));
+        }
+    }
+
+    /**
+     * phoneNumberCheck vérifie la syntaxe du numéro de téléphone.
+     * 
+     * Exception si vide ou invalide
+     *
+     * @param  string $phoneNumber
+     * @return string|null
+     */
+    public function phoneNumberCheckAndSanitize(string $phoneNumber): string|null
+    {
+        $phoneNumber = trim($phoneNumber);
+        $phoneNumber = empty($phoneNumber) ? NULL : $phoneNumber;
+        if (!empty($phoneNumber)) {
+            if (!preg_match('/^(\+?[1-9]{1}[0-9\s\-]{6,15}|0[0-9\s\-]{6,15})$/', $phoneNumber) || trim($phoneNumber, '0') === '') {
+                throw new InvalidFieldException("Numéro de téléphone invalide.");
+            }
+        }
+        return $phoneNumber;
+    }
+    
+    /**
+     * checkUserLegitimacy Vérifie que l'utilisateur de la session est valide id + role.
+     *
+     * @param  int $userId
+     * @param Role[] $roles | liste de Role Enum
+     * @return void
+     */
+    protected function checkUserLegitimacy(?int $userId = null, array $roles = [Role::CLIENT]): void
+    {
+        # valider user authentifié
+        $currentUserId = $_SESSION['id'] 
+                         ? $_SESSION['id'] 
+                         : throw new RequireLoginException(UIMessage: "Votre session est expirée, veuillez vous connecter.");
+
+        if ($userId !== null && $userId !== $currentUserId) {
+            throw new ForbiddenException(UIMessage: "Accès refusé.");
+        }
+        # valider role user
+        $currentUserRole = $_SESSION['role']
+                           ? $_SESSION['role'] 
+                           : null;
+
+        foreach ($roles as $role) {
+            if (!$role instanceof Role) {
+                throw new DataProcessingException(__METHOD__ . ': Tous les rôles doivent être des instances de Role enum.');
+            }
+        }
+        if (!$currentUserRole || !in_array($currentUserRole, $roles, true)) {
+            throw new ForbiddenException(UIMessage: "Accès refusé. Vous ne disposez pas des autorisations nécessaires.");
         }
     }
 }

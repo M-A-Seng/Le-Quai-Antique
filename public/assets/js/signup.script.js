@@ -3,7 +3,7 @@ document.getElementById('email').addEventListener('blur', function()
 {
     let csrf = document.getElementById('csrf_token').value;
     let email = this.value;
-    fetch("/inscription/check-email", {
+    fetch("/check/email", {
         method: "POST",
         headers: {"Content-Type": "application/json", "Accept": "application/json", "X-CSRF-Token": csrf},
         body: JSON.stringify({ email: email })
@@ -72,13 +72,6 @@ passwordConfirm.addEventListener('blur', function()
     const pswdConfirmFeedback = document.getElementById('password-confirm-feedback');
     pswdConfirmFeedback.style.color = pswdMatch ? 'green' : 'red';
     pswdConfirmFeedback.textContent = pswdMatch ? ' ✔' : ' ✖ Mot de passe incorecte';
-});
-
-// Faire apparaître text input si allergies non mentionnées dans la liste prédéfinit
-document.getElementById('other-allergy').addEventListener('change', function()
-{
-    const otherAllergyInput = document.getElementById('other-allergy-input');
-    otherAllergyInput.type = this.checked ? 'text' : 'hidden';
 });
 
 // Activer/Désactiver le bouton de soumission

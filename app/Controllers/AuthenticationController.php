@@ -25,13 +25,6 @@ class AuthenticationController extends AbstractController
     private UserService $userService;
     private Auth $auth;
       
-    /**
-     * __construct
-     *
-     * @param  UserService $userService
-     * @param  SessionService $session
-     * @return void
-     */
     public function __construct(UserService $userService, Auth $auth, RenderService $renderService, Logger $logger)
     {
         parent::__construct($renderService, $logger);
@@ -42,7 +35,7 @@ class AuthenticationController extends AbstractController
     /**
      * login dirige vers la page de connexion.
      *
-     * @return void
+     * @return Response
      */
     public function index(): Response
     {
@@ -53,7 +46,7 @@ class AuthenticationController extends AbstractController
     /**
      * authenticate identifie l'utilisateur et dirige vers la page appropriée.
      *
-     * @return void
+     * @return Response
      */
     public function authenticate(): Response
     {
@@ -72,7 +65,7 @@ class AuthenticationController extends AbstractController
             $this->auth->login($userData);
 
             $redirect = ['CLIENT' => '/profil/' . $userData['id'],
-                        'ADMIN' => '/admin/' . $userData['id']];
+                         'ADMIN' => '/admin/' . $userData['id']];
             return $this->redirect($redirect[$userData['role']]);
         } 
         catch (AbstractFrontendException | NotFoundException $e) {

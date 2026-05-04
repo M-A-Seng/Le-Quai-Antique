@@ -41,4 +41,9 @@ class RedirectController extends AbstractController
     {
         return $this->redirect('/connexion');
     }
+
+    public function reserve(): Response
+    {
+        return $this->redirect('/reserver');
+    }
 }

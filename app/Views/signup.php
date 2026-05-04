@@ -55,12 +55,12 @@
             Œufs
         </label><br>
         <label>
-            <input type="checkbox" name="allergy[]" value="Arachides">
-            Arachides
+            <input type="checkbox" name="allergy[]" value="Arachides/Cacahuètes">
+            Arachides/Cacahuètes
         </label><br>
         <label>
-            <input type="checkbox" name="allergy[]" value="Fruits à coque">
-            Fruits à coque
+            <input type="checkbox" name="allergy[]" value="Fruits à coque/Noix">
+            Fruits à coque/Noix
         </label><br>
         <label>
             <input type="checkbox" name="allergy[]" value="Blé">
@@ -71,6 +71,14 @@
             Crustacés
         </label><br>
         <label>
+            <input type="checkbox" name="allergy[]" value="Mollusques">
+            Mollusques
+        </label><br>
+        <label>
+            <input type="checkbox" name="allergy[]" value="Céleri">
+            Céleri
+        </label><br>
+        <label>
             <input type="checkbox" name="allergy[]" value="Poisson">
             Poisson
         </label><br>
@@ -79,13 +87,20 @@
             Soja
         </label><br>
         <label>
-            <input type="checkbox" name="allergy[]" value="Gluten">
-            Gluten
+            <input type="checkbox" name="allergy[]" value="Moutarde">
+            Moutarde
         </label><br>
         <label>
-            <input type="checkbox" id="other-allergy" value="Autres allergies">
-            Autres allergies
-            <input type="hidden" name="allergy[]" id="other-allergy-input" placeholder="Indiquez vos allergies ici !">
+            <input type="checkbox" name="allergy[]" value="Graines de sésame">
+            Graines de sésame
+        </label><br>
+        <label>
+            <input type="checkbox" name="allergy[]" value="Lupin">
+            Lupin
+        </label><br>
+        <label>
+            <input type="checkbox" name="allergy[]" value="Gluten">
+            Gluten
         </label><br>
         <label>
             <input type="checkbox" name="allergy[]" value="Pas d'allergies">

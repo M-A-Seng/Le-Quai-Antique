@@ -31,7 +31,7 @@ class UserModel extends AbstractModel
         "default_guest_count", 
     ];
 
-    private $readOnlyColumns = [
+    private array $readOnlyColumns = [
         "id",
         "user_id",
     ];
@@ -62,19 +62,14 @@ class UserModel extends AbstractModel
     
     /**
      * getUserById cherche l'existance de l'id de utilisateur.
-     * 
-     * Lance une exception si non trouvé.
      *
      * @param  int $id
-     * @return array
+     * @return ?array
      */
-    public function getUserById(int $id): array
+    public function getUserById(int $id): ?array
     {
         $result = $this->findBy(["id" => $id]);
-        if (empty($result)) {
-            throw new NotFoundException(message: __METHOD__ . ": Utilisateur '$id' non trouvé en db.", UIMessage:"Utilisateur non trouvé.");
-        }
-        return $result[0];
+        return !empty($result[0]) ? $result[0] : null;
     }
     
     /**

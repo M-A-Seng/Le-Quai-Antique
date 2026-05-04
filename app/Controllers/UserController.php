@@ -6,7 +6,6 @@ use App\Core\Abstract\AbstractController;
 use App\Core\Auth;
 use App\Core\Logger;
 use App\Core\Response;
-use App\Exceptions\ForbiddenException;
 use App\Exceptions\RequireLoginException;
 use App\Services\RenderService;
 
@@ -25,7 +24,11 @@ class UserController extends AbstractController
         if ((int)$params['id'] !== (int)$_SESSION['id']) {
             throw new RequireLoginException(UIMessage:"Votre session a expiré, veuillez vous reconnecter.");
         }
-        $content = $this->renderService->render("profile");
+        # Si l'utilisateur a rempli le formulaire de réservation avant de s'authentifier
+        if (isset($_SESSION['reservation_pending_confirmation']) && $_SESSION['reservation_pending_confirmation']) {
+            return $this->redirect('/reserver/confirmation');
+        }
+        $content = $this->renderService->render("user.profile");
         return $this->html($content);
     }
 
@@ -34,8 +37,11 @@ class UserController extends AbstractController
         if ((int)$params['id'] !== (int)$_SESSION['id']) {
             throw new RequireLoginException(UIMessage:"Votre session a expiré, veuillez vous reconnecter.");
         }
-        $content = $this->renderService->render("admin");
-        return $this->html($content);
+        # Si l'utilisateur a rempli le formulaire de réservation avant de s'authentifier
+        if (isset($_SESSION['reservation_pending_confirmation']) && $_SESSION['reservation_pending_confirmation']) {
+            return $this->redirect('/reserver/confirmation');
+        }
+        return $this->redirect('/admin/'.$_SESSION['id'].'/reservations');
     }
 
     public function logout(): Response

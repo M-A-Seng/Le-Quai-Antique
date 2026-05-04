@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Core\Abstract\AbstractService;
+use App\Enums\Role;
 use App\Models\RestaurantModel;
 
 /**
@@ -13,6 +14,7 @@ use App\Models\RestaurantModel;
  */
 class RestaurantService extends AbstractService
 {
+    # Constante utilisée par AbstractService
     protected const NOT_NULL_COLUMNS = [
         "siret",
         "name",
@@ -31,11 +33,15 @@ class RestaurantService extends AbstractService
     public function getRestaurantByAdmin()
     {
         $adminId = $_SESSION['id'] ?? 0;
+        $this->checkUserLegitimacy($adminId, roles:[Role::ADMIN]);
+
         return $this->restaurantModel->getRestaurantByAdmin((int)$adminId);
     }
     
     /**
      * getRestaurantById retourne les données du restaurant correspondant à l'id.
+     * 
+     * Exception si non trouvé.
      *
      * @return array
      */

@@ -25,13 +25,6 @@ class RegistrationController extends AbstractController
     private UserService $userService;
     private Auth $auth;
         
-    /**
-     * __construct
-     *
-     * @param  UserService $userService
-     * @param  Auth $auth
-     * @return void
-     */
     public function __construct(UserService $userService, Auth $auth, RenderService $renderService, Logger $logger)
     {
         parent::__construct($renderService, $logger);
@@ -57,7 +50,7 @@ class RegistrationController extends AbstractController
      */
     public function register(): Response
     {
-        $error_message = '';
+        $error_message = null;
         $http = 200;
         try {
             unset($_POST['csrf_token']);
@@ -69,7 +62,7 @@ class RegistrationController extends AbstractController
             $userData = $this->userService->authenticateUser($user);
             $this->auth->login($userData, true);
 
-            return $this->redirect('/profil');
+            return $this->redirect("/profil/" . $userData['id']);
         } 
         catch (AbstractFrontendException | NotFoundException $e) {
             $error_message = $e->getUIMessage();
@@ -123,7 +116,6 @@ class RegistrationController extends AbstractController
                 $this->logger->error($e->getMessage());
             }
         }
-
         $data = ['isValid' => $isValid, 
                 'error_message' => $error_message];
         return $this->json($data, $http);

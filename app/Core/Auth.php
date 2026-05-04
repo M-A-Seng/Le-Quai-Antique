@@ -42,7 +42,7 @@ class Auth
     public function login(array $userData, bool $newUser = false): void
     {
         if (empty($userData['id']) || empty($userData['role'])) {
-            throw new DataProcessingException("Argument manquant: L'id et le rôle doivent obligatoirement être fournis.");
+            throw new DataProcessingException(__METHOD__ . ": Argument manquant: L'id et le rôle doivent obligatoirement être fournis.");
         }
         session_regenerate_id(true);
         $this->session->set('id', $userData['id']);
@@ -68,7 +68,7 @@ class Auth
     public function requireLogin(): void
     {
         if (!$this->check()) {
-            throw new RequireLoginException("Utilisateur non identifié.");
+            throw new RequireLoginException(__METHOD__ . ": Utilisateur non identifié.");
         }
     }
     
@@ -83,7 +83,7 @@ class Auth
         $this->requireLogin();
         $userRole = $this->session->get('role');
         if ($role !== $userRole) {
-            throw new ForbiddenException("Impossible d'accéder à cette page.");
+            throw new ForbiddenException(__METHOD__ . ": Impossible d'accéder à cette page.");
         };
     }
     

@@ -11,7 +11,7 @@ namespace App\Exceptions;
  */
 class InvalidReservationException extends AbstractFrontendException 
 {
-    public function __construct(string $message = "Une erreur est survenue. Veuillez réessayer ou revenir plus tard.")
+    public function __construct(string $message = "Nous n'avons pas réussi à traiter votre réservation. Veuillez essayer à nouveau.")
     {
         parent::__construct($message);
     }
