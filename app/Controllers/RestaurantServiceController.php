@@ -57,7 +57,7 @@ class RestaurantServiceController extends AbstractController
         if (!is_null($error_message)) {
             $data['error_message'] = $error_message;
         }
-        $content = $this->renderService->render("admin.services", $data);
+        $content = $this->renderService->render("admin.services", $data, 'user');
         return $this->html($content, $http);
     }
     

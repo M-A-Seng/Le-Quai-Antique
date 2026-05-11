@@ -12,6 +12,7 @@ use App\Controllers\RegistrationController;
 use App\Controllers\ReservationController;
 use App\Controllers\RestaurantServiceController;
 use App\Controllers\UserController;
+use App\Controllers\UserReservationController;
 use App\Models\OpeningDayModel;
 use App\Models\ReservationModel;
 use App\Models\RestaurantServiceModel;
@@ -168,7 +169,7 @@ class DIContainer
      */
     public function getUserController(): UserController
     {
-        return new UserController($this->auth, $this->renderService, $this->logger);
+        return new UserController($this->auth, $this->reservationService, $this->renderService, $this->logger);
     }
         
     /**
@@ -189,6 +190,16 @@ class DIContainer
     public function getReservationController(): ReservationController
     {
         return new ReservationController($this->reservationService, $this->userService, $this->renderService, $this->logger);
+    }
+    
+    /**
+     * getUserReservationController retourne une instance de UserReservationController
+     *
+     * @return UserReservationController
+     */
+    public function getUserReservationController(): UserReservationController
+    {
+        return new UserReservationController($this->reservationService, $this->renderService, $this->logger);
     }
 
     /**

@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\Regex;
 use App\Exceptions\DataProcessingException;
 use App\Exceptions\InvalidFieldException;
 use DateTime;
@@ -13,23 +14,18 @@ use DateTimeZone;
  * 
  * - getDaysOfWeekTranslation()
  * - getMonthsTranslation()
+ * - getLocalTimezone()
  * - validateTimeFormat()
  * - validateDateYmdFormat()
  * - validateTimeInterval()
  * - formatTimeToHHMM()
- * - formatDateTimeToTimestamptz()
- * - formatTimestamptzToLocal()
+ * - formatDateTimeToDatetimeTzOrISO()
+ * - formatDatetimeTzOrISOToLocal()
  * - toSeconds()
  * - toMinutes()
  */
 class DatetimeService
 {
-    private const REGEX = [
-        'date' => '/^\d{4}-\d{2}-\d{2}$/',
-        'time' => '/^(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d)?$/',
-        'time-strict' => '/^(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d$/',
-        'timestamptz' => '/^\d{4}-\d{2}-\d{2}[T\s]\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})?$/',
-    ];
     protected array $months = [
         'January' => 'Janvier',
         'February' => 'Février',
@@ -53,6 +49,14 @@ class DatetimeService
         'Saturday' => 'Samedi',
         'Sunday' => 'Dimanche'
     ];
+    private DateTimeZone $localTz;
+    private DateTimeZone $UTCtz;
+
+    public function __construct()
+    {
+        $this->localTz = new DateTimeZone('Europe/Paris');
+        $this->UTCtz = new DateTimeZone('UTC');
+    }
     
     /**
      * getdayOfWeekTranslation retourne un tableau des jours de la semaine 'anglais' => 'Français'
@@ -73,54 +77,55 @@ class DatetimeService
     {
         return $this->months;
     }
+    
+    /**
+     * getLocalTimezone retourne la timezone française.
+     *
+     * @return DateTimeZone
+     */
+    public function getLocalTimezone(): DateTimeZone
+    {
+        return $this->localTz;
+    }
 
         /**
      * validateTimeFormat vérifie qu'un string contient une heure de format "hh:mm". À utiliser pour valider l'entrée utilisateur.
-     * 
-     * Exception ou bool si heure invalide.
      *
      * @param   string $time | 'H:i' accepté
      * @param   bool $strict | Obligatoirement 'H:i:s'
      * @param   bool $return | true pour ne pas lancer d'exception.
-     * @return  ?bool
+     * @return  bool si $return = true
+     * @throws DataProcessingException si $strict = true && $return = false
+     * @throws InvalidFieldException si $strict = false && $return = false
      */
-    public function validateTimeFormat(string $time, bool $strict = false, bool $return = false): ?bool
+    public function validateTimeFormat(string $time, bool $strict = false, bool $return = false): bool
     {
         $time = trim($time);
-        if ($strict) {
-            if (!preg_match(self::REGEX['time-strict'], $time)) {
-                # Mode strict utilisé côté serveur
-                if ($return) { 
-                    return false; 
-                }
-                throw new DataProcessingException(__METHOD__ . ": '$time' est invalide, un format 'H:i:s' est attendu.");
+        $regex = $strict ? Regex::TimeStrict->value : Regex::Time->value;
+
+        if (!preg_match($regex, $time)) {
+            if ($return) {
+                return false;
             }
-            return true;
+            # strict = backend, normal = frontend
+            $strict ?
+                throw new DataProcessingException(__METHOD__ . ": '$time' est invalide, un format 'hh:mm:ss' est attendu.")
+                : throw new InvalidFieldException("'$time' est invalide. Veuillez sélectionner une heure valide.");
         }
-        else {
-            if (!preg_match(self::REGEX['time'], $time)) {
-                # Mode normal utilise côté client
-                if ($return) { 
-                    return false;
-                }
-                throw new InvalidFieldException("'$time' est invalide. Veuillez sélectionner une heure valide.");
-            }
-            return true;
-        }
+        return true;
     }
     
     /**
      * validateDateYmdFormat vérifie que la date donnée correspond au format Y-m-d.
-     * 
-     * Exception si format de date invalide.
      *
      * @param  string $date | Y:m:d
      * @return void
+     * @throws InvalidFieldException
      */
     public function validateDateYmdFormat(string $date): void
     {
         $date = trim($date);
-        if (!preg_match(self::REGEX['date'], $date)) {
+        if (!preg_match(Regex::Date->value, $date)) {
             throw new InvalidFieldException("'$date' est invalide, veuillez sélectionner une date valide.");
         }
     }
@@ -128,12 +133,11 @@ class DatetimeService
     /**
      * validateTimeInterval vérifie l'interval de temps entre 2 horraire.
      * 
-     * Exception si interval invalide.
-     *
      * @param  string $startTime format "HH:MM"
      * @param  string $endTime format "HH:MM"
      * @param  int $minutesInterval nombre en minutes
      * @return void
+     * @throws InvalidFieldException
      */
     public function validateTimeInterval(string $startTime, string $endTime, int $minutesInterval): void
     {
@@ -156,12 +160,11 @@ class DatetimeService
     
     /**
      * formatTimeToHHMM transforme les données de type time ou datetime en string time de format hh:mm. À utiliser avant affichage d'une heure dans une view.
-     *
-     * Exception si impossible à formater.
      * 
      * @param  string $time
      * @param bool $strict | true pour le format H:i:s
      * @return ?string
+     * @throws DataProcessingException
      */
     public function formatTimeToHHMM(string $time, bool $strict = false): string
     {
@@ -189,75 +192,83 @@ class DatetimeService
         }
         throw new DataProcessingException(__METHOD__ . ": Impossible de formater l'heure passée en argument: '$time' est invalide.");
     }
-    
+
     /**
-     * formatDateTimeToTimestamptz retourne la date et l'heure au format ISO 8601 en timezone UTC.
+     * formatDateTimeToDatetimeTzOrISO retourne une date formatée ATOM/ISO 8601 ou Y-m-d H:i:sP.
      *
-     * @param  string $date | YYYY-MM-DD
-     * @param  string $time | HH:MM(:SS)
+     * @param  string $date
+     * @param  string $time
+     * @param  bool $local | true = Europe/Paris | false = UTC
+     * @param  bool $ISO | true = ATOM/ISO 8601 | false = Y-m-d H:i:sP
      * @return string
+     * @throws DataProcessingException
      */
-    public function formatDateTimeToTimestamptz(string $date, string $time): string
+    public function formatDateTimeToDatetimeTzOrISO(string $date, string $time, bool $local = false, bool $ISO = true): string
     {
         $date = trim($date);
         $time = trim($time);
-        if (!preg_match(self::REGEX['date'], $date) || !preg_match(self::REGEX['time'], $time)) {
+        if (!preg_match(Regex::Date->value, $date) || !preg_match(Regex::Time->value, $time)) {
             throw new DataProcessingException(__METHOD__ . ": Veuillez entrer une date et une heure valide en paramètre.");
         }
-        if (!preg_match(self::REGEX['time-strict'], $time)) {
-            $time .= ':00';
-        }
-
-        $datetime = DateTime::createFromFormat('Y-m-d H:i:s', "$date $time", new DateTimeZone('Europe/Paris'));
+        $time = !preg_match(Regex::TimeStrict->value, $time) ? $time .= ':00' : $time;
+        
+        $datetime = DateTime::createFromFormat('Y-m-d H:i:s', "$date $time", $this->localTz);
         if (!$datetime) {
             throw new DataProcessingException(__METHOD__ . ": Date/Heure invalide en paramètre.");
         }
         $errors = DateTime::getLastErrors();
         if ($errors && ($errors['warning_count'] > 0 || $errors['error_count'] > 0)) {
-            throw new DataProcessingException(__METHOD__ . ": '" . $datetime->format('Y-m-d H:i:sP' . "' est invalide.")
-            );
+            throw new DataProcessingException(__METHOD__ . ": '" . $datetime->format('Y-m-d H:i:sP' . "' est invalide."));
         }
-
-        $datetime = $datetime->setTimezone(new DateTimeZone('UTC'));
-        return $datetime->format('Y-m-d H:i:sP');
+        
+        $datetime = $local ? $datetime : $datetime->setTimezone($this->UTCtz);
+        return $ISO ? $datetime->format(DateTime::ATOM) : $datetime->format('Y-m-d H:i:sP');
     }
     
     /**
-     * formatTimestamptzToLocal attend une timestamp(tz optionnel) en paramètre, et la retourne (tableau) convertie en timezone Europe/Paris, présentation française.
-     * 
-     * @param  string $timestamptz
+     * formatDatetimeTzOrISOToLocal formate une date complète en date prête à l'affichage UI (timezone française).
+     *
+     * @param  string $DatetimeTzOrISO | ATOM/ISO 8601 ou 'Y-m-d H:i:sP'
      * @return array
      * 
      * __Tableau retourné__: 
-     * - 'universal' => 'Y-m-d H:i:sP', 
-     * - 'Y-m-d' => 'Y-m-d,
-     * - 'H:i:s' => 'H:i:s,
-     * - 'datetime' => 'd/m/Y H:i', 
-     * - 'date' => 'd/m/Y', 
-     * - 'time' => 'H:i', 
-     * - 'french_format' => '[jour] [nn] [mois] [année]'
-     * - 'full_french_format' => '[jour] [nn] [mois] [année] à [heure]'
-     */
-    public function formatTimestamptzToLocal(string $timestamptz): array
+     * - 'universal' => Y-m-d H:i:sP,
+     * - 'ISO' => ATOM/ISO 8601,
+     * - 'Y-m-d' => Y-m-d,
+     * - 'H:i:s' => H:i:s,
+     * - 'datetime' => d/m/Y H:i, 
+     * - 'date' => d/m/Y, 
+     * - 'time' => H:i, 
+     * - 'french_format' => [jour] [nn] [mois] [année]
+     * - 'full_french_format' => [jour] [nn] [mois] [année] à [heure]
+     * 
+     * @throws DataProcessingException
+     **/
+    public function formatDatetimeTzOrISOToLocal(string $DatetimeTzOrISO, bool $timestamptzFromDb = false): array
     {
-        if (!preg_match(self::REGEX['timestamptz'], $timestamptz)) {
-            throw new DataProcessingException(__METHOD__ . ": Une date format ISO 8601 / RFC 3339 est attendue en paramètre.");
+        if (!$timestamptzFromDb && !preg_match(Regex::IsoAtom->value, $DatetimeTzOrISO)) {
+            if (!preg_match(Regex::DateTimeTz->value, $DatetimeTzOrISO)) {
+                throw new DataProcessingException(__METHOD__ . ": Format ATOM/ISO 8601 ou 'Y-m-d H:i:sP' attendue en paramètre.");
+            }
         }
-        $datetime = new DateTimeImmutable($timestamptz);
-        $local = $datetime->setTimezone(new DateTimeZone('Europe/Paris'));
-        $formated = $this->dayOfWeek[ucfirst($local->format('l'))] ." ". $local->format('j') ." ". $this->months[ucfirst($local->format('F'))] ." ". $local->format('Y');
+        $datetime = new DateTimeImmutable($DatetimeTzOrISO)->setTimezone($this->localTz);
+        $formated = $this->dayOfWeek[$datetime->format('l')] ." ". $datetime->format('j') ." ". $this->months[$datetime->format('F')] ." ". $datetime->format('Y');
+
         return [
-            'universal' => $local->format('Y-m-d H:i:sP'),
-            'Y-m-d' => $local->format('Y-m-d'),
-            'H:i:s' => $local->format('H:i:s'),
-            'datetime' => $local->format('d/m/Y H:i'),
-            'date' => $local->format('d/m/Y'),
-            'time' => $local->format('H:i'),
+            'universal' => $datetime->format('Y-m-d H:i:sP'),
+            'ISO' => $datetime->format(DateTime::ATOM),
+            'Y-m-d' => $datetime->format('Y-m-d'),
+            'H:i:s' => $datetime->format('H:i:s'),
+            'datetime' => $datetime->format('d/m/Y H:i'),
+            'date' => $datetime->format('d/m/Y'),
+            'time' => $datetime->format('H:i'),
             'french_format' => $formated,
-            'full_french_format' => $formated . " à " . $local->format('H\hi'),
+            'full_french_format' => $formated . " à " . $datetime->format('H\hi'),
         ];
     }
 
+
+    
     /**
      * toSeconds converti H:i(:s) en secondes.
      *

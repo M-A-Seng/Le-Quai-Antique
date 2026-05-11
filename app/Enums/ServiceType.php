@@ -4,9 +4,9 @@ namespace App\Enums;
 
 enum ServiceType: string
 {
-    case BREAKFAST = 'BREAKFAST';
-    case BRUNCH = 'BRUNCH';
-    case LUNCH = 'LUNCH';
-    case SNACK = 'SNACK';
-    case DINNER = 'DINNER';
+    case Breakfast = 'BREAKFAST';
+    case Brunch = 'BRUNCH';
+    case Lunch = 'LUNCH';
+    case Snack = 'SNACK';
+    case Dinner = 'DINNER';
 }

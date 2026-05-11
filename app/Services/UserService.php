@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Core\Abstract\AbstractService;
+use App\Enums\Regex;
 use App\Enums\Role;
 use App\Exceptions\DataProcessingException;
 use App\Exceptions\InvalidCredentialsException;
@@ -76,7 +77,7 @@ class UserService extends AbstractService
      */
     public function passwordCheck(string $password, string $passwordConfirm): void
     {
-        if (!preg_match('/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,}$/', $password)) {
+        if (!preg_match(Regex::Password->value, $password)) {
             throw new InvalidFieldException("Votre mot de passe n'est pas assez sécurisé, veuillez suivre les instructions affichées.");
         }
         if ($password !== $passwordConfirm) {

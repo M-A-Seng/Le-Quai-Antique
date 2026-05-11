@@ -11,7 +11,7 @@ namespace App\Exceptions;
 class DataProcessingException extends AbstractBackendException
 {
     public function getUIMessage(): string {
-        return "Données invalides. Veuillez respecter les informations requises.";
+        return "Échec du traitement des données. Veuillez réessayer ou revenir plus tard.";
     }
 
     public function getHttpCode(): int {

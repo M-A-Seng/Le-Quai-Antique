@@ -2,6 +2,7 @@
 
 namespace App\Core\Abstract;
 
+use App\Enums\Regex;
 use App\Enums\Role;
 use App\Exceptions\DataProcessingException;
 use App\Exceptions\ForbiddenException;
@@ -153,7 +154,7 @@ abstract class AbstractService extends ConstantsCheckerService
         $phoneNumber = trim($phoneNumber);
         $phoneNumber = empty($phoneNumber) ? NULL : $phoneNumber;
         if (!empty($phoneNumber)) {
-            if (!preg_match('/^(\+?[1-9]{1}[0-9\s\-]{6,15}|0[0-9\s\-]{6,15})$/', $phoneNumber) || trim($phoneNumber, '0') === '') {
+            if (!preg_match(Regex::PhoneN->value, $phoneNumber) || trim($phoneNumber, '0') === '') {
                 throw new InvalidFieldException("Numéro de téléphone invalide.");
             }
         }

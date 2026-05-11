@@ -64,8 +64,8 @@ class ServiceService extends AbstractService
                 : throw new DataProcessingException(__METHOD__ . ": Heure attendue en troisième paramètre");
         $this->datetimeService->validateTimeFormat($time, strict:true);
 
-        $timestamptz = $this->datetimeService->formatDateTimeToTimestamptz($date, $time);
-        return $this->serviceModel->findServiceByTimestamptz($restaurantId, $timestamptz);
+        $datetimeTz = $this->datetimeService->formatDateTimeToDatetimeTzOrISO($date, $time);
+        return $this->serviceModel->findServiceByTimestamptz($restaurantId, $datetimeTz);
     }
     
     /**

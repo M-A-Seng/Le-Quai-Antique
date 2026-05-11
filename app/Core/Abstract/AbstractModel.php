@@ -11,7 +11,7 @@ use PDO;
 use PDOException;
 
 /**
- * AbstractModel implémente CRUD et étend AbstractCheckersModel.
+ * AbstractModel implémente CRUD et étend ConstantsCheckerService.
  * 
  * - checkProtectedColumns()
  * - insert()
@@ -46,6 +46,8 @@ abstract class AbstractModel extends ConstantsCheckerService
      *
      * @param  array|string $data
      * @return array|string
+     * 
+     * @throws InvalidArrayForDbException
      */
     private function filterAllowedColumns(string $className, array|string $data): array|string
     {
@@ -73,6 +75,8 @@ abstract class AbstractModel extends ConstantsCheckerService
      * @param  array $data
      * @param  array $protectedColumns
      * @return void
+     * 
+     * @throws InvalidArrayForDbException
      */
     protected function checkProtectedColumns(array $data, array $protectedColumns): void
     {
@@ -88,6 +92,9 @@ abstract class AbstractModel extends ConstantsCheckerService
      *
      * @param  array $data
      * @return array
+     * 
+     * @throws DataProcessingException
+     * @throws DbFailureException
      */
     protected function insert(array $data): array
     {
@@ -114,6 +121,8 @@ abstract class AbstractModel extends ConstantsCheckerService
      * findAll Retourne tous les enregistrements de la table définit dans la constante TABLE.
      *
      * @return array
+     * 
+     * @throws DbFailureException
      */
     protected function findAll(): array
     {
@@ -127,19 +136,22 @@ abstract class AbstractModel extends ConstantsCheckerService
             throw new DbFailureException(__METHOD__ . "Echec de l'opération: " . $e->getMessage(), 0, $e);
         }
     }
-    
+        
     /**
-     * findBy recupère tous les enregistrements d'une table correspondant aux conditions données pour la clause WHERE.
+     * findBy recupère tous les enregistrements d'une table correspondant aux conditions données
      *
-     * @param  array $conditions | ['column' => 'value']
+     * @param  array $conditions | WHERE 'column' => 'value';
+     * @param  array $orderBy | ORDER BY 'column' => 'direction' (ASC/DESC)
      * @return array
+     * 
+     * @throws DataProcessingException
+     * @throws DbFailureException
      */
-    protected function findBy(array $conditions): array
+    protected function findBy(array $conditions, array $orderBy = []): array
     {
         if (empty($conditions) || array_is_list($conditions)) {
-            throw new DataProcessingException(__METHOD__ . "Un tableau associatif est attendu en paramètre de findBy().");
+            throw new DataProcessingException(__METHOD__ . ": Tableau associatif attendu en premier paramètre.");
         }
-
         $sql = "SELECT * FROM " . static::TABLE . " WHERE ";
         $clauses = [];
         $params = [];
@@ -156,13 +168,32 @@ abstract class AbstractModel extends ConstantsCheckerService
             }
         }
         $sql .= implode(" AND ", $clauses);
+
+        # ORDER BY optionnel
+        if (!empty($orderBy)) {
+            if (array_is_list($orderBy)) {
+                throw new DataProcessingException(__METHOD__ . ": Tableau associatif attendu pour orderBy.");
+            }
+            $orders = [];
+
+            foreach ($orderBy as $column => $direction) {
+                $this->filterAllowedColumns(static::class, $column);
+
+                $direction = strtoupper(trim($direction));
+                if (!in_array($direction, ['ASC', 'DESC'], true)) {
+                    throw new DataProcessingException(__METHOD__ . ": Est attendu 'colonne' => 'ASC' ou 'DESC' dans orderBy.");
+                }
+                $orders[] = "$column $direction";
+            }
+            $sql .= " ORDER BY " . implode(', ', $orders);
+        }
         $stmt = $this->pdo->prepare($sql);
         try {
             $stmt->execute($params);
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } 
         catch (PDOException $e) {
-            throw new DbFailureException(__METHOD__ . "Echec de l'opération: " . $e->getMessage(), 0, $e);
+            throw new DbFailureException(__METHOD__ . ": Echec de l'opération: " . $e->getMessage(), 0, $e);
         }
     }
     
@@ -172,6 +203,9 @@ abstract class AbstractModel extends ConstantsCheckerService
      * @param  int $id
      * @param  array $data
      * @return array
+     * 
+     * @throws DataProcessingException
+     * @throws DbFailureException
      */
     protected function update(int $id, array $data): array
     {
@@ -184,16 +218,25 @@ abstract class AbstractModel extends ConstantsCheckerService
         $this->filterAllowedColumns(static::class, array_keys($data));
 
         $processedData = [];
+        $columns = [];
+
         foreach ($data as $column => $value) {
             $processedData[] = "\"$column\" = :$column";
+            $columns[] = "\"$column\"";
         }
-        $setClause = implode(', ', $processedData);
+        $setClause = implode(', ', $processedData); // valeurs à modifier
+        $columnsList = implode(', ', $columns);
+        $paramsList = implode(', ', array_map(fn($col) => ':' . trim($col, '"'), $columns)); // comparer les colonnes pour annuler update si rien n'a changé
 
-        $sql = "UPDATE \"" . static::TABLE . "\" SET $setClause WHERE id = :id RETURNING *";
+        $sql = "UPDATE \"" . static::TABLE . "\"
+                SET $setClause
+                WHERE id = :id
+                AND ($columnsList) IS DISTINCT FROM ($paramsList)
+                RETURNING *";
         $stmt = $this->pdo->prepare($sql);
-        $data['id'] = $id;
+        $params = array_merge($data, ['id' => $id]);
         try {
-            $stmt->execute($data);
+            $stmt->execute($params);
             return $stmt->fetch(PDO::FETCH_ASSOC);
         } 
         catch (PDOException $e) {
@@ -206,6 +249,9 @@ abstract class AbstractModel extends ConstantsCheckerService
      *
      * @param  array $conditions | 'colomn' => 'value';
      * @return int
+     * 
+     * @throws DataProcessingException
+     * @throws DbFailureException
      */
     protected function delete(array $conditions): int
     {

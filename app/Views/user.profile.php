@@ -8,7 +8,16 @@
     </div>
 <?php endif; ?>
 
-<form action="/deconnexion" target="_self" method="POST">
-    <input type="hidden" name="csrf_token" value="<?= html($_SESSION['csrf_token']) ?>">
-    <button type="submit">Se déconnecter</button>
-</form>
+<h2>Réservations à venir</h2>
+
+<?php if (!empty($reservations)): ?>
+    <?php require DIR_ROOT . '/app/Views/components/reservationUpdateForm.php' ?>
+    <?php require DIR_ROOT . '/app/Views/components/userReservationsDisplay.php' ?>
+
+    <a href="/profil/<?= $_SESSION['id'] ?>/mes-reservations">Voir toutes mes réservations</a>
+    <script src="/assets/js/reservation.form.script.js" defer></script>
+    <script src="/assets/js/user.reservation.script.js" defer></script>
+<?php elseif (!isset($error_message) || empty($error_message)): ?>
+    <p>Vous n'avez pas de réservations prévues pour le moment!</p>
+<?php endif; ?>
+

@@ -89,7 +89,7 @@ class Router
                 }
             }
             $controller = $this->diContainer->$getController();
-            $response = $controller->$controllerMethod($params);
+            $response = $controller->$controllerMethod(param:$params);
             if (!$response instanceof Response) {
                 throw new ServerException(__METHOD__ . ": Le controller '$controller' doit retourner une instance de 'Response'");
             }

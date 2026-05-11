@@ -1,38 +1,38 @@
 <?php use function App\html; ?>
 
-<div id="require-login-modal" style="<?= isset($requireLogin) && $requireLogin ? 'display:block' : 'display:none' ?>">
-    <button class="close-modal">✖</button>
-    <p>Presque terminé ! Connectez-vous ou inscrivez-vous pour valider votre réservation.</p>
-    
-    <button onclick="window.location.href='/connexion'">Se connecter</button>
-    <button onclick="window.location.href='/inscription'">S'inscrire</button><br>
-    <button class="close-modal">Rester sur cette page</button>
-</div>
-
-<h1><?= !isset($recap['display']) || !$recap['display'] ? 'Réserver une table' : 'Vérifiez votre réservation' ?></h1>
+<h1><?= isset($recap['display']) && $recap['display'] ? 'Vérifiez votre réservation' : 'Réserver une table' ?></h1>
 
 <?php if (!isset($_SESSION['id']) || !isset($_SESSION['role'])): ?>
+    <div id="require-login-modal" style="display:none">
+        <button class="close-modal">✖</button>
+        <p>Presque terminé ! Connectez-vous ou inscrivez-vous pour valider votre réservation.</p>
+        
+        <button onclick="window.location.href='/connexion'">Se connecter</button>
+        <button onclick="window.location.href='/inscription'">S'inscrire</button><br>
+        <button class="close-modal">Rester sur cette page</button>
+    </div>
+
     <p>Pas encore connecté ? Connectez-vous pour une réservation plus rapide et simplifiée !</p>
     <a href="/connexion">Se connecter</a>
     <a href="/inscription">S'inscrire</a>
 <?php endif; ?>
 
-<form action="/check/reservation" target="_self" method="POST">
+<form action="/check/reservation" target="_self" method="POST" id="form">
     <input type="hidden" id="csrf_token" name="csrf_token" value="<?= html($_SESSION['csrf_token']) ?>"><br>
 
-    <?php if (isset($recap['display']) && $recap['display']): ?>
-        <div>
-            <p>Date : <?= isset($recap['date']) ? html($recap['date']) : '' ?></p>
-            <p>Nom : <?= isset($client_name) ? html($client_name) : '' ?></p>
-            <p>Téléphone : <?= isset($client_tel) ? html($client_tel) : '' ?></p>
-            <p>Invités : <?= isset($guest_count) ? html($guest_count) : '' ?> personnes</p>
-            <p>Allergies: <?= isset($recap['allergy_string']) ? html($recap['allergy_string']) : '' ?></p>
-            <button type="submit" formaction="/reserver">Valider</button>
-            <a href='/reserver'>✎ Modifier ma réservation</a>
+    <?php if (isset($_SESSION['id']) && isset($_SESSION['role'])): ?>
+        <div id="recap" style="<?= isset($recap['display']) && $recap['display'] ? 'display:block' : 'display:none' ?>">
+            <p>Date : <span id="recap-date"><?= isset($recap) ? $recap['date'] : '' ?></span></p>
+            <p>Nom : <span id="recap-name"><?= isset($recap) ? $recap['name'] : '' ?></span></p>
+            <p>Téléphone : <span id="recap-tel"><?= isset($recap) ? $recap['tel'] : '' ?></span></p>
+            <p>Invités : <span id="recap-guests"><?= isset($recap) ? $recap['guest'] : '' ?></span> personnes</p>
+            <p>Allergies: <span id="recap-allergy"><?= isset($recap) ? $recap['allergy'] : '' ?></span></p>
+            <button type="submit" id="confirm-form-button" formaction="<?= isset($recap['formaction']) ? $recap['formaction'] : '' ?>" name="action" value="reserve">Valider</button>
+            <button onclick="window.location.href='/reserver'">Modifier ma réservation</button>
         </div>
     <?php endif; ?>
 
-    <div style="<?= isset($recap['display']) && $recap['display'] ? 'display:none' : 'display:block' ?>">
+    <div id="form-fields" style="<?= isset($recap['display']) && $recap['display'] ? 'display:none' : 'display:block' ?>">
         <label for="reservation_date">Date de réservation* :
             <input id="reservation_date" name="reservation_date" type="date" 
                 value="<?= isset($reservation_date) ? html($reservation_date) : '' ?>"
@@ -48,6 +48,7 @@
         <label for="guest_count">Pour combien de personnes ?* :
             <input id="guest_count" name="guest_count" type="number" min="1" max="20" 
                 value="<?= isset($guest_count) ? html($guest_count) : '' ?>" required disabled><br>
+            <small>Pour une réservation supérieure à 20 personnes, veuillez appeler au </small>
         </label><br>
 
         <label for="client_name">À quel nom réservez-vous ?* :
@@ -56,7 +57,7 @@
         </label><br>
 
         <label for="client_tel">Un numéro de téléphone ? (facultatif):
-            <input id="client_tel" name="client_tel" type="text" $pattern = "/^(\+?[1-9]{1}[0-9\s\-]{6,15}|0[0-9\s\-]{6,15})$/"; 
+            <input id="client_tel" name="client_tel" type="text" $pattern = "/^(\+?[1-9]{1}[0-9\s\-]{6,15}|0[0-9\s\-]{6,15})$/"  
                 value="<?= isset($client_tel) ? html($client_tel) : '' ?>">
         </label><br>
 
@@ -124,9 +125,14 @@
             </label><br>
         </fieldset>
 
-        <p id="feedback"></p>
-        <button type="submit" id="submit-button" disabled>Réserver</button>
+        <p id="form-feedback"></p>
+        <?php if (!isset($_SESSION['id']) || !isset($_SESSION['role'])): ?>
+            <button id="submit-button" class="display-require-login-button" disabled>Réserver</button>
+        <?php else: ?>
+            <button type="submit" id="submit-button" name="ajax" disabled>Réserver</button>
+        <?php endif; ?>
     </div>
 </form>
 
+<script src="/assets/js/reservation.form.script.js" defer></script>
 <script src="/assets/js/reservation.script.js" defer></script>

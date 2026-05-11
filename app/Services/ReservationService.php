@@ -55,10 +55,9 @@ class ReservationService extends AbstractService
         'client_id',
         'client_name',
         'client_tel',
-        'allergy'
+        'allergy',
+        'action'
     ];
-    private array $dayOfWeek;
-    
     private DateTimeZone $timezone;
 
     public function __construct(private ReservationModel $reservationModel, 
@@ -67,8 +66,7 @@ class ReservationService extends AbstractService
                                 private RestaurantServiceModel $restaurantServiceModel,
                                 private OpeningDayService $openingDayService) 
     {
-        $this->timezone = new DateTimeZone('Europe/Paris');
-        $this->dayOfWeek = $this->datetimeService->getDaysOfWeekTranslation();
+        $this->timezone = $this->datetimeService->getLocalTimezone();
     }
     
     /**
@@ -77,6 +75,8 @@ class ReservationService extends AbstractService
      * @param  int $restaurantId
      * @param  array $data
      * @return array
+     * 
+     * @throws DataProcessingException
      */
     public function addReservation(int $restaurantId, array $data): array
     {
@@ -108,72 +108,89 @@ class ReservationService extends AbstractService
         $this->validateNotNullKeys(static::class, $data, true);
         return $this->reservationModel->createReservation($data);
     }
-    
+     
     /**
-     * getReservationById retourne les données de la réservation demandée.
+     * getReservationById retourne les données d'une réservation.
      *
      * @param  int $id
+     * @param  bool $formattedForForm | true: pour formulaire / false: pour affichage
      * @return array
      */
-    public function getReservationById(int $id): array
+    public function getReservationById(int $id, bool $formattedForForm = false): array
     {
         $this->checkUserLegitimacy(roles:[Role::ADMIN, Role::CLIENT]);
         $this->validatePositiveInteger($id);
         $result = $this->reservationModel->findReservationById($id);
-
-        $reservationDate = $this->datetimeService->formatTimestamptzToLocal($result['reservation_at']);
+        if (empty($result)) {
+            return [];
+        }
+        $reservationDate = $this->datetimeService->formatDatetimeTzOrISOToLocal($result['reservation_at'], true);
         if (!empty($result['created_at']) && !empty($result['updated_at'])) {
-            $created = $this->datetimeService->formatTimestamptzToLocal($result['created_at']);
-            $updated = $this->datetimeService->formatTimestamptzToLocal($result['updated_at']);
+            $created = $this->datetimeService->formatDatetimeTzOrISOToLocal($result['created_at'], true);
+            $updated = $this->datetimeService->formatDatetimeTzOrISOToLocal($result['updated_at'], true);
         }
-        $allergy = [];
-        if (!empty($result['allergy'])) {
-            $allergy = explode(', ', $result['allergy']);
-        }
-
-        return [
+        $base = [
             'id' => $result['id'],
             'service_id' => $result['service_id'],
-            'reservation_date' => $reservationDate['french_date'] ?? null,
-            'reservation_time' => $reservationDate['time'] ?? null,
             'status' => $this->reservationStatus[$result['status']] ?? null,
             'guest_count' => $result['guest_count'],
             'client_name' => $result['client_name'],
             'client_tel' => $result['client_tel'] ?? null,
-            'allergy_string' => $result['allergy'] ?? null,
-            'allergy_array' => $allergy,
             'created_at' => $created['datetime'] ?? null,
             'updated_at' => $updated['datetime'] ?? null,
         ];
+        $forDisplay = [
+            'date_fullformat' => ($_SESSION['role']->value === 'ADMIN' ? $reservationDate['datetime'] : $reservationDate['full_french_format']) ?? null,
+            'reservation_date' => ($_SESSION['role']->value === 'ADMIN' ? $reservationDate['date'] : $reservationDate['french_format']) ?? null,
+            'reservation_time' => $reservationDate['time'] ?? null,
+            'allergy' => $result['allergy'],
+        ];
+        $forForm = [
+            'reservation_date' => $reservationDate['Y-m-d'] ?? null,
+            'default_reservation_time' => $reservationDate['time'] ?? null,
+            'allergy' => !empty($result['allergy']) ? explode(', ', $result['allergy']) : null,
+        ];
+        return $formattedForForm ? array_merge($base, $forForm) : array_merge($base, $forDisplay);
     }
-    
+      
     /**
-     * getUserReservations retourne toutes les réservations enregistrées par l'utilisateur donné.
+     * getUserReservations
      *
      * @param  int $userId
-     * @return array
+     * @param  bool $confirmedOnly
+     * @return ?array
      */
-    public function getUserReservations(int $userId) : array
+    public function getUserReservations(int $userId, bool $confirmedOnly = false) : ?array
     {
         $this->validatePositiveInteger($userId);
         $this->checkUserLegitimacy($userId, [Role::CLIENT]);
+        $data = [];
+        $result = $confirmedOnly ? 
+                  $this->reservationModel->findConfirmedReservationsByUserId($userId)
+                  : $this->reservationModel->findReservationsByUserId($userId);
+        
+        if ($result === null) { return null; }
 
-        $result = $this->reservationModel->findReservationsByUserId($userId);
-        foreach ($result as &$row) {
-            $reservationDate = $this->datetimeService->formatTimestamptzToLocal($row['reservation_at']);
-            $row['reservation_date'] = $reservationDate['Y-m-d'];
-            $row['reservation_time'] = $reservationDate['time'];
-            $row['reservation_fullstring'] = $reservationDate['full_french_format'];
-            $row['status'] = $this->reservationStatus[$row['status']] ?? '';
-
-            $allergy = '';
-            if (!empty($result['allergy'])) {
-                $allergy = explode(', ', $result['allergy']);
-            }
-            $row['allergy_string'] = $allergy;
+        foreach ($result as $row) {
+            $reservationDate = $this->datetimeService->formatDatetimeTzOrISOToLocal($row['reservation_at'], true);
+            $created = $this->datetimeService->formatDatetimeTzOrISOToLocal($row['created_at'], true);
+            $updated = $this->datetimeService->formatDatetimeTzOrISOToLocal($row['updated_at'], true);
+            $data[] = [
+                'id' => $row['id'],
+                'service_id' => $row['service_id'],
+                'date_fullformat' => ($_SESSION['role']->value === 'ADMIN' ? $reservationDate['datetime'] : $reservationDate['full_french_format']) ?? '',
+                'reservation_date' => ($_SESSION['role']->value === 'ADMIN' ? $reservationDate['date'] : $reservationDate['french_format']) ?? '',
+                'reservation_time' => $reservationDate['time'] ?? '',
+                'status' => $this->reservationStatus[$row['status']] ?? '',
+                'client_name' => $row['client_name'],
+                'client_tel' => $row['client_tel'] ?? '',
+                'guest_count' => $row['guest_count'],
+                'allergy' => $row['allergy'] ?? '',
+                'created_at' => $created['datetime'] ?? '',
+                'updated_at' => $updated['datetime'] ?? '',
+            ];
         }
-        unset($row);
-        return $result;
+        return $data;
     }
     
     /**
@@ -182,6 +199,8 @@ class ReservationService extends AbstractService
      * @param  int $restaurantId
      * @param  string $date
      * @return array
+     * 
+     * @throws InvalidFieldException
      */
     public function getReservationsByDate(int $restaurantId, string $date) : array
     {
@@ -199,7 +218,7 @@ class ReservationService extends AbstractService
         foreach ($result as &$group) 
         {
             foreach ($group as &$row) {
-                $reservationDate = $this->datetimeService->formatTimestamptzToLocal($row['reservation_at']);
+                $reservationDate = $this->datetimeService->formatDatetimeTzOrISOToLocal($row['reservation_at']);
                 $row['date'] = $reservationDate['date'];
                 $row['time'] = $reservationDate['time'];
                 $row['status'] = $this->reservationStatus[$row['status']] ?? '';
@@ -215,20 +234,22 @@ class ReservationService extends AbstractService
      * @param  int $reservationId
      * @param  array $data
      * @return array
+     * 
+     * @throws DataProcessingException
+     * @throws ServerException
      */
     public function modifyReservation(int $reservationId, array $data): array
     {
         if (empty($data) || array_is_list($data)) {
             throw new DataProcessingException(__METHOD__ . ": Tableau associatif attendu en deuxième paramètre.");
         }
-        $this->validatePositiveInteger($data['user_id'] ?? 0);
+        $this->validatePositiveInteger($data['user_id']);
         $this->checkUserLegitimacy($data['user_id'], [Role::ADMIN, Role::CLIENT]);
         $this->validatePositiveInteger($reservationId);
 
         # valider données
         $reservation = $this->reservationModel->findReservationById($reservationId); # reservation existe?
-        $verified = $this->validateReservationData($data);
-
+        $verified = $this->validateReservationData($data, false);
         # valider date/heure
         try {
             $currentReservation = new DateTimeImmutable($reservation['reservation_at'])->setTimezone($this->timezone);
@@ -247,10 +268,9 @@ class ReservationService extends AbstractService
                           ?? $this->serviceService->newService($restaurantId, $modifiedReservation);
             $serviceId = $service['id'];
         }
-        
         $data = [
             'service_id' => $serviceId,
-            'client_id' => $verified['client_id'],
+            'client_id' => $verified['client_id'] ?? $reservation['client_id'],
             'reservation_at' => $modifiedReservation->format('Y-m-d H:i:sP'),
             'guest_count' => $verified['guest_count'],
             'client_name' => $verified['client_name'],
@@ -285,7 +305,12 @@ class ReservationService extends AbstractService
      * validateReservationData vérifie les données passées en entrée par l'utilisateur et les retourne prêt à l'emploi.
      *
      * @param  array $data
+     * @param bool $clientId | true si l'utilisateur est authentifié
      * @return array
+     * 
+     * @throws InvalidFieldException
+     * @throws DataProcessingException
+     * @throws InvalidFieldException
      */
     public function validateReservationData(array $data, bool $clientId = true): array
     {
@@ -339,6 +364,9 @@ class ReservationService extends AbstractService
      * @param  string $date
      * @param  string $time
      * @return DateTimeImmutable
+     * 
+     * @throws InvalidReservationException
+     * @throws InvalidFieldException
      */
     public function isValidReservationDateTime(int $restaurantId, string $date, string $time): DateTimeImmutable
     {
@@ -357,8 +385,8 @@ class ReservationService extends AbstractService
             throw new InvalidReservationException("Le restaurant est fermé à $formattedTime. Veuillez sélectionner une heure comprise dans les horaires d'ouverture.");
         }
         if ($this->openingDayService->isServiceOpenThatDay($restaurantService['id'], $reservationDate->format('Y-m-d')) === false) {
-            $timestamptz = $this->datetimeService->formatDateTimeToTimestamptz($date, $time);
-            $local = $this->datetimeService->formatTimestamptzToLocal($timestamptz);
+            $datetimeTz = $this->datetimeService->formatDateTimeToDatetimeTzOrISO($date, $time, true, false);
+            $local = $this->datetimeService->formatDatetimeTzOrISOToLocal($datetimeTz);
             throw new InvalidReservationException("Le restaurant est fermé le " . $local['full_french_format'] . ". Veuillez sélectionner une date et heure comprise dans les horaires d'ouverture.");
         }
         try {
@@ -394,28 +422,29 @@ class ReservationService extends AbstractService
     }
     
     /**
-     * getFrenchFormatedDate
+     * getFrenchFormatedDate retourne des dates et heures formatées sur la timezone française
      *
      * @param  string $date
      * @param  string $time
      * @return array
      * 
      * __Tableau retourné__: 
-     * - 'universal' => 'Y-m-d H:i:sP', 
-     * - 'Y-m-d' => 'Y-m-d,
-     * - 'H:i:s' => 'H:i:s,
-     * - 'datetime' => 'd/m/Y H:i', 
-     * - 'date' => 'd/m/Y', 
-     * - 'time' => 'H:i', 
-     * - 'french_format' => '[jour] [nn] [mois] [année]'
-     * - 'full_french_format' => '[jour] [nn] [mois] [année] à [heure]'
+     * - 'universal' => Y-m-d H:i:sP,
+     * - 'ISO' => ATOM/ISO 8601,
+     * - 'Y-m-d' => Y-m-d,
+     * - 'H:i:s' => H:i:s,
+     * - 'datetime' => d/m/Y H:i, 
+     * - 'date' => d/m/Y, 
+     * - 'time' => H:i, 
+     * - 'french_format' => [jour] [nn] [mois] [année]
+     * - 'full_french_format' => [jour] [nn] [mois] [année] à [heure]
      */
     public function getFrenchFormatedDate(string $date, string $time): array
     {
         $this->datetimeService->validateDateYmdFormat($date);
         $this->datetimeService->validateTimeFormat($time);
 
-        $timestamptz = $this->datetimeService->formatDateTimeToTimestamptz($date, $time);
-        return $this->datetimeService->formatTimestamptzToLocal($timestamptz);
+        $datetimeTz = $this->datetimeService->formatDateTimeToDatetimeTzOrISO($date, $time, true, false);
+        return $this->datetimeService->formatDatetimeTzOrISOToLocal($datetimeTz);
     }
 }

@@ -1,9 +1,30 @@
 <?php use function App\html; ?>
-LAYOUT ERROR PAGE
+<p>LAYOUT USER</p>
 
 <?php require_once DIR_ROOT . '/app/Views/components/header.php' ?>
 
 <body>
+    <?php if (isset($error_message) && !empty($error_message)): ?>
+        <div style="color:red">
+            <?php echo html($error_message); ?>
+        </div>
+    <?php endif; ?>
+
+    <?php if (isset($confirmation_message) && !empty($confirmation_message)): ?>
+        <div style="color:green">
+            <?php echo html($confirmation_message); ?>
+        </div>
+    <?php endif; ?>
+
+    <?php if (isset($requireLogin) && $requireLogin): ?>
+        <div>
+            <p>Votre session a expiré. Veuillez vous reconnecter.</p>
+
+            <button onclick="window.location.href='/connexion'">Se connecter</button>
+            <button onclick="window.location.href='/'">Page d'accueil</button><br>
+        </div>
+    <?php endif; ?>
+
     <noscript>
         <div>
             <p>JavaScript est désactivé.</p>
@@ -11,7 +32,7 @@ LAYOUT ERROR PAGE
             <a href=".">Recharger la page</a>
         </div>
     </noscript>
-    
+
     <?php if (isset($content)): ?>
         <?= $content ?>
     <?php else: ?>
@@ -19,6 +40,7 @@ LAYOUT ERROR PAGE
         <button onclick="location.reload()">Recharger la page</button>
         <button onclick="window.location.href='/'">Page d'accueil</button><br>
     <?php endif; ?>
+   
 </body>
 
 <?php require_once DIR_ROOT . '/app/Views/components/footer.php' ?>

@@ -13,7 +13,8 @@ use PDOException;
  * ReservationModel
  * 
  * - createReservation()
- * - findReservationsByClient()
+ * - findReservationsByUserId()
+ * - findConfirmedReservationsByUserId()
  * - findReservationById()
  * - findReservationsByDate()
  * - updateReservation()
@@ -60,15 +61,24 @@ class ReservationModel extends AbstractModel
      * Exception si non trouvé.
      *
      * @param  int $userId
-     * @return array
+     * @return ?array
      */
-    public function findReservationsByUserId(int $userId): array
+    public function findReservationsByUserId(int $userId): ?array
     {
-        $result = $this->findBy(['client_id' => $userId]);
-        if (empty($result)) {
-            throw new NotFoundException(message:__METHOD__ . ": Aucune réservation trouvée en db pour le client '$userId'.", UIMessage:"Aucune réservation.");
-        }
-        return $result;
+        $result = $this->findBy(['client_id' => $userId], ['status' => 'ASC', 'reservation_at' => 'ASC']);
+        return empty($result) ? null : $result;
+    }
+    
+    /**
+     * findConfirmedReservationsByUserId retourne uniqument les réservations à venir.
+     *
+     * @param  int $id
+     * @return ?array
+     */
+    public function findConfirmedReservationsByUserId(int $id): ?array
+    {
+        $result = $this->findBy(['client_id' => $id, 'status' => 'CONFIRMED'], ['reservation_at' => 'ASC']);
+        return empty($result) ? null : $result;
     }
     
     /**

@@ -1,9 +1,7 @@
 <?php use function App\html; ?>
-LAYOUT
+<p>DEFAULT LAYOUT</p>
 
-<script src="/assets/js/session-cleanup.js"></script>
-
-<?php require_once __DIR__.'/../components/header.php' ?>
+<?php require_once DIR_ROOT . '/app/Views/components/header.php' ?>
 
 <body>
     <?php if (isset($error_message) && !empty($error_message)): ?>
@@ -18,7 +16,21 @@ LAYOUT
         </div>
     <?php endif; ?>
 
-    <?= $content ?>
+    <noscript>
+        <div>
+            <p>JavaScript est désactivé.</p>
+            <p>Ce site utilise JavaScript pour fonctionner correctement. Activez-le dans les paramètres de votre navigateur puis rechargez la page pour continuer.</p>
+            <a href=".">Recharger la page</a>
+        </div>
+    </noscript>
+
+    <?php if (isset($content)): ?>
+        <?= $content ?>
+    <?php else: ?>
+        <p>Le chargement du contenu a échoué.</p>
+        <button onclick="location.reload()">Recharger la page</button>
+        <button onclick="window.location.href='/'">Page d'accueil</button><br>
+    <?php endif; ?>
 </body>
 
-<?php require_once __DIR__.'/../components/footer.php' ?>
+<?php require_once DIR_ROOT . '/app/Views/components/footer.php' ?>

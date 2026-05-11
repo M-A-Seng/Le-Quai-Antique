@@ -8,6 +8,7 @@ use App\Core\Logger;
 use App\Core\Response;
 use App\Exceptions\AbstractBackendException;
 use App\Exceptions\AbstractFrontendException;
+use App\Exceptions\DataProcessingException;
 use App\Exceptions\DbFailureException;
 use App\Exceptions\NotFoundException;
 use App\Services\ReservationService;
@@ -18,6 +19,7 @@ use App\Services\UserService;
  * 
  * - index()
  * - validateReservation()
+ * - checkAndPreserveData()
  * - reserve()
  * - canReserve()
  */
@@ -71,45 +73,53 @@ class ReservationController extends AbstractController
     }
         
     /**
-     * validateReservation Vérifie les données et affiche le récapitulatif si ok.
+     * validateReservation Vérifie les entrées et affiche le récapitulatif si ok.
      *
      * @return Response
      */
     public function validateReservation(): Response
     {
-        $http = 200;
         unset($_POST['csrf_token']);
-        $_SESSION['reservation_data'] = $_POST; // stocker temporairement les données.
+        $http = 200;
         try {
-            # Si les données n'ont jamais été vérifiée -> procéder
+            # Si les données n'ont jamais été vérifiées/stockées -> procéder
             if (!isset($_SESSION['reservation_pending_confirmation']) || $_SESSION['reservation_pending_confirmation'] = false || !isset($_SESSION['reservation_data']))
             {
+                unset($_POST['beenModified']);
                 $verified = $this->reservationService->validateReservationData($_POST, false);
                 $this->reservationService->isValidReservationDateTime(1, $verified['date'], $verified['time']); # Actuellement restaurant unique
+                $_SESSION['reservation_data'] = $_POST;
             }
-            # demande de connexion/inscription si utilisateur non identifié
-            if (!isset($_SESSION['id']) || !isset($_SESSION['role'])) {
-                $_SESSION['reservation_pending_confirmation'] = true; 
-                $_POST['requireLogin'] = true;
-                $content = $this->renderService->render('reserve', $_POST);
-                return $this->html($content);
-            }
+            $_SESSION['reservation_data'] = isset($_POST['beenModified']) && $_POST['beenModified'] ? $_POST : $_SESSION['reservation_data'] ?? ''; # Si l'utilisateur a re-modiffié sa réservation, réattribuer $_post
+            unset($_SESSION['reservation_data']['beenModified']);
             $data = $_SESSION['reservation_data'] ?? $_POST;
             $local = $this->reservationService->getFrenchFormatedDate($data['reservation_date'], $data['reservation_time']);
-            $data = !empty($_POST) ? $_POST : $_SESSION['reservation_data'];
+            $allergy = isset($data['allergy']) ?
+                       (is_array($data['allergy']) ? implode(", ", $data['allergy']) : $data['allergy'])
+                       : '';
+            $formaction = $data['action'] === 'update' ? '/profil/'.$_SESSION['id'].'/reservation/'.$data['id'].'/update' : '/reserver';
             $data['recap'] = [
                 'display' => true,
                 'date' => $local['full_french_format'],
-                'allergy_string' => $data['allergy'] ? implode(", ", $data['allergy']) : '',
+                'name' => $data['client_name'],
+                'guest' => $data['guest_count'],
+                'tel' => $data['client_tel'] ?? '',
+                'allergy' => $allergy,
+                'formaction' => $formaction
             ];
-            $content = $this->renderService->render('reserve', $data);
-            return $this->html($content);
+            // redirection
+            if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+                $content = $this->renderService->render('reserve', $data, 'user');
+                return $this->html($content);
+            }
+            // ajax
+            return $this->json($data);
         }
         catch (AbstractFrontendException | NotFoundException $e) {
-            $_POST['error_message'] = $e->getUIMessage();
+            $_POST['error_message'] = $e;//->getUIMessage();
         }
         catch (AbstractBackendException $e) {
-            $_POST['error_message'] = $e->getUIMessage();
+            $_POST['error_message'] = $e;//->getUIMessage();
             $http = $e->getHttpCode();
             if ($e instanceof DbFailureException) {
                 $this->logger->dbError($e->getMessage());
@@ -117,8 +127,44 @@ class ReservationController extends AbstractController
                 $this->logger->error($e->getMessage());
             }
         }
+        if ($_POST['action'] && $_POST['action'] === 'update') {
+            $content = $this->renderService->render('user.reservations', $_POST, 'user');
+            return $this->html($content, $http);
+        }
         $content = $this->renderService->render('reserve', $_POST);
         return $this->html($content, $http);
+    }
+    
+    /**
+     * checkAndPreserveData méthode appelée lorsque l'utilisateur essai de réserver sans être authentifiée.
+     *
+     * @return Response
+     */
+    public function checkAndPreserveData(): Response
+    {
+        $error_message = null;
+        unset($_POST['csrf_token']);
+        $http = 200;
+        try {
+            $verified = $this->reservationService->validateReservationData($_POST, false);
+            $this->reservationService->isValidReservationDateTime(1, $verified['date'], $verified['time']); # Actuellement restaurant unique
+            $_SESSION['reservation_data'] = $_POST;
+            $_SESSION['reservation_pending_confirmation'] = true;
+            return $this->json(['success' => true]);
+        } 
+        catch (AbstractFrontendException | NotFoundException $e) {
+            $error_message = $e->getUIMessage();
+        }
+        catch (AbstractBackendException $e) {
+            $error_message = $e->getUIMessage();
+            $http = $e->getHttpCode();
+            if ($e instanceof DbFailureException) {
+                $this->logger->dbError($e->getMessage());
+            } else {
+                $this->logger->error($e->getMessage());
+            }
+        }
+        return $this->json(['error_message' => $error_message]);
     }
 
     /**
@@ -128,9 +174,13 @@ class ReservationController extends AbstractController
      */
     public function reserve(): Response
     {
+        if ($_POST['action'] && $_POST['action'] === 'reserve') {
+            unset($_POST['action'], $_POST['csrf_token']);
+        } else {
+            throw new DataProcessingException(__METHOD__ . ": Champ 'action' invalide ou indéfinit.");
+        }
         $error_message = null;
         $http = 200;
-        unset($_POST['csrf_token']);
         try {
             $_POST['client_id'] = $_SESSION['id'];
             $this->reservationService->addReservation(1, $_POST); # Actuellement restaurant unique
@@ -145,12 +195,10 @@ class ReservationController extends AbstractController
             return $this->redirect('/profil/' . $_SESSION['id']);
         } 
         catch (AbstractFrontendException | NotFoundException $e) {
-            echo $e;
-            $error_message = $e->getUIMessage();
+            $error_message = $e;//->getUIMessage();
         }
         catch (AbstractBackendException $e) {
-            echo $e;
-            $error_message = $e->getUIMessage();
+            $error_message = $e;//->getUIMessage();
             $http = $e->getHttpCode();
             if ($e instanceof DbFailureException) {
                 $this->logger->dbError($e->getMessage());
