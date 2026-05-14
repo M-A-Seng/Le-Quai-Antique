@@ -26,6 +26,7 @@ class ServiceService extends AbstractService
         "restaurant_id",
         "open_at",
         "close_at",
+        "service_type",
         "max_guests",
     ];
 
@@ -51,6 +52,8 @@ class ServiceService extends AbstractService
      * @param  string $date | YYYY-MM-DD
      * @param  string $time | HH:MM(:SS)
      * @return ?array
+     * 
+     * @throws DataProcessingException
      */
     public function findServiceByDateTime(int $restaurantId, string $date, string $time): ?array
     {
@@ -99,10 +102,10 @@ class ServiceService extends AbstractService
             'restaurant_id' => $restaurantId,
             'open_at' => $openAt->format('Y-m-d H:i:sP'),
             'close_at' => $closeAt->format('Y-m-d H:i:sP'),
+            'service_type' => $restaurantService['service_type'],
             'max_guests' => $restaurantService['max_guests'],
         ];
         $this->validateNotNullKeys(static::class, $data, true);
-
         try {
             return $this->serviceModel->createService($data);
         } 

@@ -11,6 +11,7 @@ use App\Exceptions\InvalidReservationException;
 use App\Exceptions\ServerException;
 use App\Models\ReservationModel;
 use App\Models\RestaurantServiceModel;
+use DateTime;
 use DateTimeImmutable;
 use DateTimeZone;
 use Exception;
@@ -57,6 +58,13 @@ class ReservationService extends AbstractService
         'client_tel',
         'allergy',
         'action'
+    ];
+    private array $serviceType = [
+        'BREAKFAST' => "Petit Déjeuner",
+        'BRUNCH' => "Brunch",
+        'LUNCH' => "Déjeuner",
+        'SNACK' => "Goûter",
+        'DINNER' => "Dîner"
     ];
     private DateTimeZone $timezone;
 
@@ -194,15 +202,15 @@ class ReservationService extends AbstractService
     }
     
     /**
-     * getReservationsByDate retourne toutes les réservations pour la date données.
+     * getReservationsByDate retourne toutes les données pour la page admin.reservations.php.
      *
      * @param  int $restaurantId
-     * @param  string $date
-     * @return array
+     * @param  string $date | YYYY-mm-dd
+     * @return ?array
      * 
      * @throws InvalidFieldException
      */
-    public function getReservationsByDate(int $restaurantId, string $date) : array
+    public function getReservationsByDate(int $restaurantId, string $date) : ?array
     {
         $this->checkUserLegitimacy(roles:[Role::ADMIN]);
     
@@ -214,18 +222,65 @@ class ReservationService extends AbstractService
             throw new InvalidFieldException("Sélectionnez une date valide pour afficher les réservations.");
         }
         $result = $this->reservationModel->findReservationsByDate($restaurantId, $datetime);
+        if ($result === null) {return null;} // early return
 
-        foreach ($result as &$group) 
+        $data = [];
+        $first = true;
+        $reservation = [];
+        $params = [];
+        $max_guests = [];
+        $remaining = [];
+
+        foreach ($result as $serviceTypeEn => $group) 
         {
-            foreach ($group as &$row) {
-                $reservationDate = $this->datetimeService->formatDatetimeTzOrISOToLocal($row['reservation_at']);
-                $row['date'] = $reservationDate['date'];
-                $row['time'] = $reservationDate['time'];
-                $row['status'] = $this->reservationStatus[$row['status']] ?? '';
+            $params['service_types'][strtolower($serviceTypeEn)] = $this->serviceType[$serviceTypeEn] ?? $serviceTypeEn;
+
+            foreach ($group as $row) {
+                $reservationDate = $this->datetimeService->formatDatetimeTzOrISOToLocal($row['reservation_at'], true);
+                $created = $this->datetimeService->formatDatetimeTzOrISOToLocal($row['created_at'], true);
+                $updated = $this->datetimeService->formatDatetimeTzOrISOToLocal($row['updated_at'], true);
+
+                if ($first) {
+                    $params["french_formated_date"] = $reservationDate['french_format'];
+                    $params['display_by_default'] = strtolower($serviceTypeEn);
+                    $first = false;
+                }
+                $reservation[strtolower($serviceTypeEn)][] = [
+                    "id" => $row['id'],
+                    "service_id" => $row['service_id'],
+                    "client_id" => $row['client_id'],
+                    "date_fullformat" => $reservationDate['full_french_format'],
+                    "reservation_date" => $reservationDate['date'],
+                    "reservation_time" => $reservationDate['time'],
+                    "status" => $this->reservationStatus[$row['status']],
+                    "guest_count" => $row['guest_count'],
+                    "client_name" => $row['client_name'],
+                    "client_tel" => $row['client_tel'] ?? '',
+                    "allergy" => $row['allergy'] ?? '',
+                    "created_at" => $created['datetime'],
+                    "updated_at" => $updated['datetime'],
+                ];
+                // condition if pour éviter de boucler 2 fois le même service
+                if (!isset($max_guests[strtolower($serviceTypeEn)])) {
+                    $max_guests[strtolower($serviceTypeEn)] = $this->serviceService->getServiceById($row['service_id'])['max_guests'];
+                }
+                if (!isset($remaining[strtolower($serviceTypeEn)])) {
+                    $remaining[strtolower($serviceTypeEn)] = $this->serviceService->getRemainingPlacesInService($row['service_id']);
+                }
             }
         }
-        unset($group, $row);
-        return $result;
+        unset($serviceType, $row);
+        $data = [
+            'service_types' => $params['service_types'],
+            'french_formated_date' => $params['french_formated_date'],
+            'display_by_default' => $params['display_by_default'],
+            'reservations' => $reservation,
+            'day_before' => $datetime->modify('-1 day')->format('d-m-Y'),
+            'day_after' => $datetime->modify('+1 day')->format('d-m-Y'),
+            'max_guests' => $max_guests,
+            'remaining_places' => $remaining
+        ];
+        return $data;
     }
     
     /**

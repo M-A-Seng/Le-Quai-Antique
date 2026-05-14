@@ -3,6 +3,7 @@
 namespace App\Core;
 
 use App\Config\DbConnection;
+use App\Controllers\AdminReservationController;
 use App\Controllers\AuthenticationController;
 use App\Controllers\GalleryController;
 use App\Controllers\HomeController;
@@ -200,6 +201,16 @@ class DIContainer
     public function getUserReservationController(): UserReservationController
     {
         return new UserReservationController($this->reservationService, $this->renderService, $this->logger);
+    }
+    
+    /**
+     * getAdminReservationController retourne une instance de AdminReservationController
+     *
+     * @return AdminReservationController
+     */
+    public function getAdminReservationController(): AdminReservationController
+    {
+        return new AdminReservationController($this->reservationService, $this->serviceService, $this->renderService, $this->logger);
     }
 
     /**

@@ -10,6 +10,7 @@ use App\Exceptions\AbstractBackendException;
 use App\Exceptions\AbstractFrontendException;
 use App\Exceptions\DbFailureException;
 use App\Exceptions\ForbiddenException;
+use App\Exceptions\InvalidFieldException;
 use App\Exceptions\InvalidReservationException;
 use App\Exceptions\NotFoundException;
 use App\Services\RenderService;
@@ -25,11 +26,16 @@ use App\Services\ReservationService;
  */
 class UserReservationController extends AbstractController
 {
+    private string $baseUrl;
+    private string $pageUrl;
+
     public function __construct(private ReservationService $reservationService,
                                 RenderService $renderService, 
                                 Logger $logger)
     {
-        return parent::__construct($renderService, $logger);
+        parent::__construct($renderService, $logger);
+        $this->baseUrl = ($_SESSION['role']->value === 'ADMIN' ? '/admin/' : '/profil/') . $_SESSION['id'];
+        $this->pageUrl = $this->baseUrl . ($_SESSION['role']->value === 'ADMIN' ? '/reservations' : '/mes-reservations');
     }
     
     /**
@@ -90,6 +96,7 @@ class UserReservationController extends AbstractController
             if (empty($reservation)) {
                 throw new InvalidReservationException("Impossible de charger les données, veuillez réessayer.");
             }
+            $reservation['url'] = $this->baseUrl . "/reservation/" . $reservation['id'] . "/modifier";
             return $this->json($reservation);
         }
         catch (AbstractFrontendException | NotFoundException $e) {
@@ -123,7 +130,14 @@ class UserReservationController extends AbstractController
         if ((int)$param['id'] !== (int)$_SESSION['id']) {
             throw new ForbiddenException(__METHOD__ . ": Utilisateur non reconnu.");
         }
+        $url = $this->pageUrl;
         try {
+            if (!$_POST['reservation_date']) {
+                throw new InvalidFieldException("Veuillez fournir une date de réservation.");
+            }
+            [$year, $month, $day] = explode('-', $_POST['reservation_date']);
+            $url = $this->pageUrl . ($_SESSION['role']->value === 'ADMIN' ? "/{$day}-{$month}-{$year}" : '');
+
             $reservation = $this->reservationService->getReservationById($_POST['id']);
             if (empty($reservation)) {
                 throw new InvalidReservationException("Impossible de mettre à jour votre réservation, veuillez réessayer.");
@@ -132,7 +146,7 @@ class UserReservationController extends AbstractController
             $this->reservationService->modifyReservation($reservation['id'], $_POST);
 
             $_SESSION['confirmation_message'] = "✔️ Réservation modifiée avec succès !";
-            return $this->redirect('/profil/'.$_SESSION['id'].'/mes-reservations');
+            return $this->redirect($url);
         }
         catch (AbstractFrontendException | NotFoundException $e) {
             $error_message = $e->getUIMessage();
@@ -147,7 +161,7 @@ class UserReservationController extends AbstractController
             }
         }
         $_SESSION['error_message'] = $error_message;
-        return $this->redirect('/profil/'.$_SESSION['id'].'/mes-reservations');
+        return $this->redirect($url);
     }
     
     /**
@@ -174,8 +188,11 @@ class UserReservationController extends AbstractController
             $_POST['user_id'] = $param['id'];
             $this->reservationService->changeReservationStatus($param['id'], $reservation['id'], ReservationStatus::CANCELED);
 
-            $_SESSION['confirmation_message'] = "✔️ Annulation réussie : votre table pour le ".$_POST['reservation_datetime']." n'est plus réservée. À très vite au restaurant!";
-            return $this->redirect('/profil/'.$_SESSION['id'].'/mes-reservations');
+            $message = $_SESSION['role']->value === 'ADMIN' ? 
+                       "Réservation du ".$_POST['reservation_datetime']." annulée avec succès! ✔️ "
+                       : "✔️ Annulation réussie : votre table pour le ".$_POST['reservation_datetime']." n'est plus réservée. À très vite au restaurant!";
+            $_SESSION['confirmation_message'] = $message;
+            return $this->redirect($this->pageUrl);
         }
         catch (AbstractFrontendException | NotFoundException $e) {
             $error_message = $e->getUIMessage();
@@ -190,6 +207,6 @@ class UserReservationController extends AbstractController
             }
         }
         $_SESSION['error_message'] = $error_message;
-        return $this->redirect('/profil/'.$_SESSION['id'].'/mes-reservations');
+        return $this->redirect($this->pageUrl);
     }
 }

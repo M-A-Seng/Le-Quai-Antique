@@ -16,7 +16,6 @@
     <h2>Modification de la réservation</h2>
     <form action="/check/reservation" target="_self" method="POST" id="form">
         <input type="hidden" id="csrf_token" name="csrf_token" value="<?= html($_SESSION['csrf_token']) ?>"><br>
-        <input type="hidden" id="user" value="<?= html($_SESSION['id']) ?>">
         <input type="hidden" id="id" name="id" value=""><br>
         <input type="hidden" name="service_id" value=""><br>
 
@@ -43,7 +42,7 @@
         </label><br>
 
         <label for="guest_count">Nombre de personnes* :
-            <input id="guest_count" name="guest_count" type="number" min="1" max="20" value="" required><br>
+            <input id="guest_count" name="guest_count" type="number" min="1" <?= $_SESSION['role']->value === 'ADMIN' ? '' : 'max="20"' ?> value="" required><br>
         </label><br>
 
         <label for="client_name">Nom* :

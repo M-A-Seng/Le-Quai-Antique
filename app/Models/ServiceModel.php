@@ -26,6 +26,7 @@ class ServiceModel extends AbstractModel
         "restaurant_id",
         "open_at",
         "close_at",
+        "service_type",
         "max_guests",
         "reservation_duration",
     ];
@@ -51,6 +52,8 @@ class ServiceModel extends AbstractModel
      *
      * @param  string $timestamptz | Y-m-d H:i:sP
      * @return ?array
+     * 
+     * @throws DbFailureException
      */
     public function findServiceByTimestamptz(int $restaurantId, string $timestamptz): ?array
     {
@@ -78,6 +81,8 @@ class ServiceModel extends AbstractModel
      *
      * @param  int $id
      * @return array
+     * 
+     * @throws NotFoundException
      */
     public function findServiceById(int $id): array
     {
@@ -93,6 +98,8 @@ class ServiceModel extends AbstractModel
      *
      * @param  int $serviceId
      * @return int
+     * 
+     * @throws DbFailureException
      */
     public function calculateRemainingPlacesInService(int $serviceId): int
     {

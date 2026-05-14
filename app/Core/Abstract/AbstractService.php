@@ -189,7 +189,7 @@ abstract class AbstractService extends ConstantsCheckerService
             }
         }
         if (!$currentUserRole || !in_array($currentUserRole, $roles, true)) {
-            throw new ForbiddenException(UIMessage: "Accès refusé. Vous ne disposez pas des autorisations nécessaires.");
+            throw new ForbiddenException(message:__METHOD__ . ": Accès non autorisé.", UIMessage: "Accès refusé. Vous ne disposez pas des autorisations nécessaires.");
         }
     }
 }

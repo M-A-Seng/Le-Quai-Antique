@@ -1,6 +1,5 @@
 const formContainer = document.getElementById('form-container');
 const reservationFeedback = document.getElementById('reservation-feedback');
-const userId = document.getElementById('user').value;
 const currentPathname = window.location.pathname;
 
 // Ouvrir le formulaire prérempli
@@ -23,9 +22,9 @@ document.querySelectorAll('.modify-button').forEach(button => {
                 reservationFeedback.style.color = "red";
             }
             else {
-                if (currentPathname !== `/profil/${userId}/reservation/${this.value}/modifier`) {
+                if (currentPathname !== data.url) {
                     // éviter doublons dans l'historique navigateur
-                    history.pushState({}, "", `/profil/${userId}/reservation/${this.value}/modifier`); 
+                    history.pushState({}, "", data.url); 
                 }
                 reservationFeedback.textContent = ""; // efface message d'erreur si existant
                 feedback.textContent = "";
@@ -72,10 +71,10 @@ document.querySelectorAll('.modify-button').forEach(button => {
         });
     })
 })
-// Revenir à la page normale si l'utilisateur ferme le formulaire.
+// Fermer le formulaire.
 document.getElementById('close-form-button')?.addEventListener('click', function()
 {
-    window.location.href = currentPathname;
+    formContainer.style.display = 'none';
 })
 
 const cancelWarning = document.getElementById('cancel-warning');
@@ -89,7 +88,8 @@ document.querySelectorAll('.cancel-button').forEach(button => {
         document.getElementById('submit-cancel').value = this.value;
         document.getElementById('warning-datetime').textContent = this.dataset.datetime;
         document.getElementById('reservation_datetime').value = this.dataset.datetime;
-        document.getElementById('cancel-form').action = `/profil/${userId}/reservation/${this.value}/annuler`;
+        const params = currentPathname.split("/").filter(Boolean);
+        document.getElementById('cancel-form').action = `/${params[0]}/${params[1]}/reservation/${this.value}/annuler`;
         cancelWarning.style.display = "block";
     })
 })

@@ -25,12 +25,17 @@ use App\Services\UserService;
  */
 class ReservationController extends AbstractController
 {
+    private string $baseUrl;
+    private string $pageUrl;
+
     public function __construct(private ReservationService $reservationService, 
                                 private UserService $userService,
                                 RenderService $renderService, 
                                 Logger $logger)
     {
         parent::__construct($renderService, $logger);
+        $this->baseUrl = ($_SESSION['role']->value === 'ADMIN' ? '/admin/' : '/profil/') . $_SESSION['id'];
+        $this->pageUrl = $this->baseUrl . ($_SESSION['role']->value === 'ADMIN' ? '/reservations' : '/mes-reservations');
     }
     
     /**
@@ -49,7 +54,9 @@ class ReservationController extends AbstractController
         $userParam = null;
         if (isset($_SESSION['id']) && isset($_SESSION['role'])) {
             try {
-                $userParam = $this->userService->getUserParameters($_SESSION['id']);
+                if ($_SESSION['role']->value !== 'ADMIN') {
+                    $userParam = $this->userService->getUserParameters($_SESSION['id']);
+                }
             }
             catch (AbstractFrontendException | NotFoundException $e) {
                 echo $e;
@@ -97,7 +104,9 @@ class ReservationController extends AbstractController
             $allergy = isset($data['allergy']) ?
                        (is_array($data['allergy']) ? implode(", ", $data['allergy']) : $data['allergy'])
                        : '';
-            $formaction = $data['action'] === 'update' ? '/profil/'.$_SESSION['id'].'/reservation/'.$data['id'].'/update' : '/reserver';
+            $formaction = $data['action'] === 'update' ? 
+                          $this->baseUrl . '/reservation/'.$data['id'].'/update'
+                          : '/reserver';
             $data['recap'] = [
                 'display' => true,
                 'date' => $local['full_french_format'],
@@ -184,15 +193,15 @@ class ReservationController extends AbstractController
         try {
             $_POST['client_id'] = $_SESSION['id'];
             $this->reservationService->addReservation(1, $_POST); # Actuellement restaurant unique
-            
+
             unset($_SESSION['reservation_data'], $_SESSION['reservation_pending_confirmation']);
 
-            if (strtolower($_SESSION['role']->value) === 'admin') {
+            if ($_SESSION['role']->value === 'ADMIN') {
                 $_SESSION['confirmation_message'] = "Réservation enregistrée avec succès !";
-                return $this->redirect('/admin/' . $_SESSION['id'] . '/reservations');
+                return $this->redirect($this->pageUrl);
             }
             $_SESSION['confirmation_message'] = "Réservation confirmée ! Merci pour votre confiance. Vous pouvez consulter vos réservations directement depuis votre profil ou votre onglet « Mes Réservations ».";
-            return $this->redirect('/profil/' . $_SESSION['id']);
+            return $this->redirect($this->pageUrl);
         } 
         catch (AbstractFrontendException | NotFoundException $e) {
             $error_message = $e;//->getUIMessage();

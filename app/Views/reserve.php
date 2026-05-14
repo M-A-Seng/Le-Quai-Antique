@@ -28,7 +28,7 @@
             <p>Invités : <span id="recap-guests"><?= isset($recap) ? $recap['guest'] : '' ?></span> personnes</p>
             <p>Allergies: <span id="recap-allergy"><?= isset($recap) ? $recap['allergy'] : '' ?></span></p>
             <button type="submit" id="confirm-form-button" formaction="<?= isset($recap['formaction']) ? $recap['formaction'] : '' ?>" name="action" value="reserve">Valider</button>
-            <button onclick="window.location.href='/reserver'">Modifier ma réservation</button>
+            <button type="button" class="close-recap-button">Modifier ma réservation</button>
         </div>
     <?php endif; ?>
 
@@ -46,7 +46,7 @@
         </label><br>
 
         <label for="guest_count">Pour combien de personnes ?* :
-            <input id="guest_count" name="guest_count" type="number" min="1" max="20" 
+            <input id="guest_count" name="guest_count" type="number" min="1" <?= isset($_SESSION['role']) && $_SESSION['role']->value === 'ADMIN' ? '' : 'max="20"' ?> 
                 value="<?= isset($guest_count) ? html($guest_count) : '' ?>" required disabled><br>
             <small>Pour une réservation supérieure à 20 personnes, veuillez appeler au </small>
         </label><br>

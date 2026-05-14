@@ -35,9 +35,7 @@ return [
     ['POST', '/admin/{id}/settings/services',                       'RestaurantServiceController',  'update',   ['requireLogin', 'requireAdmin', 'requirePost&Csrf']],
     ['GET',  '/admin/{id}/reservations',                            'AdminReservationController',   'index',    ['requireLogin', 'requireAdmin']],
     ['GET',  '/admin/{id}/reservations/{date}',                     'AdminReservationController',   'index',    ['requireLogin', 'requireAdmin']],
-    ['GET',  '/admin/{id}/reservation/{reservation_id}',            'AdminReservationController',   'read',     ['requireLogin', 'requireAdmin']],
-    ['GET',  '/admin/{id}/reservation/{reservation_id}/modifier',   'AdminReservationController',   'edit',     ['requireLogin', 'requireAdmin']],
-    ['POST', '/admin/{id}/reservation/{reservation_id}/modifier',   'AdminReservationController',   'update',   ['requireLogin', 'requireAdmin', 'requirePost&Csrf']],
+    ['POST', '/admin/{id}/reservation/{reservation_id}/update',     'UserReservationController',    'update',   ['requireLogin', 'requireAdmin', 'requirePost&Csrf']],
     ['POST', '/admin/{id}/reservation/{reservation_id}/annuler',    'UserReservationController',    'cancel',   ['requireLogin', 'requireAdmin', 'requirePost&Csrf']],
     
     # routes utilisées par AJAX
@@ -47,7 +45,8 @@ return [
     ['POST', '/prepare/reservation',        'ReservationController',        'checkAndPreserveData', ['requirePost&Csrf']],
     ['POST', '/check/reservation',          'ReservationController',        'validateReservation',  ['requirePost&Csrf']],
     ['POST', '/get/reservation',            'UserReservationController',    'edit',                 ['requireLogin', 'requirePost&Csrf']],
-
+    ['POST', '/get/capacity',               'AdminReservationController',   'getServiceCapacity',   ['requireLogin', 'requireAdmin', 'requirePost&Csrf']],
+    
     # Redirection
     ['GET',  '/accueil',                    'RedirectController',           'home'],
     ['GET',  '/welcome',                    'RedirectController',           'home'],

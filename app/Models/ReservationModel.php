@@ -105,31 +105,21 @@ class ReservationModel extends AbstractModel
      * 
      * @param int $restaurantId
      * @param  DateTimeImmutable $datetimeTz | Date avec timezone
-     * @return array
+     * @return ?array
+     * 
+     * @throws DbFailureException
      */
-    public function findReservationsByDate(int $restaurantId, DateTimeImmutable $datetimeTz): array
+    public function findReservationsByDate(int $restaurantId, DateTimeImmutable $datetimeTz): ?array
     {
         $sql = "SELECT 
-                    s.time_of_day,
-                    r.id,
-                    r.service_id,
-                    r.client_id,
-                    r.reservation_date,
-                    r.reservation_time,
-                    r.status,
-                    r.guest_count,
-                    r.client_name,
-                    r.client_tel,
-                    r.allergy,
-                    r.created_at,
-                    r.updated_at
+                    s.service_type, 
+                    r.* 
                 FROM app_front.reservation r
-                JOIN app_back.service s ON s.id = r.service_id
-                WHERE 
-                    s.restaurant_id = :restaurant_id
-                    AND r.reservation_at::date = :reservation_date
-                ORDER BY 
-                    s.service_type, r.reservation_at::time, r.status;";
+                JOIN app_back.service s
+                ON r.service_id = s.id
+                WHERE s.restaurant_id = :restaurant_id
+                AND r.reservation_at::date = :reservation_date
+                ORDER BY s.service_type, r.status, r.reservation_at;";
         $stmt = $this->pdo->prepare($sql);
         try {
             $stmt->execute([
@@ -137,16 +127,13 @@ class ReservationModel extends AbstractModel
                 'reservation_date' => $datetimeTz->format('Y-m-d'),
             ]);
             $result = $stmt->fetchAll(PDO::FETCH_GROUP | PDO::FETCH_ASSOC);
-            if (empty($result)) {
-                throw new NotFoundException(message:__METHOD__ . ": Aucune réservation trouvée pour la date" . $datetimeTz->format('Y-m-d') . "dans le restaurant '$restaurantId'.", UIMessage:"Aucune réservation pour le " . $datetimeTz->format('d/m/Y'));
-            }
-            return $result;
+            return empty($result) ? null : $result;
         } 
         catch (PDOException $e) {
             throw new DbFailureException(__METHOD__ . ": Échec de l'opération: " . $e->getMessage(), 0, $e);
         }
     }
-    
+
     /**
      * updateReservation modifie une réservation existante.
      *
