@@ -5,6 +5,13 @@
 composer.phar
 
 ############################
+# Dépendances JS / Node
+############################
+node_modules/
+dist/
+.vite/
+
+############################
 # Fichiers d'environnement
 ############################
 .env
