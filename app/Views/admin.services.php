@@ -1,4 +1,7 @@
-<?php use function App\html; ?>
+<?php 
+use function App\html;
+use function App\vite_js;
+ ?>
 <h1>Restaurant<br>Le Quai Antique</h1>
 
 <h2>Service du midi</h2>
@@ -54,4 +57,4 @@
     <button type="submit">Se déconnecter</button>
 </form>
 
-<script src="/assets/js/services.script.js" defer></script>
+<?= vite_js('resources/js/pages/admin-services.js') ?>

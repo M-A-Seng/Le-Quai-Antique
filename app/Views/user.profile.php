@@ -1,4 +1,7 @@
-<?php use function App\html; ?>
+<?php 
+use function App\html;
+use function App\vite_js;
+ ?>
 <h1>Mon profil client</h1>
 
 <?php if ($_SESSION['new_user']): ?>
@@ -15,8 +18,7 @@
     <?php require DIR_ROOT . '/app/Views/components/userReservationsDisplay.php' ?>
 
     <a href="/profil/<?= $_SESSION['id'] ?>/mes-reservations">Voir toutes mes réservations</a>
-    <script src="/assets/js/reservation.form.script.js" defer></script>
-    <script src="/assets/js/user.reservation.script.js" defer></script>
+    <?= vite_js('resources/js/pages/user-profile.js') ?>
 <?php elseif (!isset($error_message) || empty($error_message)): ?>
     <p>Vous n'avez pas de réservations prévues pour le moment!</p>
 <?php endif; ?>

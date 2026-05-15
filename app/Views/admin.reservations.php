@@ -1,4 +1,7 @@
-<?php use function App\html; ?>
+<?php 
+use function App\html;
+use function App\vite_js;
+ ?>
 <style>
     .hidden {
         display:none;
@@ -111,4 +114,4 @@
     <p>Aucune réservation enregistrée pour ce jour.</p>
 <?php endif; ?>
 
-<script src="/assets/js/admin.reservation.script.js" defer></script>
+<?= vite_js('resources/js/pages/admin-reservations.js') ?>

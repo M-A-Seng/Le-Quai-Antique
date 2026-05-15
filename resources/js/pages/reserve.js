@@ -1,3 +1,5 @@
+import '../shared/reservation-form.js';
+
 const requireLoginModal = document.getElementById('require-login-modal');
 const formFields = document.getElementById('form-fields');
 const title = document.querySelector('h1');

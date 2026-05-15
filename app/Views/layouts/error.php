@@ -1,4 +1,7 @@
-<?php use function App\html; ?>
+<?php 
+    use function App\html;
+    use function App\vite_js;
+?>
 LAYOUT ERROR PAGE
 
 <?php require_once DIR_ROOT . '/app/Views/components/header.php' ?>
@@ -19,6 +22,8 @@ LAYOUT ERROR PAGE
         <button onclick="location.reload()">Recharger la page</button>
         <button onclick="window.location.href='/'">Page d'accueil</button><br>
     <?php endif; ?>
+
+    <?= vite_js('resources/js/app.js') ?>
 </body>
 
 <?php require_once DIR_ROOT . '/app/Views/components/footer.php' ?>

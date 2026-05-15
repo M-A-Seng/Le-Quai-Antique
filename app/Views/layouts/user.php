@@ -1,4 +1,7 @@
-<?php use function App\html; ?>
+<?php 
+    use function App\html;
+    use function App\vite_js;
+?>
 <p>LAYOUT USER</p>
 
 <?php require_once DIR_ROOT . '/app/Views/components/header.php' ?>
@@ -41,6 +44,7 @@
         <button onclick="window.location.href='/'">Page d'accueil</button><br>
     <?php endif; ?>
    
+    <?= vite_js('resources/js/app.js') ?>
 </body>
 
 <?php require_once DIR_ROOT . '/app/Views/components/footer.php' ?>

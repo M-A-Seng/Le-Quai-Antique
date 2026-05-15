@@ -1,4 +1,7 @@
-<?php use function App\html; ?>
+<?php 
+use function App\html;
+use function App\vite_js;
+ ?>
 
 <h1><?= isset($recap['display']) && $recap['display'] ? 'Vérifiez votre réservation' : 'Réserver une table' ?></h1>
 
@@ -134,5 +137,4 @@
     </div>
 </form>
 
-<script src="/assets/js/reservation.form.script.js" defer></script>
-<script src="/assets/js/reservation.script.js" defer></script>
+<?= vite_js('resources/js/pages/reserve.js') ?>

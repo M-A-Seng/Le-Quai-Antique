@@ -58,10 +58,10 @@ class RestaurantModel extends AbstractModel
     /**
      * getRestaurantById retourne les données du restaurant correspondant à l'id.
      * 
-     * Exception si non trouvé.
-     *
      * @param  int $id
      * @return array
+     * 
+     * @throws NotFoundException
      */
     public function getRestaurantById(int $id): array
     {

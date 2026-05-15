@@ -1,4 +1,7 @@
-<?php use function App\html; ?>
+<?php 
+use function App\html;
+use function App\vite_js;
+ ?>
 <h1>Inscription</h1>
 
 <form method="POST" action="/inscription" target="_self">
@@ -113,4 +116,4 @@
 <p>Vous avez déjà un compte?</p>
 <p><a href="/connexion">Se connecter</a></p>
 
-<script src="/assets/js/signup.script.js" defer></script>
+<?= vite_js('resources/js/pages/signup.js') ?>

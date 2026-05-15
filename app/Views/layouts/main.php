@@ -1,4 +1,7 @@
-<?php use function App\html; ?>
+<?php 
+    use function App\html;
+    use function App\vite_js;
+?>
 <p>DEFAULT LAYOUT</p>
 
 <?php require_once DIR_ROOT . '/app/Views/components/header.php' ?>
@@ -31,6 +34,8 @@
         <button onclick="location.reload()">Recharger la page</button>
         <button onclick="window.location.href='/'">Page d'accueil</button><br>
     <?php endif; ?>
+
+    <?= vite_js('resources/js/app.js') ?>
 </body>
 
 <?php require_once DIR_ROOT . '/app/Views/components/footer.php' ?>

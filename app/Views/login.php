@@ -1,4 +1,7 @@
-<?php use function App\html; ?>
+<?php 
+use function App\html;
+use function App\vite_js;
+ ?>
 <h1>Connexion</h1>
 
 <form action="/connexion" target="_self" method="POST">
@@ -18,4 +21,4 @@
 <p><a href="#">J'ai oublié mon mot de passe</a></p>
 <p><a href="/inscription">Créer un compte</a></p>
 
-<script src="/assets/js/login.script.js" defer></script>
+<?= vite_js('resources/js/pages/login.js') ?>
