@@ -3,8 +3,10 @@
 namespace App\Core;
 
 use App\Config\DbConnection;
+use App\Controllers\AdminMenuSettingsController;
 use App\Controllers\AdminReservationController;
 use App\Controllers\AuthenticationController;
+use App\Controllers\CategoryController;
 use App\Controllers\GalleryController;
 use App\Controllers\HomeController;
 use App\Controllers\MenuController;
@@ -14,15 +16,21 @@ use App\Controllers\ReservationController;
 use App\Controllers\RestaurantServiceController;
 use App\Controllers\UserController;
 use App\Controllers\UserReservationController;
+use App\Models\CategoryModel;
+use App\Models\DishModel;
 use App\Models\OpeningDayModel;
 use App\Models\ReservationModel;
+use App\Models\RestaurantModel;
 use App\Models\RestaurantServiceModel;
 use App\Models\ServiceModel;
 use App\Models\UserModel;
+use App\Services\CategoryService;
 use App\Services\DatetimeService;
+use App\Services\DishService;
 use App\Services\OpeningDayService;
 use App\Services\RenderService;
 use App\Services\ReservationService;
+use App\Services\RestaurantService;
 use App\Services\RestaurantServiceService;
 use App\Services\ServiceService;
 use App\Services\SessionService;
@@ -47,6 +55,9 @@ class DIContainer
     private UserModel $userModel;
     private UserService $userService;
 
+    private RestaurantModel $restaurantModel;
+    private RestaurantService $restaurantService;
+
     private ServiceModel $serviceModel;
     private ServiceService $serviceService;
     private RestaurantServiceModel $restaurantServiceModel;
@@ -57,6 +68,12 @@ class DIContainer
 
     private ReservationModel $reservationModel;
     private ReservationService $reservationService;
+
+    private CategoryModel $categoryModel;
+    private CategoryService $categoryService;
+
+    private DishModel $dishModel;
+    private DishService $dishService;
     
     /**
      * __construct
@@ -79,6 +96,9 @@ class DIContainer
         $this->userModel = new UserModel($this->frontConnection);
         $this->userService = new UserService($this->userModel);
 
+        $this->restaurantModel = new RestaurantModel($this->backConnection);
+        $this->restaurantService = new RestaurantService($this->restaurantModel);
+
         $this->serviceModel = new ServiceModel($this->backConnection);
         $this->restaurantServiceModel = new RestaurantServiceModel($this->backConnection);
         $this->serviceService = new ServiceService($this->serviceModel, $this->restaurantServiceModel, $this->datetimeService);
@@ -89,6 +109,12 @@ class DIContainer
 
         $this->reservationModel = new ReservationModel($this->frontConnection);
         $this->reservationService = new ReservationService($this->reservationModel, $this->datetimeService, $this->serviceService, $this->restaurantServiceModel, $this->openingDayService);
+
+        $this->categoryModel = new CategoryModel($this->backConnection);
+        $this->categoryService = new CategoryService($this->categoryModel, $this->restaurantModel);
+
+        $this->dishModel = new DishModel($this->backConnection);
+        $this->dishService = new DishService($this->dishModel, $this->restaurantModel);
     }
         
     /**
@@ -211,6 +237,26 @@ class DIContainer
     public function getAdminReservationController(): AdminReservationController
     {
         return new AdminReservationController($this->reservationService, $this->serviceService, $this->renderService, $this->logger);
+    }
+    
+    /**
+     * getAdminMenuSettingsController retourne un instance de AdminMenuSettingsController
+     *
+     * @return AdminMenuSettingsController
+     */
+    public function getAdminMenuSettingsController(): AdminMenuSettingsController
+    {
+        return new AdminMenuSettingsController($this->categoryService, $this->renderService, $this->logger);
+    }
+    
+    /**
+     * getCategoryController retourne une instance de CategoryController
+     *
+     * @return CategoryController
+     */
+    public function getCategoryController(): CategoryController
+    {
+        return new CategoryController($this->categoryService, $this->dishService, $this->renderService, $this->logger);
     }
 
     /**

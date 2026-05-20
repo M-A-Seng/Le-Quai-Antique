@@ -19,6 +19,9 @@ use PDOException;
  * - findBy()
  * - update()
  * - delete()
+ * - beginTransaction()
+ * - commit()
+ * - rollBack()
  */
 abstract class AbstractModel extends ConstantsCheckerService
 {
@@ -237,7 +240,15 @@ abstract class AbstractModel extends ConstantsCheckerService
         $params = array_merge($data, ['id' => $id]);
         try {
             $stmt->execute($params);
-            return $stmt->fetch(PDO::FETCH_ASSOC);
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+            $affectedRows = $stmt->rowCount();
+            if ($affectedRows === 0) {
+                return []; // Pas d'erreur réelle, juste rien a changé
+            }
+            if ($result === false) {
+                throw new DbFailureException(__METHOD__ . ": Échec de l'opération.");
+            }
+            return $result;
         } 
         catch (PDOException $e) {
             throw new DbFailureException(__METHOD__ . "Échec de l'opération: " . $e->getMessage(), 0, $e);
@@ -275,6 +286,36 @@ abstract class AbstractModel extends ConstantsCheckerService
         catch (PDOException $e) {
             throw new DbFailureException(__METHOD__ . "Echec de l'opération: " . $e->getMessage(), 0, $e);
         }
+    }
+    
+    /**
+     * beginTransaction place les requetes sql en attente
+     *
+     * @return void
+     */
+    public function beginTransaction(): void
+    {
+        $this->pdo->beginTransaction();
+    }
+    
+    /**
+     * commit valide toutes les requetes sql attrapées dans beginTransaction()
+     *
+     * @return void
+     */
+    public function commit(): void
+    {
+        $this->pdo->commit();
+    }
+    
+    /**
+     * rollBack annule les requetes sql attrapées dans beginTransaction()
+     *
+     * @return void
+     */
+    public function rollBack(): void
+    {
+        $this->pdo->rollBack();
     }
 }
 
