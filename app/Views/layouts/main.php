@@ -4,6 +4,10 @@
 ?>
 <p>DEFAULT LAYOUT</p>
 
+<head>
+    <meta name="csrf-token" content="<?= $_SESSION['csrf_token'] ?>">
+</head>
+
 <?php require_once DIR_ROOT . '/app/Views/components/header.php' ?>
 
 <body>

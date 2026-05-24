@@ -1,4 +1,5 @@
 import '../shared/reservation-form.js';
+import { csrf } from '../app.js';
 
 const requireLoginModal = document.getElementById('require-login-modal');
 const formFields = document.getElementById('form-fields');

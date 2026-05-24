@@ -37,10 +37,13 @@ return [
     ['GET',  '/admin/{id}/reservations/{date}',                     'AdminReservationController',   'index',    ['requireLogin', 'requireAdmin']],
     ['POST', '/admin/{id}/reservation/{reservation_id}/update',     'UserReservationController',    'update',   ['requireLogin', 'requireAdmin', 'requirePost&Csrf']],
     ['POST', '/admin/{id}/reservation/{reservation_id}/annuler',    'UserReservationController',    'cancel',   ['requireLogin', 'requireAdmin', 'requirePost&Csrf']],
-    ['GET',  '/admin/{id}/gestion/{branch}',                        'AdminMenuSettingsController',  'index',    ['requireLogin', 'requireAdmin']],
+    ['GET',  '/admin/{id}/gestion/{branch}',                        'AdminMenuController',          'index',    ['requireLogin', 'requireAdmin']],
     ['POST', '/admin/{id}/creer/categorie',                         'CategoryController',           'create',   ['requireLogin', 'requireAdmin', 'requirePost&Csrf']],
     ['POST', '/admin/{id}/modifier/categorie',                      'CategoryController',           'update',   ['requireLogin', 'requireAdmin', 'requirePost&Csrf']],
     ['POST', '/admin/{id}/supprimer/categorie',                     'CategoryController',           'delete',   ['requireLogin', 'requireAdmin', 'requirePost&Csrf']],
+    ['POST', '/admin/{id}/creer/plat',                              'DishController',               'create',   ['requireLogin', 'requireAdmin', 'requirePost&Csrf']],
+    ['POST', '/admin/{id}/modifier/plat',                           'DishController',               'update',   ['requireLogin', 'requireAdmin', 'requirePost&Csrf']],
+    ['POST', '/admin/{id}/supprimer/plat',                          'DishController',               'delete',   ['requireLogin', 'requireAdmin', 'requirePost&Csrf']],
     
     # routes utilisées par AJAX
     ['POST', '/check/email',                'RegistrationController',       'checkEmail',           ['requirePost&Csrf']],
@@ -52,6 +55,7 @@ return [
     ['POST', '/get/capacity',               'AdminReservationController',   'getServiceCapacity',   ['requireLogin', 'requireAdmin', 'requirePost&Csrf']],
     ['POST', '/check/category',             'CategoryController',           'canDelete',            ['requireLogin', 'requireAdmin', 'requirePost&Csrf']],
     ['POST', '/update/categories-order',    'CategoryController',           'updateOrder',          ['requireLogin', 'requireAdmin', 'requirePost&Csrf']],
+    ['POST', '/update/dishes-order',        'DishController',               'updateOrder',          ['requireLogin', 'requireAdmin', 'requirePost&Csrf']],
     
     # Redirection
     ['GET',  '/accueil',                    'RedirectController',           'home'],

@@ -1,10 +1,12 @@
 import Sortable from 'sortablejs';
+import { csrf } from '../../app.js';
+import { saveElementsOrder } from './index.js';
 
 const categoryFormContainer = document.getElementById('category-form-container');
 // afficher formulaire
 document.getElementById('new-category-button').addEventListener('click', function() 
 {
-    categoryFormContainer.style.display = 'block';
+    categoryFormContainer.classList.remove('hidden');
 })
 
 let activeButton = null;
@@ -12,36 +14,46 @@ let activeButton = null;
 document.querySelectorAll('.category-button').forEach(button => 
 {
     button.addEventListener('click', () => {
-        const input = document.getElementById(`cat-${button.dataset.id}`);
+        const row = button.closest('li');
+        const view = document.getElementById(`view-category-${button.dataset.id}`);
+        const edit = document.getElementById(`edit-category-${button.dataset.id}`);
 
         if (activeButton && activeButton !== button) {
-            const oldInput = document.getElementById(`cat-${activeButton.dataset.id}`);
-            resetInitialState(activeButton, oldInput);
+            const oldRow = activeButton.closest('li');
+            const oldView = document.getElementById(`view-category-${activeButton.dataset.id}`);
+            const oldEdit = document.getElementById(`edit-category-${activeButton.dataset.id}`);
+            resetInitialState(activeButton, oldRow, oldView, oldEdit);
         }
         if (button.textContent === 'Modifier') {
             button.textContent = 'Annuler';
-            input.setAttribute("name", "title");
-            input.removeAttribute("readonly");
+            row.classList.add('no-dragdrop');
             document.querySelectorAll(`.cat-${button.dataset.id}`).forEach(element => {
-                element.style.display = 'inline';
+                element.removeAttribute("disabled");
+                element.classList.remove('hidden');
             })
             activeButton = button;
+            view.classList.add('hidden');
+            edit.classList.remove('hidden');
         } else {
-            resetInitialState(button, input)
+            resetInitialState(button, row, view, edit);
+            activeButton = null;
         }
     })
 })
-function resetInitialState(button, input) {
+function resetInitialState(button, row, view, edit) {
     button.textContent = 'Modifier';
-    input.value = button.dataset.title;
-    input.removeAttribute("name");
-    input.setAttribute("readonly", true);
+    row.classList.remove('no-dragdrop');
     document.querySelectorAll(`.cat-${button.dataset.id}`).forEach(element => {
-        element.style.display = 'none';
+        element.classList.add('hidden');
+        element.setAttribute("disabled", true);
+        if (element.tagName === 'INPUT') {
+            element.value = element.defaultValue;
+        }
     })
+    edit.classList.add('hidden');
+    view.classList.remove('hidden');
 }
 
-const csrf = document.getElementById('csrf_token')?.value;
 const dishesContainer = document.getElementById('dishes-in-category');
 // AJAX check avant suppression categorie
 document.querySelectorAll('.delete-category-button').forEach(button => {
@@ -65,7 +77,7 @@ document.querySelectorAll('.delete-category-button').forEach(button => {
             if ('can_delete' in data && data.can_delete === true) {
                 document.getElementById('delete-category-button').setAttribute('value', button.dataset.id);
                 document.getElementById('category-name').textContent = button.dataset.title;
-                document.getElementById('delete-category').style.display = 'block';
+                document.getElementById('delete-category').classList.remove('hidden');
             } 
             else {
                 const ul = document.createElement('ul');
@@ -76,7 +88,7 @@ document.querySelectorAll('.delete-category-button').forEach(button => {
                 });
                 dishesContainer.innerHTML = '';
                 dishesContainer.appendChild(ul);
-                document.getElementById('cant-delete-category').style.display = 'block';
+                document.getElementById('cant-delete-category').classList.remove('hidden');
             }
         })
         .catch(err => console.error('Erreur :', err));
@@ -84,18 +96,18 @@ document.querySelectorAll('.delete-category-button').forEach(button => {
 })
 
 const categories = document.getElementById('categories');
-const category = document.querySelectorAll('.category');
+// const category = document.querySelectorAll('.category');
 const saveCategoryOrder = document.getElementById('save-category-order');
 // SortableJS changer l'ordre des catégories
 if (categories) {
     const initialOrder = getCategoriesOrder();
     new Sortable(categories, {
-        handle: '.dragdrop',
-        animation: 150,
+        animation: 130,
+        filter: '.no-dragdrop',
+        preventOnFilter: false,
         onEnd: function() {
             const currentOrder = getCategoriesOrder();
-            saveCategoryOrder.style.display = JSON.stringify(initialOrder) !== JSON.stringify(currentOrder) ?
-                                              'block' : 'none';
+            saveCategoryOrder.classList.toggle('hidden', JSON.stringify(initialOrder) === JSON.stringify(currentOrder));
         }
     });
 }
@@ -105,27 +117,6 @@ function getCategoriesOrder() {
 }
 // AJAX Enregistrer l'ordre des catégorie
 saveCategoryOrder?.addEventListener('click', function() {
-
-    fetch('/update/categories-order', {
-        method: 'POST',
-        headers: {
-            "Content-Type": "application/json",
-            "Accept": "application/json",
-            "X-CSRF-Token": csrf
-        },
-        body: JSON.stringify({
-            order: getCategoriesOrder()
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data && data.success === true) {
-            window.location.href = data.redirect;
-        } else {
-            throw new Error(data.message || 'Erreur serveur');
-        }
-    })
-    .catch(err => {
-        console.error('Erreur :', err);
-    });
+    const body = {order: getCategoriesOrder()};
+    saveElementsOrder('/update/categories-order', body, csrf);
 });

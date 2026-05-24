@@ -1,5 +1,6 @@
 import '../shared/reservation-form.js';
 import '../shared/edit-reservation.js';
+import { csrf } from '../app.js';
 
 // Capacité du restaurant en temps réel, actualisation toutes les minutes.
 function fetchServiceCapacity(serviceId, element) {

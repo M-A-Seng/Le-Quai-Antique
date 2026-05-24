@@ -21,7 +21,7 @@ use function App\vite_js;
 <?php endif; ?>
 
 <form action="/check/reservation" target="_self" method="POST" id="form">
-    <input type="hidden" id="csrf_token" name="csrf_token" value="<?= html($_SESSION['csrf_token']) ?>"><br>
+    <input type="hidden" name="csrf_token" value="<?= html($_SESSION['csrf_token']) ?>"><br>
 
     <?php if (isset($_SESSION['id']) && isset($_SESSION['role'])): ?>
         <div id="recap" style="<?= isset($recap['display']) && $recap['display'] ? 'display:block' : 'display:none' ?>">

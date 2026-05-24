@@ -3,10 +3,11 @@
 namespace App\Core;
 
 use App\Config\DbConnection;
-use App\Controllers\AdminMenuSettingsController;
+use App\Controllers\AdminMenuController;
 use App\Controllers\AdminReservationController;
 use App\Controllers\AuthenticationController;
 use App\Controllers\CategoryController;
+use App\Controllers\DishController;
 use App\Controllers\GalleryController;
 use App\Controllers\HomeController;
 use App\Controllers\MenuController;
@@ -114,7 +115,7 @@ class DIContainer
         $this->categoryService = new CategoryService($this->categoryModel, $this->restaurantModel);
 
         $this->dishModel = new DishModel($this->backConnection);
-        $this->dishService = new DishService($this->dishModel, $this->restaurantModel);
+        $this->dishService = new DishService($this->dishModel, $this->categoryModel, $this->restaurantModel);
     }
         
     /**
@@ -242,11 +243,11 @@ class DIContainer
     /**
      * getAdminMenuSettingsController retourne un instance de AdminMenuSettingsController
      *
-     * @return AdminMenuSettingsController
+     * @return AdminMenuController
      */
-    public function getAdminMenuSettingsController(): AdminMenuSettingsController
+    public function getAdminMenuController(): AdminMenuController
     {
-        return new AdminMenuSettingsController($this->categoryService, $this->renderService, $this->logger);
+        return new AdminMenuController($this->categoryService, $this->dishService, $this->renderService, $this->logger);
     }
     
     /**
@@ -257,6 +258,16 @@ class DIContainer
     public function getCategoryController(): CategoryController
     {
         return new CategoryController($this->categoryService, $this->dishService, $this->renderService, $this->logger);
+    }
+    
+    /**
+     * getDishController retourne une instance de DishController
+     *
+     * @return DishController
+     */
+    public function getDishController(): DishController
+    {
+        return new DishController($this->dishService, $this->renderService, $this->logger);
     }
 
     /**

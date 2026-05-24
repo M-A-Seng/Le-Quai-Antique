@@ -1,12 +1,12 @@
 <?php
-# admin.menu.php
+# app/Views/admin-menu/index.php
 use function App\html;
 use function App\vite_js;
  ?>
 <h2>Catégories</h2>
 
 <!-- modal -->
-<div id="cant-delete-category" style="display:none">
+<div id="cant-delete-category" class="hidden">
     <p>Impossible de supprimer cette catégorie tant qu'elle contient des éléments.</p>
     <p>Éléments actuellement présents :</p>
     <div id="dishes-in-category"></div>
@@ -16,9 +16,9 @@ use function App\vite_js;
 
 <button type="button" id="new-category-button">Nouvelle catégorie.</button>
 <!-- modal -->
-<div id="category-form-container" style="display:none">
+<div id="category-form-container" class="hidden">
     <form action="/admin/<?= $_SESSION['id'] ?>/creer/categorie" target="_self" method="POST">
-        <input type="hidden" id="csrf_token" name="csrf_token" value="<?= html($_SESSION['csrf_token']) ?>"><br>
+        <input type="hidden" name="csrf_token" value="<?= html($_SESSION['csrf_token']) ?>"><br>
         <label for="title">Titre: 
             <input type="text" id="title" name="title">
         </label>
@@ -27,11 +27,11 @@ use function App\vite_js;
     </form>
 </div>
 
-<?php if (isset($categories)): ?>
+<?php if (isset($categories) && !empty($categories)): ?>
     <form action="/admin/<?= html($_SESSION['id']) ?>/modifier/categorie" method="POST" target="_self">
-        <input type="hidden" id="csrf_token" name="csrf_token" value="<?= html($_SESSION['csrf_token']) ?>"><br>
+        <input type="hidden"  name="csrf_token" value="<?= html($_SESSION['csrf_token']) ?>"><br>
         <!-- modal -->
-        <div id="delete-category" style="display:none">
+        <div id="delete-category" class="hidden">
             <p>Supprimer la catégorie <strong><span id="category-name"></span></strong> ?</p>
             <p>Cette action est <strong>définitive</strong>. La catégorie n'apparaîtra plus sur la carte du restaurant.</p>
             <button type="submit" id="delete-category-button" name="id" formaction="/admin/<?= $_SESSION['id'] ?>/supprimer/categorie">Supprimer</button>
@@ -41,16 +41,20 @@ use function App\vite_js;
         <ul id="categories">
             <?php foreach ($categories as $row): ?>
             <li class="category" data-id="<?= html($row['id']) ?>">
-                <span class="dragdrop"> ↕ </span>
-                <input type="text" value="<?= html($row['title']) ?>" id="cat-<?= html($row['id']) ?>" readonly>
-                <button type="button" class="category-button" data-id="<?= html($row['id']) ?>" data-title="<?= html($row['title']) ?>">Modifier</button>
-                <button type="submit" class="cat-<?= html($row['id']) ?>" name="id" value="<?= html($row['id']) ?>" style="display:none">Valider</button>
-                <button type="button" class="cat-<?= html($row['id']) ?> delete-category-button" data-id="<?= html($row['id']) ?>" data-title="<?= html($row['title']) ?>" style="display:none">Supprimer la catégorie</button>
+                <span id="view-category-<?= html($row['id']) ?>" class="draggable">
+                    <strong><?= html($row['title']) ?></strong>
+                </span>
+                <span id="edit-category-<?= html($row['id']) ?>" class="hidden">
+                    <input type="text" name="title" value="<?= html($row['title']) ?>" size="30" class="cat-<?= html($row['id']) ?>" maxlength="64" disabled>
+                    <button type="submit" class="cat-<?= html($row['id']) ?> hidden" name="id" value="<?= html($row['id']) ?>" disabled>Valider</button>
+                    <button type="button" class="cat-<?= html($row['id']) ?> delete-category-button hidden" data-id="<?= html($row['id']) ?>" data-title="<?= html($row['title']) ?>" disabled>Supprimer la catégorie</button>
+                </span>
+                <button type="button" class="category-button" data-id="<?= html($row['id']) ?>">Modifier</button>
             </li>
             <?php endforeach; ?>
         </ul>
     </form>
-    <button type="button" id="save-category-order" style="display:none">Enregistrer l'ordre</button>
+    <button type="button" id="save-category-order" class="hidden">Enregistrer l'ordre</button>
 <?php else: ?>
     <p>Vous n'avez pas de catégories enregistrées pour le moment.</p>
 <?php endif; ?>

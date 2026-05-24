@@ -5,7 +5,7 @@ use function App\vite_js;
 <h1>Inscription</h1>
 
 <form method="POST" action="/inscription" target="_self">
-    <input type="hidden" id="csrf_token" name="csrf_token" value="<?= html($_SESSION['csrf_token']) ?>">
+    <input type="hidden" name="csrf_token" value="<?= html($_SESSION['csrf_token']) ?>">
     
     <label for="last_name">Nom* :
         <input id="last_name" name="last_name" type="text" pattern="^[A-Za-zÀ-ÖØ-öø-ÿ' \-]{2,50}$" required>

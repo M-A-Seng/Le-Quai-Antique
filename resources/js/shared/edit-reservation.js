@@ -1,3 +1,5 @@
+import { csrf } from '../app.js';
+
 const formContainer = document.getElementById('form-container');
 const reservationFeedback = document.getElementById('reservation-feedback');
 const currentPathname = window.location.pathname;

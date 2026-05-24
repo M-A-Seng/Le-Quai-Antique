@@ -11,30 +11,25 @@ use App\Exceptions\AbstractFrontendException;
 use App\Exceptions\DbFailureException;
 use App\Exceptions\ForbiddenException;
 use App\Exceptions\NotFoundException;
-use App\Services\CategoryService;
 use App\Services\DishService;
 
 /**
- * CategoryController
+ * DishController
  * 
  * - create()
  * - update()
  * - delete()
- * - canDelete()
  * - updateOrder()
  */
-class CategoryController extends AbstractController
+class DishController extends AbstractController
 {
-    public function __construct(private CategoryService $categoryService, 
-                                private DishService $dishService,
-                                RenderService $renderService, 
-                                Logger $logger)
+    public function __construct(private DishService $dishService, RenderService $renderService, Logger $logger)
     {
         parent::__construct($renderService, $logger);
     }
     
     /**
-     * create nouvelle catégorie
+     * create créer plat
      *
      * @param  array $param
      * @return Response
@@ -48,8 +43,8 @@ class CategoryController extends AbstractController
         }
         unset($_POST['csrf_token']);
         try {
-            $this->categoryService->newCategory(1, $_POST);
-            $confirmation_message = "Catégorie '".$_POST['title']."' créée avec succès!";
+            $this->dishService->newDish(1, $_POST);
+            $confirmation_message = "'".$_POST['title']."' ajouté avec succès!";
         }
         catch (AbstractFrontendException | NotFoundException $e) {
             $error_message = $e->getUIMessage();
@@ -68,11 +63,11 @@ class CategoryController extends AbstractController
             'error_message' => $error_message ?? null,
             'http' => $http ?? null
         ];
-        return $this->redirect("/admin/".$_SESSION['id']."/gestion/categories");
+        return $this->redirect("/admin/".$_SESSION['id']."/gestion/plats");
     }
     
     /**
-     * update modifier une catégorie
+     * update modifier plat
      *
      * @param  array $param
      * @return Response
@@ -86,8 +81,8 @@ class CategoryController extends AbstractController
         }
         unset($_POST['csrf_token']);
         try {
-            $this->categoryService->updateCategory($_POST);
-            $confirmation_message = "Catégorie modifiée avec succès!";
+            $this->dishService->modifyDish($_POST);
+            $confirmation_message = "'".$_POST['title']."' modifié avec succès!";
         }
         catch (AbstractFrontendException | NotFoundException $e) {
             $error_message = $e->getUIMessage();
@@ -106,13 +101,13 @@ class CategoryController extends AbstractController
             'error_message' => $error_message ?? null,
             'http' => $http ?? null
         ];
-        return $this->redirect("/admin/".$_SESSION['id']."/gestion/categories");
+        return $this->redirect("/admin/".$_SESSION['id']."/gestion/plats");
     }
     
     /**
-     * delete supprimer une catégorie
+     * delete supprimer plat
      *
-     * @param  mixed $param
+     * @param  array $param
      * @return Response
      * 
      * @throws ForbiddenException
@@ -122,9 +117,10 @@ class CategoryController extends AbstractController
         if ((int)$param['id'] !== (int)$_SESSION['id']) {
             throw new ForbiddenException(__METHOD__ . ": Utilisateur non reconnu.");
         }
+        unset($_POST['csrf_token']);
         try {
-            $this->categoryService->removeCategory($_POST['id']);
-            $confirmation_message = "Catégorie '".$_POST['title']."' supprimée avec succès!";
+            $this->dishService->deleteDish($_POST['id']);
+            $confirmation_message = "'".$_POST['title']."' supprimé avec succès!";
         }
         catch (AbstractFrontendException | NotFoundException $e) {
             $error_message = $e->getUIMessage();
@@ -143,44 +139,11 @@ class CategoryController extends AbstractController
             'error_message' => $error_message ?? null,
             'http' => $http ?? null
         ];
-        return $this->redirect("/admin/".$_SESSION['id']."/gestion/categories");
+        return $this->redirect("/admin/".$_SESSION['id']."/gestion/plats");
     }
     
     /**
-     * canDelete vérifie si une catégorie est vide pour supprimer (AJAX)
-     *
-     * @return Response
-     */
-    public function canDelete(): Response
-    {
-        $data = json_decode(file_get_contents("php://input"), true);
-        if (!is_array($data) || empty($data['id'])) {
-            return $this->json([
-                'error_message' => 'Requête invalide'
-            ], 400);
-        }
-        $dishes = null;
-        try {
-            $dishes = $this->dishService->getDishesNamesInCategory(1, $data['id']);
-        }
-        catch (AbstractFrontendException | NotFoundException $e) {
-            $data['error_message'] = $e->getUIMessage();
-        }
-        catch (AbstractBackendException $e) {
-            $data['error_message'] = $e->getUIMessage();
-            $http = $e->getHttpCode();
-            if ($e instanceof DbFailureException) {
-                $this->logger->dbError($e->getMessage());
-            } else {
-                $this->logger->error($e->getMessage());
-            }
-        }
-        $data = $dishes === null || empty($dishes) ? ['can_delete' => true] : $dishes;
-        return $this->json($data);
-    }
-    
-    /**
-     * updateOrder modifie l'ordre des catégories (AJAX)
+     * updateOrder modifier l'ordre des plats (AJAX)
      *
      * @return Response
      */
@@ -196,11 +159,11 @@ class CategoryController extends AbstractController
             ]);
         }
         try {
-            $this->categoryService->changeCategoriesOrder($data['order']);
-            $_SESSION['confirmation_message'] = "Catégories mises à jour avec succès!";
+            $this->dishService->changeDishesOrder($data['order']);
+            $_SESSION['confirmation_message'] = "Plats mis à jour avec succès!";
             return $this->json([
                 'success' => true,
-                'redirect' => "/admin/".$_SESSION['id']."/gestion/categories"
+                'redirect' => "/admin/".$_SESSION['id']."/gestion/plats"
             ]);
         }
         catch (AbstractFrontendException | NotFoundException $e) {

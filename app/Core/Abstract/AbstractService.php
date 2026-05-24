@@ -18,7 +18,8 @@ use App\Services\ConstantsCheckerService;
  * - validatePositiveInteger()
  * - trimStringValuesInArray()
  * - checkExpectedKeys()
- * - phoneNumberCheckAndSanitize
+ * - phoneNumberCheckAndSanitize()
+ * - priceCheckAndNormalize()
  * - checkUserLegitimacy()
  */
 abstract class AbstractService extends ConstantsCheckerService
@@ -68,8 +69,8 @@ abstract class AbstractService extends ConstantsCheckerService
             throw new InvalidArrayForDbException 
             (
                 ($checkAllRequiredKeys ?
-                    __METHOD__ . "Clés obligatoires manquantes ou vides: " :
-                    __METHOD__ . "Ces clés ne peuvent pas être vides ou null: ") . implode(', ', $invalidKeys)
+                    __METHOD__ . ": Clés obligatoires manquantes ou vides: " :
+                    __METHOD__ . ": Ces clés ne peuvent pas être vides ou null: ") . implode(', ', $invalidKeys)
             );
         }
     }
@@ -159,6 +160,26 @@ abstract class AbstractService extends ConstantsCheckerService
             }
         }
         return $phoneNumber;
+    }
+    
+    /**
+     * priceCheckAndNormalize
+     *
+     * @param  mixed $price
+     * @return string numérique à 2 décimales
+     * 
+     * @throws DataProcessingException
+     */
+    function priceCheckAndNormalize(mixed $price): string
+    {
+        $value = trim((string)$price);
+        $value = str_replace(['€', ' '], '', $value);
+        $value = str_replace(',', '.', $value);
+
+        if (!is_numeric($value) || !preg_match('/^\d+(?:[.,]\d+)?$/', $value)) {
+            throw new DataProcessingException(__METHOD__ . ": Prix invalide en argument: '$value'. ");
+        }
+        return number_format((float)$value, 2, '.', '');
     }
     
     /**

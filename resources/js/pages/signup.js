@@ -1,3 +1,5 @@
+import { csrf } from '../app.js';
+
 // Vérification email en base de données avec AJAX
 document.getElementById('email').addEventListener('blur', function() 
 {
@@ -5,7 +7,9 @@ document.getElementById('email').addEventListener('blur', function()
     let email = this.value;
     fetch("/check/email", {
         method: "POST",
-        headers: {"Content-Type": "application/json", "Accept": "application/json", "X-CSRF-Token": csrf},
+        headers: {"Content-Type": "application/json", 
+                  "Accept": "application/json", 
+                  "X-CSRF-Token": csrf},
         body: JSON.stringify({ email: email })
     })
     .then(response => response.json())

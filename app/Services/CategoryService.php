@@ -52,7 +52,6 @@ class CategoryService extends AbstractService
             throw new InvalidFieldException("Veuillez renseigner les champs requis.");
         }
         $this->validatePositiveInteger($restaurantId);
-        $this->restaurantModel->getRestaurantById($restaurantId);
         $data['position'] = $this->getCategoryCount($restaurantId) + 1;
 
         $this->checkExpectedKeys($this->categoryExpectedInput, $data, false);
@@ -111,6 +110,7 @@ class CategoryService extends AbstractService
      */
     public function changeCategoriesOrder(array $data): bool
     {
+        $this->checkUserLegitimacy(roles:[Role::ADMIN]);
         if (!array_is_list($data)) {
             throw new DataProcessingException(__METHOD__ . ": Liste attendue en paramètre");
         }

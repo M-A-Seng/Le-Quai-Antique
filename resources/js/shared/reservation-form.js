@@ -1,4 +1,5 @@
-const csrf = document.getElementById('csrf_token').value;
+import { csrf } from '../app.js';
+
 const form = document.getElementById('form');
 const date = document.getElementById('reservation_date');
 const time = document.getElementById('reservation_time');

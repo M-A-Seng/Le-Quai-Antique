@@ -55,7 +55,7 @@ abstract class AbstractModel extends ConstantsCheckerService
     private function filterAllowedColumns(string $className, array|string $data): array|string
     {
         if (empty($data)) {
-            throw new InvalidArrayForDbException(__METHOD__ . "Le deuxième argument est vide: Au moins une colonne est attendue.");
+            throw new InvalidArrayForDbException(__METHOD__ . ": Le deuxième argument est vide: Au moins une colonne est attendue.");
         }
         $columns = is_string($data) ? [$data] : (array_is_list($data) ? $data : array_keys($data));
 
@@ -66,7 +66,7 @@ abstract class AbstractModel extends ConstantsCheckerService
 
         if (!empty($unknownColumns)) {
             throw new InvalidArrayForDbException(
-                __METHOD__ . 'Colonnes inconnues ou invalides: ' . implode(', ', $unknownColumns)
+                __METHOD__ . ': Colonnes inconnues ou invalides: ' . implode(', ', $unknownColumns)
             );
         }
         return $data;
@@ -86,7 +86,7 @@ abstract class AbstractModel extends ConstantsCheckerService
         $forbiddenColumns = array_intersect(array_keys($data), $protectedColumns);
 
         if (!empty($forbiddenColumns)) {
-            throw new InvalidArrayForDbException(__METHOD__ . "Accès refusé pour les colonnes : " . implode(", ", $forbiddenColumns));
+            throw new InvalidArrayForDbException(__METHOD__ . ": Accès refusé pour les colonnes : " . implode(", ", $forbiddenColumns));
         }
     }
 
@@ -102,7 +102,7 @@ abstract class AbstractModel extends ConstantsCheckerService
     protected function insert(array $data): array
     {
         if (empty($data) || array_is_list($data)) {
-            throw new DataProcessingException(__METHOD__ . "Tableau associatif attendu en paramètre de insert().");
+            throw new DataProcessingException(__METHOD__ . ": Tableau associatif attendu en paramètre de insert().");
         }
         $data = $this->filterAllowedColumns(static::class, $data);
 
@@ -116,7 +116,7 @@ abstract class AbstractModel extends ConstantsCheckerService
             return $stmt->fetch(PDO::FETCH_ASSOC);
         } 
         catch (PDOException $e) {
-            throw new DbFailureException(__METHOD__ . "Echec de l'opération: " . $e->getMessage(), 0, $e);
+            throw new DbFailureException(__METHOD__ . ": Echec de l'opération: " . $e->getMessage(), 0, $e);
         }
     }
     
@@ -136,7 +136,7 @@ abstract class AbstractModel extends ConstantsCheckerService
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } 
         catch (PDOException $e) {
-            throw new DbFailureException(__METHOD__ . "Echec de l'opération: " . $e->getMessage(), 0, $e);
+            throw new DbFailureException(__METHOD__ . ": Echec de l'opération: " . $e->getMessage(), 0, $e);
         }
     }
         
@@ -213,10 +213,10 @@ abstract class AbstractModel extends ConstantsCheckerService
     protected function update(int $id, array $data): array
     {
         if (empty($data) || empty($id)) {
-            throw new DataProcessingException(__METHOD__ . "Veuillez passer les arguments demandés en paramètre.");
+            throw new DataProcessingException(__METHOD__ . ": Veuillez passer les arguments demandés en paramètre.");
         }
         if (array_is_list($data)) {
-            throw new DataProcessingException(__METHOD__ . "Tableau associatif attentdu en deuxième paramètre.");
+            throw new DataProcessingException(__METHOD__ . ": Tableau associatif attentdu en deuxième paramètre.");
         }
         $this->filterAllowedColumns(static::class, array_keys($data));
 
@@ -251,7 +251,7 @@ abstract class AbstractModel extends ConstantsCheckerService
             return $result;
         } 
         catch (PDOException $e) {
-            throw new DbFailureException(__METHOD__ . "Échec de l'opération: " . $e->getMessage(), 0, $e);
+            throw new DbFailureException(__METHOD__ . ": Échec de l'opération: " . $e->getMessage(), 0, $e);
         }
     }
     
@@ -267,7 +267,7 @@ abstract class AbstractModel extends ConstantsCheckerService
     protected function delete(array $conditions): int
     {
         if (empty($conditions) || array_is_list($conditions)) {
-            throw new DataProcessingException(__METHOD__ . 'Tableau associatif attendu en paramètre de delete().');
+            throw new DataProcessingException(__METHOD__ . ': Tableau associatif attendu en paramètre de delete().');
         }
         $this->filterAllowedColumns(static::class, array_keys($conditions));
 
@@ -284,7 +284,7 @@ abstract class AbstractModel extends ConstantsCheckerService
             return $stmt->rowCount();
         } 
         catch (PDOException $e) {
-            throw new DbFailureException(__METHOD__ . "Echec de l'opération: " . $e->getMessage(), 0, $e);
+            throw new DbFailureException(__METHOD__ . ": Echec de l'opération: " . $e->getMessage(), 0, $e);
         }
     }
     
