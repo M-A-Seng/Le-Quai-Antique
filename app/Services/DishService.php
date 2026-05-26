@@ -108,7 +108,7 @@ class DishService extends AbstractService
      * @param  int $restaurantId
      * @return array|null
      */
-    public function getAllRestaurantDishes(int $restaurantId): ?array
+    public function getRestaurantDishes(int $restaurantId): ?array
     {
         $this->checkUserLegitimacy(roles:[Role::ADMIN]);
         $this->validatePositiveInteger($restaurantId);

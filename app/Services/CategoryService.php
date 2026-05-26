@@ -134,7 +134,7 @@ class CategoryService extends AbstractService
      * @param  int $restaurantId
      * @return int
      */
-    public function getCategoryCount(int $restaurantId): int
+    private function getCategoryCount(int $restaurantId): int
     {
         $this->validatePositiveInteger($restaurantId);
         $this->restaurantModel->getRestaurantById($restaurantId);

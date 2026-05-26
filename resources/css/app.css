@@ -7,3 +7,9 @@
 .draggable {
     cursor: move;
 }
+.description {
+    white-space: pre-line;
+}
+details {
+    display: inline-block;
+}

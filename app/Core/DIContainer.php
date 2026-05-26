@@ -15,6 +15,7 @@ use App\Controllers\RedirectController;
 use App\Controllers\RegistrationController;
 use App\Controllers\ReservationController;
 use App\Controllers\RestaurantServiceController;
+use App\Controllers\SetMenuController;
 use App\Controllers\UserController;
 use App\Controllers\UserReservationController;
 use App\Models\CategoryModel;
@@ -24,6 +25,7 @@ use App\Models\ReservationModel;
 use App\Models\RestaurantModel;
 use App\Models\RestaurantServiceModel;
 use App\Models\ServiceModel;
+use App\Models\SetMenuModel;
 use App\Models\UserModel;
 use App\Services\CategoryService;
 use App\Services\DatetimeService;
@@ -35,6 +37,7 @@ use App\Services\RestaurantService;
 use App\Services\RestaurantServiceService;
 use App\Services\ServiceService;
 use App\Services\SessionService;
+use App\Services\SetMenuService;
 use App\Services\UserService;
 
 /**
@@ -75,6 +78,9 @@ class DIContainer
 
     private DishModel $dishModel;
     private DishService $dishService;
+
+    private SetMenuModel $setMenuModel;
+    private SetMenuService $setMenuService;
     
     /**
      * __construct
@@ -115,7 +121,10 @@ class DIContainer
         $this->categoryService = new CategoryService($this->categoryModel, $this->restaurantModel);
 
         $this->dishModel = new DishModel($this->backConnection);
-        $this->dishService = new DishService($this->dishModel, $this->categoryModel, $this->restaurantModel);
+        $this->dishService = new DishService($this->dishModel, $this->categoryModel);
+
+        $this->setMenuModel = new SetMenuModel($this->backConnection);
+        $this->setMenuService = new SetMenuService($this->setMenuModel);
     }
         
     /**
@@ -247,7 +256,7 @@ class DIContainer
      */
     public function getAdminMenuController(): AdminMenuController
     {
-        return new AdminMenuController($this->categoryService, $this->dishService, $this->renderService, $this->logger);
+        return new AdminMenuController($this->categoryService, $this->dishService, $this->setMenuService, $this->renderService, $this->logger);
     }
     
     /**
@@ -268,6 +277,16 @@ class DIContainer
     public function getDishController(): DishController
     {
         return new DishController($this->dishService, $this->renderService, $this->logger);
+    }
+    
+    /**
+     * getSetMenuController retourne une instance de SetMenuController
+     *
+     * @return SetMenuController
+     */
+    public function getSetMenuController(): SetMenuController
+    {
+        return new SetMenuController($this->setMenuService, $this->renderService, $this->logger);
     }
 
     /**

@@ -44,6 +44,9 @@ return [
     ['POST', '/admin/{id}/creer/plat',                              'DishController',               'create',   ['requireLogin', 'requireAdmin', 'requirePost&Csrf']],
     ['POST', '/admin/{id}/modifier/plat',                           'DishController',               'update',   ['requireLogin', 'requireAdmin', 'requirePost&Csrf']],
     ['POST', '/admin/{id}/supprimer/plat',                          'DishController',               'delete',   ['requireLogin', 'requireAdmin', 'requirePost&Csrf']],
+    ['POST', '/admin/{id}/creer/menu',                              'SetMenuController',            'create',   ['requireLogin', 'requireAdmin', 'requirePost&Csrf']],
+    ['POST', '/admin/{id}/modifier/menu',                           'SetMenuController',            'update',   ['requireLogin', 'requireAdmin', 'requirePost&Csrf']],
+    ['POST', '/admin/{id}/supprimer/menu',                          'SetMenuController',            'delete',   ['requireLogin', 'requireAdmin', 'requirePost&Csrf']],
     
     # routes utilisées par AJAX
     ['POST', '/check/email',                'RegistrationController',       'checkEmail',           ['requirePost&Csrf']],
@@ -56,6 +59,7 @@ return [
     ['POST', '/check/category',             'CategoryController',           'canDelete',            ['requireLogin', 'requireAdmin', 'requirePost&Csrf']],
     ['POST', '/update/categories-order',    'CategoryController',           'updateOrder',          ['requireLogin', 'requireAdmin', 'requirePost&Csrf']],
     ['POST', '/update/dishes-order',        'DishController',               'updateOrder',          ['requireLogin', 'requireAdmin', 'requirePost&Csrf']],
+    ['POST', '/update/menus-order',         'SetMenuController',            'updateOrder',          ['requireLogin', 'requireAdmin', 'requirePost&Csrf']],
     
     # Redirection
     ['GET',  '/accueil',                    'RedirectController',           'home'],

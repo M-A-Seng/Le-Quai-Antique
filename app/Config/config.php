@@ -24,5 +24,5 @@ session_set_cookie_params([
     'domain' => '',
     'httponly' => true,
     'secure' => false,   // Mettre true en prod
-    'samesite' => 'Strict'
+    // 'samesite' => 'Strict'
 ]);

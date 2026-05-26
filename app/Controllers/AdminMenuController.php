@@ -8,6 +8,7 @@ use App\Core\Response;
 use App\Services\CategoryService;
 use App\Services\DishService;
 use App\Services\RenderService;
+use App\Services\SetMenuService;
 
 /**
  * AdminMenuController
@@ -18,6 +19,7 @@ class AdminMenuController extends AbstractController
 {
     public function __construct(private CategoryService $categoryService,
                                 private DishService $dishService, 
+                                private SetMenuService $setMenusService,
                                 RenderService $renderService, 
                                 Logger $logger)
     {
@@ -53,13 +55,15 @@ class AdminMenuController extends AbstractController
                     return new Response($content, 404, ['Content-Type' => 'text/html']);
             }
         }
-        $dishes = $this->dishService->getAllRestaurantDishes(1);
+        $dishes = $this->dishService->getRestaurantDishes(1);
         $categories = $this->categoryService->getRestaurantCategories(1);
+        $setmenus = $this->setMenusService->getRestaurantMenus(1);
 
         $data = [
             'default' => $default,
             'dishes' => $dishes,
             'categories' => $categories,
+            'setmenus' => $setmenus
         ];
         if (isset($_SESSION['AdminMenuController_index'])) {
             $data = array_merge($data, $_SESSION['AdminMenuController_index']);
