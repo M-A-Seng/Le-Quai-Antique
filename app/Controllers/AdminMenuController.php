@@ -5,6 +5,10 @@ namespace App\Controllers;
 use App\Core\Abstract\AbstractController;
 use App\Core\Logger;
 use App\Core\Response;
+use App\Exceptions\AbstractBackendException;
+use App\Exceptions\AbstractFrontendException;
+use App\Exceptions\DbFailureException;
+use App\Exceptions\NotFoundException;
 use App\Services\CategoryService;
 use App\Services\DishService;
 use App\Services\RenderService;
@@ -41,7 +45,7 @@ class AdminMenuController extends AbstractController
                 case 'categories':
                     $default = 'categories';
                     break;
-                
+            
                 case 'plats':
                     $default = 'dishes';
                     break;
@@ -55,16 +59,27 @@ class AdminMenuController extends AbstractController
                     return new Response($content, 404, ['Content-Type' => 'text/html']);
             }
         }
-        $dishes = $this->dishService->getRestaurantDishes(1);
-        $categories = $this->categoryService->getRestaurantCategories(1);
-        $setmenus = $this->setMenusService->getRestaurantMenus(1);
-
-        $data = [
-            'default' => $default,
-            'dishes' => $dishes,
-            'categories' => $categories,
-            'setmenus' => $setmenus
-        ];
+        $data = null;
+        try {
+            $data = [
+                'default' => $default,
+                'dishes' => $this->dishService->getRestaurantDishes(1),
+                'categories' => $this->categoryService->getRestaurantCategories(1),
+                'setmenus' => $this->setMenusService->getRestaurantMenus(1)
+            ];
+        }
+        catch (AbstractFrontendException | NotFoundException $e) {
+            $data['error_message'] = $e->getUIMessage();
+        }
+        catch (AbstractBackendException $e) {
+            $data['error_message'] = $e->getUIMessage();
+            $http = $e->getHttpCode();
+            if ($e instanceof DbFailureException) {
+                $this->logger->dbError($e->getMessage());
+            } else {
+                $this->logger->error($e->getMessage());
+            }
+        }
         if (isset($_SESSION['AdminMenuController_index'])) {
             $data = array_merge($data, $_SESSION['AdminMenuController_index']);
             $http = $_SESSION['AdminMenuController_index']['http'] ?? $http;

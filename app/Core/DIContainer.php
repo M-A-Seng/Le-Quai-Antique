@@ -166,7 +166,7 @@ class DIContainer
      */
     public function getMenuController(): MenuController
     {
-        return new MenuController($this->renderService, $this->logger);
+        return new MenuController($this->dishService, $this->setMenuService, $this->renderService, $this->logger);
     }
     
     /**
