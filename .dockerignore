@@ -1,5 +1,4 @@
 # Environnement
-docker/
 .env
 .env.*
 
@@ -7,15 +6,18 @@ docker/
 .git
 .gitignore
 
+# Dépendances
+vendor/
+node_modules/
+
 # Fichiers temporaires
 cache/
 tmp/
-*.log
 *.tmp
 
-# Dépendances
-vendor/
-
-# Autre
+# Docs inutiles en image
 docs/
 *.md
+
+# Tests locaux
+phpunit.xml.bak

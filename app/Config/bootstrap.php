@@ -1,14 +1,26 @@
 <?php
 
-namespace App\Config;
 
 use App\Core\DIContainer;
 use App\Core\Response;
 use App\Services\RenderService;
-use Throwable;
+use Dotenv\Dotenv;
+
+# Chargement autmatique des dépendances dans les fichers php
+require_once DIR_ROOT . '/vendor/autoload.php';
 
 # Fonctions d'aide (helpers)
 require_once DIR_ROOT . '/app/helpers.php';
+
+# chargement des variables d'environnement
+$dotenv = Dotenv::createImmutable(DIR_ROOT);
+# dev
+$dotenv->load();
+# prod
+// $dotenv->safeLoad();
+
+# Variable globale, environnement dev ou prod
+define('APPENV', $_ENV['APP_ENV'] ?? null);
 
 # Session
 session_start();
@@ -17,7 +29,7 @@ if (!isset($_SESSION['csrf_token'])) {
 }
 
 # Gestion des Exceptions non prévues
-set_exception_handler(function (Throwable $e) 
+set_exception_handler(function (\Throwable $e) 
 {
     $logMessage = "[" . date('Y-m-d H:i:s') . "] "
                 . $e->getMessage() . " in "

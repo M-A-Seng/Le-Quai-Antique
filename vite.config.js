@@ -17,9 +17,11 @@ export default defineConfig({
                 signup: 'resources/js/pages/signup.js',
                 login: 'resources/js/pages/login.js',
                 reserve: 'resources/js/pages/reserve.js',
+                userProfile: 'resources/js/pages/user-profile.js',
                 userReservations: 'resources/js/pages/user-reservations.js',
                 adminService: 'resources/js/pages/admin-service.js',
-                adminReservations: 'resources/js/pages/admin-reservations.js'
+                adminReservations: 'resources/js/pages/admin-reservations.js',
+                adminMenu: 'resources/js/pages/admin-menu/index.js'
             },
             // noms fichiers après build
             output: {

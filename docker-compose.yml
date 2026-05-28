@@ -22,15 +22,8 @@ services:
     build:
       context: .
       dockerfile: docker/php/Dockerfile
-    env_file:
-      - .env
     volumes:
-      - ./app:/var/www/html/app # backend
-      - ./public:/var/www/html/public # frontend
-      - ./composer.json:/var/www/html/composer.json # synchroniser composer docker/machine
-      - ./composer.lock:/var/www/html/composer.lock # synchroniser composer docker/machine
-      - ./logs:/var/www/html/logs # Deboggage, DEV uniquement
-      - /var/www/html/vendor # volume anonyme pour vendor
+      - .:/var/www/html
       - ./docker/php/opcache.${APP_ENV}.ini:/usr/local/etc/php/conf.d/10-opcache.ini  # Caching php pour performances
     expose:
       - "9000"

@@ -7,6 +7,7 @@ RUN apt-get update && apt-get install -y \
     libpq-dev \
     libonig-dev \
     libssl-dev \
+    curl \
     && docker-php-ext-install \
         pdo_pgsql \
         mbstring \
@@ -18,7 +19,7 @@ WORKDIR /var/www/html
 # Installer php composer directement dans l'image
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-COPY composer.json ./
+COPY composer.json composer.lock ./
 
 # Installer autoload directement dans l'image
 RUN composer install --no-dev --optimize-autoloader
