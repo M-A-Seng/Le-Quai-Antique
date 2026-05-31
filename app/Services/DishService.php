@@ -7,7 +7,6 @@ use App\Enums\Role;
 use App\Exceptions\DataProcessingException;
 use App\Models\CategoryModel;
 use App\Models\DishModel;
-use App\Models\RestaurantModel;
 use Throwable;
 
 /**

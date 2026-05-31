@@ -1,4 +1,6 @@
-<?php use function App\html; ?>
+<?php
+use function App\Helpers\html;
+  ?>
 <?php foreach ($reservations as $reservation): ?>
     <div>
         <div class="">

@@ -1,13 +1,13 @@
 <?php
 # app/Views/admin-menu/index.php
-use function App\html;
+use function App\Helpers\html;
  ?>
 <h2>Plats à la carte</h2>
 
 <!-- nouveau plat -->
 <button type="button" class="open-container" data-container-id="new-dish-container">Ajouter un plat</button>
 <div id="new-dish-container" class="hidden">
-    <form class="new-element-form" 
+    <form class="form-check-validity" 
           data-submit-button="submit-dish" 
           action="/admin/<?= html($_SESSION['id']) ?>/creer/plat" method="POST" target="_self">
 

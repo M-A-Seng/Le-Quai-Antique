@@ -9,6 +9,16 @@ use App\Exceptions\InvalidFieldException;
 use App\Models\SetMenuModel;
 use Throwable;
 
+/**
+ * SetMenuService
+ * 
+ * - newMenu()
+ * - getRestaurantMenus()
+ * - ModifyMenu()
+ * - changeMenuOrder()
+ * - getMenuCount()
+ * - removeMenu()
+ */
 class SetMenuService extends AbstractService
 {
     protected const NOT_NULL_COLUMNS = [
@@ -28,7 +38,16 @@ class SetMenuService extends AbstractService
     ];
 
     public function __construct(private SetMenuModel $setMenuModel) {}
-
+    
+    /**
+     * newMenu ajouter menu
+     *
+     * @param  int $restaurantId
+     * @param  array $data
+     * @return array
+     * 
+     * @throws InvalidFieldException
+     */
     public function newMenu(int $restaurantId, array $data): array
     {
         $this->checkUserLegitimacy(roles:[Role::ADMIN]);
@@ -48,7 +67,13 @@ class SetMenuService extends AbstractService
         $this->validateNotNullKeys(static::class, $table, true);
         return $this->setMenuModel->createMenu($table);
     }
-
+    
+    /**
+     * getRestaurantMenus retourne tous les menus
+     *
+     * @param  int $restaurantId
+     * @return array
+     */
     public function getRestaurantMenus(int $restaurantId): ?array
     {
         $this->checkUserLegitimacy(roles:[Role::ADMIN]);
@@ -56,7 +81,15 @@ class SetMenuService extends AbstractService
 
         return $this->setMenuModel->findAllMenus($restaurantId);
     }
-
+    
+    /**
+     * ModifyMenu modifier un menu
+     *
+     * @param  array $data
+     * @return array
+     * 
+     * @throws InvalidFieldException
+     */
     public function ModifyMenu(array $data): array
     {
         $this->checkUserLegitimacy(roles:[Role::ADMIN]);
@@ -74,7 +107,16 @@ class SetMenuService extends AbstractService
         $this->validateNotNullKeys(static::class, $table);
         return $this->setMenuModel->updateMenu($data['id'], $table);
     }
-
+    
+    /**
+     * changeMenuOrder modifier l'ordre des menus
+     *
+     * @param  array $data
+     * @return bool
+     * 
+     * @throws DataProcessingException
+     * @throws Throwable
+     */
     public function changeMenuOrder(array $data): bool
     {
         $this->checkUserLegitimacy(roles:[Role::ADMIN]);
@@ -94,7 +136,13 @@ class SetMenuService extends AbstractService
             throw $e;
         }
     }
-
+    
+    /**
+     * getMenuCount compter nombre de menu
+     *
+     * @param  int $restaurantId
+     * @return int
+     */
     private function getMenuCount(int $restaurantId): int
     {
         $this->checkUserLegitimacy(roles:[Role::ADMIN]);
@@ -102,7 +150,13 @@ class SetMenuService extends AbstractService
 
         return $this->setMenuModel->countMenus($restaurantId);
     }
-
+    
+    /**
+     * removeMenu retirer menu
+     *
+     * @param  int $menuId
+     * @return int
+     */
     public function removeMenu(int $menuId): int
     {
         $this->checkUserLegitimacy(roles:[Role::ADMIN]);

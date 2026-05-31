@@ -20,6 +20,7 @@ use App\Controllers\UserController;
 use App\Controllers\UserReservationController;
 use App\Models\CategoryModel;
 use App\Models\DishModel;
+use App\Models\GalleryModel;
 use App\Models\OpeningDayModel;
 use App\Models\ReservationModel;
 use App\Models\RestaurantModel;
@@ -27,9 +28,11 @@ use App\Models\RestaurantServiceModel;
 use App\Models\ServiceModel;
 use App\Models\SetMenuModel;
 use App\Models\UserModel;
+use App\Services\Api\CloudinaryService;
 use App\Services\CategoryService;
 use App\Services\DatetimeService;
 use App\Services\DishService;
+use App\Services\GalleryService;
 use App\Services\OpeningDayService;
 use App\Services\RenderService;
 use App\Services\ReservationService;
@@ -38,6 +41,7 @@ use App\Services\RestaurantServiceService;
 use App\Services\ServiceService;
 use App\Services\SessionService;
 use App\Services\SetMenuService;
+use App\Services\UploadService;
 use App\Services\UserService;
 
 /**
@@ -81,6 +85,12 @@ class DIContainer
 
     private SetMenuModel $setMenuModel;
     private SetMenuService $setMenuService;
+
+    private CloudinaryService $cloudinary; # API
+    private UploadService $uploadService;
+
+    private GalleryModel $galleryModel;
+    private GalleryService $galleryService;
     
     /**
      * __construct
@@ -125,6 +135,12 @@ class DIContainer
 
         $this->setMenuModel = new SetMenuModel($this->backConnection);
         $this->setMenuService = new SetMenuService($this->setMenuModel);
+
+        $this->cloudinary = new CloudinaryService();
+        $this->uploadService = new UploadService($this->cloudinary);
+
+        $this->galleryModel = new GalleryModel($this->backConnection);
+        $this->galleryService = new GalleryService($this->galleryModel, $this->uploadService);
     }
         
     /**
@@ -176,7 +192,7 @@ class DIContainer
      */
     public function getGalleryController(): GalleryController
     {
-        return new GalleryController($this->renderService, $this->logger);
+        return new GalleryController($this->galleryService, $this->renderService, $this->logger);
     }
     
     /**

@@ -1,16 +1,7 @@
-<?php 
-use function App\html;
-use function App\vite_js;
+<?php
+use function App\Helpers\html;
+use function App\Helpers\vite_js;
  ?>
-<style>
-    .hidden {
-        display:none;
-    }
-    h2 {
-        display:inline;
-    }
-</style>
-
 <h1>Réservations</h1>
 
 <div>

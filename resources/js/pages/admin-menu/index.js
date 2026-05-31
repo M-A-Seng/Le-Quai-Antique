@@ -1,8 +1,7 @@
-import Sortable from 'sortablejs';
-import { csrf } from '../../app.js';
+import '../../shared/reorder.js';
 import './categories.js';
-// import './dishes.js';
-// import './setmenus.js';
+// import './dishes.js'; // vide
+// import './setmenus.js'; // vide
 
 // swith branches catégorie/plats/menus
 document.querySelectorAll('.branch-button')?.forEach(button => {
@@ -15,34 +14,6 @@ document.querySelectorAll('.branch-button')?.forEach(button => {
         document.getElementById(button.dataset.branchId).classList.remove('hidden');
     })
 })
-
-// ouvrir conteneur
-document.querySelectorAll('.open-container').forEach(element => {
-    element.addEventListener('click', () => {
-        const container = document.getElementById(element.dataset.containerId);
-        if (container) {
-            container.classList.remove('hidden');
-        }
-    });
-});
-// fermer conteneur
-document.querySelectorAll('.close-container').forEach(element => {
-    element.addEventListener('click', () => {
-        const container = document.getElementById(element.dataset.containerId);
-        if (container) {
-            container.classList.add('hidden');
-        }
-    });
-});
-
-// formulaire nouveau catégorie/plats/menus
-document.querySelectorAll('.new-element-form').forEach(form => {
-    const submitButton = document.getElementById(form.dataset.submitButton);
-
-    form.addEventListener('input', () => {
-        submitButton.disabled = !form.checkValidity();
-    });
-});
 
 // basculer view/edit des éléments de liste catégorie/plats/menus
 let activeButton = null;
@@ -99,61 +70,6 @@ function resetListInitialState(button)
     row.classList.remove('no-dragdrop');
     edit.classList.add('hidden');
     view.classList.remove('hidden');
-}
-
-// drag & drop + display bouton save
-document.querySelectorAll('.sortable')?.forEach(list => {
-    const initialOrder = getListOrder(list.dataset.liClassname);
-    const saveButton = document.getElementById(list.dataset.saveButtonId);
-    
-    new Sortable(list, {
-        animation: 130,
-        filter: '.no-dragdrop',
-        preventOnFilter: false,
-        onEnd: function() {
-            const currentOrder = getListOrder(list.dataset.liClassname);
-            saveButton.classList.toggle('hidden', JSON.stringify(initialOrder) === JSON.stringify(currentOrder));
-        }
-    });
-})
-
-// retourne la liste des éléments dans l'ordre html
-function getListOrder(li_className) {
-    return [...document.querySelectorAll(`.${li_className}`)]
-        .map(element => element.dataset.id);
-}
-
-// sauvegarder l'ordre des listes
-document.querySelectorAll('.save-list-order').forEach(button => {
-    button.addEventListener('click', () => {
-        saveElementsOrder(button.dataset.url, {order: getListOrder(button.dataset.liClassname)}, csrf);
-    })
-})
-
-// sauvegarder l'ordre des éléments (après drag & drop)
-function saveElementsOrder(url, body, csrf)
-{
-    return fetch(url, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'X-CSRF-Token': csrf
-        },
-        body: JSON.stringify(body)
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data && data.success === true) {
-            window.location.href = data.redirect;
-        } else {
-            throw new Error(data.message || 'Erreur serveur');
-        }
-    })
-    .catch(err => {
-        console.error('Erreur :', err);
-        throw err;
-    });
 }
 
 // Afficher modal confirmation de suppression

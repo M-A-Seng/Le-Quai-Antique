@@ -1,10 +1,10 @@
-<?php 
-use function App\html;
-use function App\vite_js;
+<?php
+use function App\Helpers\html;
+use function App\Helpers\vite_js;
  ?>
 <h1>Connexion</h1>
 
-<form action="/connexion" target="_self" method="POST">
+<form action="/connexion" target="_self" method="POST" class="form-check-validity" data-submit-button="submit-login">
     <input type="hidden" name="csrf_token" value="<?= html($_SESSION['csrf_token']) ?>"><br>
     <label for="email">Email :
         <input id="email" name="email" type="email" required>
@@ -15,7 +15,7 @@ use function App\vite_js;
         <span id="password-feedback"></span>
     </label><br>
 
-    <button type="submit" id="submit-button" disabled>Se connecter</button>
+    <button type="submit" id="submit-login" disabled>Se connecter</button>
 </form>
 
 <p><a href="#">J'ai oublié mon mot de passe</a></p>

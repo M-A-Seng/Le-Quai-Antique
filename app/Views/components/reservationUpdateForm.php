@@ -1,4 +1,6 @@
-<?php use function App\html; ?>
+<?php
+use function App\Helpers\html;
+  ?>
 <div id="cancel-warning" style="display:none">
     <button class="close-warning-button">✖</button>
     <p>Annuler la réservation du <span id="warning-datetime"></span> ?</p>

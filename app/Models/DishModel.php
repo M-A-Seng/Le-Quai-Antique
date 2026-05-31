@@ -35,7 +35,7 @@ class DishModel extends AbstractModel
         "updated_at",
     ];
 
-    private $readOnlyColumns = [
+    private array $readOnlyColumns = [
         "id",
         "created_at",
         "updated_at"

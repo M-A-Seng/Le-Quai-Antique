@@ -17,9 +17,3 @@ document.getElementById('password').addEventListener('change', function()
     feedback.style.color = !isValid ? 'red' : '';
     feedback.textContent = !isValid ? ' ✖ Mot de passe invalide' : '';
 });
-
-// Activer/Désactiver le bouton de soumission
-document.querySelector('form').addEventListener('input', function() 
-{
-    document.getElementById('submit-button').disabled = !this.checkValidity();
-});

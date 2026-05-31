@@ -8,6 +8,16 @@ use App\Exceptions\DbFailureException;
 use App\Exceptions\NotFoundException;
 use PDOException;
 
+/**
+ * SetMenuModel
+ * 
+ * - createMenu()
+ * - findAllMenus()
+ * - findMenuById()
+ * - countMenus()
+ * - updateMenu()
+ * - deleteMenu()
+ */
 class SetMenuModel extends AbstractModel
 {
     protected const TABLE = "set_menu";
@@ -32,19 +42,39 @@ class SetMenuModel extends AbstractModel
     {
         parent::__construct($connection);
     }
-
+    
+    /**
+     * createMenu ajouter un menu
+     *
+     * @param  array $data
+     * @return array
+     */
     public function createMenu(array $data): array
     {
         $this->checkProtectedColumns($data, $this->readOnlyColumns);
         return $this->insert($data);
     }
-
+    
+    /**
+     * findAllMenus retourne tous les menus
+     *
+     * @param  int $restaurantId
+     * @return array
+     */
     public function findAllMenus(int $restaurantId): ?array
     {
         $result = $this->findBy(['restaurant_id' => $restaurantId], ['position' => 'ASC']);
         return empty($result) ? null : $result;
     }
-
+    
+    /**
+     * findMenuById trouver un menu par ID
+     *
+     * @param  int $id
+     * @return array
+     * 
+     * @throws NotFoundException
+     */
     public function findMenuById(int $id): array
     {
         $result = $this->findBy(['id' => $id]);
@@ -53,7 +83,15 @@ class SetMenuModel extends AbstractModel
         }
         return $result[0];
     }
-
+    
+    /**
+     * countMenus compter le nombre de menu
+     *
+     * @param  int $restaurantId
+     * @return int
+     * 
+     * @throws DbFailureException
+     */
     public function countMenus(int $restaurantId): int
     {
         $sql = "SELECT COUNT(*) AS total_menus
@@ -68,13 +106,26 @@ class SetMenuModel extends AbstractModel
             throw new DbFailureException(__METHOD__ . "Echec de l'opération: " . $e->getMessage(), 0, $e);
         }
     }
-
+    
+    /**
+     * updateMenu modifier menu
+     *
+     * @param  int $menuId
+     * @param  array $data
+     * @return array
+     */
     public function updateMenu(int $menuId, array $data): array
     {
         $this->checkProtectedColumns($data, $this->readOnlyColumns);
         return $this->update($menuId, $data);
     }
-
+    
+    /**
+     * deleteMenu supprimer menu
+     *
+     * @param  int $menuId
+     * @return int
+     */
     public function deleteMenu(int $menuId): int
     {
         return $this->delete(['id' => $menuId]);

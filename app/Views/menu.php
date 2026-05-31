@@ -1,6 +1,5 @@
-<?php 
-use function App\html;
-use function App\vite_js;
+<?php
+use function App\Helpers\html;
  ?>
 <h1>Carte du restaurant</h1>
 

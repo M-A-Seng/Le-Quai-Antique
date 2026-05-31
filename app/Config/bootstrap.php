@@ -9,8 +9,10 @@ use Dotenv\Dotenv;
 # Chargement autmatique des dépendances dans les fichers php
 require_once DIR_ROOT . '/vendor/autoload.php';
 
-# Fonctions d'aide (helpers)
-require_once DIR_ROOT . '/app/helpers.php';
+# helpers
+require_once DIR_ROOT . '/app/Helpers/html.php';
+require_once DIR_ROOT . '/app/Helpers/vite.php';
+require_once DIR_ROOT . '/app/Helpers/cloudinary.php';
 
 # chargement des variables d'environnement
 $dotenv = Dotenv::createImmutable(DIR_ROOT);

@@ -1,6 +1,6 @@
-<?php 
-use function App\html;
-use function App\vite_js;
+<?php
+use function App\Helpers\html;
+use function App\Helpers\vite_js;
  ?>
 <h1>Inscription</h1>
 

@@ -1,6 +1,6 @@
 <?php
 # app/Views/admin-menu/index.php
-use function App\html;
+use function App\Helpers\html;
  ?>
 <h2>Catégories</h2>
 
@@ -15,7 +15,7 @@ use function App\html;
 
 <button type="button" class="open-container" data-container-id="category-form-container">Nouvelle catégorie.</button>
 <div id="category-form-container" class="hidden">
-    <form action="/admin/<?= $_SESSION['id'] ?>/creer/categorie" target="_self" method="POST" class="new-element-form" data-submit-button="submit-category">
+    <form action="/admin/<?= $_SESSION['id'] ?>/creer/categorie" target="_self" method="POST" class="form-check-validity" data-submit-button="submit-category">
         <input type="hidden" name="csrf_token" value="<?= html($_SESSION['csrf_token']) ?>"><br>
         <label for="category-title">Titre: 
             <input type="text" id="category-title" name="title" required>

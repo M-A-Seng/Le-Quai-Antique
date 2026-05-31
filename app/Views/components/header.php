@@ -1,4 +1,6 @@
-<?php use function App\html; ?>
+<?php
+use function App\Helpers\html;
+  ?>
 <p>HEADER</p>
 
 <?php if (isset($_SESSION['id']) && isset($_SESSION['role'])): ?>

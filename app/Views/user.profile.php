@@ -1,6 +1,5 @@
-<?php 
-use function App\html;
-use function App\vite_js;
+<?php
+use function App\Helpers\vite_js;
  ?>
 <h1>Mon profil client</h1>
 

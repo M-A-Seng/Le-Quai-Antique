@@ -1,12 +1,12 @@
 <?php
 # app/Views/admin-menu/index.php
-use function App\html;
+use function App\Helpers\html;
  ?>
 <h2>Menus</h2>
 
 <button type="button" class="open-container" data-container-id="menu-form-container">Ajouter un menu</button>
 <div id="menu-form-container" class="hidden">
-    <form class="new-element-form" action="/admin/<?= $_SESSION['id'] ?>/creer/menu" target="_self" method="POST" data-submit-button="submit-menu">
+    <form class="form-check-validity" action="/admin/<?= $_SESSION['id'] ?>/creer/menu" target="_self" method="POST" data-submit-button="submit-menu">
         <input type="hidden" name="csrf_token" value="<?= html($_SESSION['csrf_token']) ?>"><br>
         <label for="menu-title">Titre: 
             <input type="text" id="menu-title" name="title" maxlength="128" required>

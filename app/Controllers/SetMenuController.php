@@ -13,6 +13,14 @@ use App\Exceptions\NotFoundException;
 use App\Services\RenderService;
 use App\Services\SetMenuService;
 
+/**
+ * SetMenuController
+ * 
+ * - create()
+ * - update()
+ * - updateOrder()
+ * - delete()
+ */
 class SetMenuController extends AbstractController
 {
     public function __construct(private SetMenuService $setMenuService,
@@ -21,7 +29,15 @@ class SetMenuController extends AbstractController
     {
         parent::__construct($renderService, $logger);
     }
-
+    
+    /**
+     * create ajouter nouveau menu
+     *
+     * @param  array $param
+     * @return Response
+     * 
+     * @throws ForbiddenException
+     */
     public function create(array $param): Response
     {
         if ((int)$param['id'] !== (int)$_SESSION['id']) {
@@ -51,7 +67,15 @@ class SetMenuController extends AbstractController
         ];
         return $this->redirect("/admin/".$_SESSION['id']."/gestion/menus");
     }
-
+    
+    /**
+     * update modifier un menu
+     *
+     * @param  array $param
+     * @return Response
+     * 
+     * @throws ForbiddenException
+     */
     public function update(array $param): Response
     {
         if ((int)$param['id'] !== (int)$_SESSION['id']) {
@@ -81,7 +105,12 @@ class SetMenuController extends AbstractController
         ];
         return $this->redirect("/admin/".$_SESSION['id']."/gestion/menus");
     }
-
+    
+    /**
+     * updateOrder modifier ordre des menus (AJAX)
+     *
+     * @return Response
+     */
     public function updateOrder(): Response
     {
         $http = 200;
@@ -119,7 +148,15 @@ class SetMenuController extends AbstractController
             'message' => $error_message
         ]);
     }
-
+    
+    /**
+     * delete supprimer menu
+     *
+     * @param  array $param
+     * @return Response
+     * 
+     * @throws ForbiddenException
+     */
     public function delete(array $param): Response
     {
         if ((int)$param['id'] !== (int)$_SESSION['id']) {

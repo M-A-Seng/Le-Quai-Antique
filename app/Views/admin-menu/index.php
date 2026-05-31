@@ -1,8 +1,6 @@
 <?php
-use function App\html;
-use function App\vite_js;
+use function App\Helpers\vite_js;
  ?>
-
 <h1>Gestion de la carte</h1>
 
 <div>

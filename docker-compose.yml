@@ -24,6 +24,7 @@ services:
       dockerfile: docker/php/Dockerfile
     volumes:
       - .:/var/www/html
+      - ./docker/php/php.ini:/usr/local/etc/php/conf.d/custom.ini # Override /usr/local/etc/php/conf.d/custom.ini docker avec php.ini
       - ./docker/php/opcache.${APP_ENV}.ini:/usr/local/etc/php/conf.d/10-opcache.ini  # Caching php pour performances
     expose:
       - "9000"

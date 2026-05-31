@@ -1,22 +1,6 @@
 <?php
 
-namespace App;
-
-use App\Exceptions\ServerException;
-
-/**
- * html retourne le string safe pour html
- *
- * @param  string $value
- * @return string
- */
-function html(string $value): string
-{
-    if (empty($value)) {
-        return '';
-    }
-    return htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8', false);
-}
+namespace App\Helpers;
 
 /**
  * Retourne les balises link CSS pour Vite (DEV et PROD)
