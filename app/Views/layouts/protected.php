@@ -1,26 +1,12 @@
-<?php use function App\Helpers\html;
+<?php 
+use function App\Helpers\html;
 use function App\Helpers\vite_js;
-
  ?>
+LAYOUT PROTECTED  <!-- retirer en prod -->
+
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>[PREPROD] <?= html($head['title'] ?? 'Le Quai Antique - Restaurant') ?></title>
-
-    <!-- navigateurs -->
-    <meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noimageindex, notranslate, max-snippet:0, max-image-preview:none, max-video-preview:0" />
-    <meta name="googlebot" content="noindex, nofollow, noarchive, nosnippet, noimageindex" />
-    <meta name="bingbot" content="noindex, nofollow, noarchive, nosnippet" />
-    <!-- empêcher indexation et cache -->
-    <meta name="referrer" content="no-referrer" />
-
-    <!-- DESIGN -->
-    <link rel="icon" href="">
-    <!-- MOBILE -->
-    <meta name="theme-color" content="#ffffff">
-    <!-- EXTRA DATA -->
-    <meta name="csrf-token" content="<?= $_SESSION['csrf_token'] ?? '' ?>">
-    <meta name="cloudinary-cloud-name" content="<?= $_ENV['CLOUDINARY_CLOUD_NAME'] ?>">
+    <?php require_once DIR_ROOT . '/app/Views/components/head/head.php' ?>
+    <?php require_once DIR_ROOT . '/app/Views/components/head/head-private.php' ?>
 </head>
 
 <?php if (!isset($_SESSION['dev_token']) || empty($_SESSION['dev_token'])): ?>

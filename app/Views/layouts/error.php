@@ -1,8 +1,8 @@
-LAYOUT ERROR PAGE
+LAYOUT ERROR PAGE <!-- retirer en prod -->
 
 <head>
-    <meta name="csrf-token" content="<?= $_SESSION['csrf_token'] ?>">
-    <meta name="cloudinary-cloud-name" content="<?= $_ENV['CLOUDINARY_CLOUD_NAME'] ?>">
+    <?php require_once DIR_ROOT . '/app/Views/components/head/head.php' ?>
+    <?php require_once DIR_ROOT . '/app/Views/components/head/head-private.php' ?>
 </head>
 
 <?php require_once DIR_ROOT . '/app/Views/components/header.php' ?>

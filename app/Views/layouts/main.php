@@ -1,8 +1,8 @@
-<p>DEFAULT LAYOUT</p>
+DEFAULT LAYOUT <!-- retirer en prod -->
 
 <head>
-    <meta name="csrf-token" content="<?= $_SESSION['csrf_token'] ?>">
-    <meta name="cloudinary-cloud-name" content="<?= $_ENV['CLOUDINARY_CLOUD_NAME'] ?>">
+    <?php require_once DIR_ROOT . '/app/Views/components/head/head.php' ?>
+    <?php require_once DIR_ROOT . '/app/Views/components/head/head-public.php' ?>
 </head>
 
 <?php require_once DIR_ROOT . '/app/Views/components/header.php' ?>
