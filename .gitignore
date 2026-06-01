@@ -5,6 +5,12 @@
 composer.phar
 
 ############################
+# Node, JS
+############################
+
+node_modules/
+
+############################
 # Fichiers d'environnement
 ############################
 .env
@@ -14,6 +20,7 @@ composer.phar
 ############################
 # Logs & fichiers temporaires
 ############################
+logs/
 *.log
 *.tmp
 *.cache
@@ -66,4 +73,5 @@ composer.phar
 myprocess.md
 logs.md
 diagram_activites_quai-antique.pdf
-
+.vite
+info.php
