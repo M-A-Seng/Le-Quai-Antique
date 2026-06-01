@@ -9,6 +9,16 @@ use App\Exceptions\InvalidFieldException;
 use App\Models\GalleryModel;
 use Throwable;
 
+/**
+ * GalleryService
+ * 
+ * - newImage()
+ * - getRestaurantImages()
+ * - getImageCount()
+ * - modifyImage()
+ * - changeImagesOrder()
+ * - deleteImage()
+ */
 class GalleryService extends AbstractService
 {
     protected const NOT_NULL_COLUMNS = [
@@ -33,7 +43,17 @@ class GalleryService extends AbstractService
     ];
 
     public function __construct(private GalleryModel $galleryModel, private UploadService $uploadService) {}
-
+    
+    /**
+     * newImage ajouter image
+     *
+     * @param  int $restaurantId
+     * @param  array $data
+     * @param  array $file
+     * @return array
+     * 
+     * @throws DataProcessingException
+     */
     public function newImage(int $restaurantId, array $data, array $file): array
     {
         $this->checkUserLegitimacy(roles:[Role::ADMIN]);
@@ -60,7 +80,13 @@ class GalleryService extends AbstractService
         $this->validateNotNullKeys(static::class, $table, true);
         return $this->galleryModel->addImage($table);
     }
-
+    
+    /**
+     * slugifyUnique générer slug unique
+     *
+     * @param  string $text
+     * @return string
+     */
     private function slugifyUnique(string $text): string
     {
         $slug = mb_strtolower($text, 'UTF-8'); # lowercase
@@ -75,13 +101,25 @@ class GalleryService extends AbstractService
         }
         return "{$slug}-{$random}";
     }
-
+    
+    /**
+     * getRestaurantImages trouve 1 image
+     *
+     * @param  mixed $restaurantId
+     * @return array|null
+     */
     public function getRestaurantImages(int $restaurantId): ?array
     {
         $this->validatePositiveInteger($restaurantId);
         return $this->galleryModel->findAllImages($restaurantId);
     }
-
+    
+    /**
+     * getImageCount compter les images du restaurant
+     *
+     * @param  int $restaurantId
+     * @return int
+     */
     public function getImageCount(int $restaurantId): int
     {
         $this->checkUserLegitimacy(roles:[Role::ADMIN]);
@@ -89,7 +127,17 @@ class GalleryService extends AbstractService
 
         return $this->galleryModel->countImages($restaurantId);
     }
-
+    
+    /**
+     * modifyImage modifier image
+     *
+     * @param  array $data
+     * @param  array $file
+     * @return array
+     * 
+     * @throws InvalidFieldException
+     * @throws DataProcessingException
+     */
     public function modifyImage(array $data, ?array $file = null): array
     {
         $this->checkUserLegitimacy(roles:[Role::ADMIN]);
@@ -120,7 +168,16 @@ class GalleryService extends AbstractService
         $this->validateNotNullKeys(static::class, $table);
         return $this->galleryModel->updateImage($data['id'], $table);
     }
-
+    
+    /**
+     * changeImagesOrder changer l'ordre des images
+     *
+     * @param  array $data
+     * @return bool
+     * 
+     * @throws DataProcessingException
+     * @throws Throwable
+     */
     public function changeImagesOrder(array $data): bool
     {
         $this->checkUserLegitimacy(roles:[Role::ADMIN]);
@@ -140,7 +197,13 @@ class GalleryService extends AbstractService
             throw $e;
         }
     }
-
+    
+    /**
+     * deleteImage supprimer image
+     *
+     * @param  int $imageId
+     * @return int
+     */
     public function deleteImage(int $imageId): int
     {
         $this->checkUserLegitimacy(roles:[Role::ADMIN]);

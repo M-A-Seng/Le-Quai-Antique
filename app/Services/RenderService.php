@@ -20,6 +20,8 @@ class RenderService
      * @param  array $data      | un tableau de données pour les variables à injécter, vide par défaut
      * @param  string $layout   | structure html, "main" par défaut
      * @return string
+     * 
+     * @throws NotFoundException
      */
     public function render(string $view, array $data = [], string $layout = "main"): string
     {
@@ -31,7 +33,10 @@ class RenderService
         $viewPath = $layout === 'error' ? 
             DIR_ROOT . '/app/Views/errors/' . $view . '.php'
             : DIR_ROOT . '/app/Views/' . $view . '.php';
-        $layoutPath = DIR_ROOT . '/app/Views/layouts/' . $layout . '.php';
+        # layout dev.php si app déployée en dev
+        $layoutPath = $_ENV['APP_PROTECTED'] === 'true' ?
+            DIR_ROOT . '/app/Views/layouts/protected.php'
+            : DIR_ROOT . '/app/Views/layouts/' . $layout . '.php';
 
         if (!file_exists($viewPath)) {
             throw new NotFoundException(message: __METHOD__ . ": Vue introuvable : $view");

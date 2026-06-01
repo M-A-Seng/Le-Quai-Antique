@@ -48,6 +48,7 @@ class Auth
         $this->session->set('id', $userData['id']);
         $this->session->set('role', Role::from($userData['role']));
         $this->session->set('new_user', $newUser);
+        $this->session->set('last_activity', time());
     }
 
     /**

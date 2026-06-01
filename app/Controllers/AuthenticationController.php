@@ -19,6 +19,7 @@ use App\Services\UserService;
  * 
  * - index()
  * - authenticate()
+ * - provideDevAccess()
  */
 class AuthenticationController extends AbstractController
 {
@@ -56,10 +57,10 @@ class AuthenticationController extends AbstractController
             $userData = $this->userService->authenticateUser($_POST);
 
             if (empty($userData['id']) || empty($userData['role'])) {
-                throw new ForbiddenException("Utilisateur non reconnu.");
+                throw new ForbiddenException(__METHOD__ . ": Utilisateur non reconnu.");
             }
             if ($userData['role'] !== 'CLIENT' && $userData['role'] !== 'ADMIN') {
-                throw new ForbiddenException("Rôle utilisateur inconnu : " . $userData['role']);
+                throw new ForbiddenException(__METHOD__ . ": Rôle utilisateur inconnu : " . $userData['role']);
             }
 
             $this->auth->login($userData);
@@ -82,5 +83,25 @@ class AuthenticationController extends AbstractController
         }
         $content = $this->renderService->render("login", ["error_message" => $error_message]);
         return $this->html($content, $http);
+    }
+    
+    /**
+     * provideDevAccess environnement preprod
+     *
+     * @return Response
+     */
+    public function provideDevAccess(array $params): Response
+    {
+        if (empty($_POST['csrf_token']) || empty($_POST['access_key']) ) {
+            $_SESSION['error_message'] = "Invalid request";
+            return $this->redirect('/');
+        }
+        if (password_verify($_POST['access_key'], '$2y$12$9Xp9iiqAuEriJKZkV1BOZ.d.lBnUD0mkr7Alg8Og6E8TIdS/WgSLe')) {
+            $_SESSION['dev_token'] = bin2hex(random_bytes(32));
+            $_SESSION['last_activity'] = time();
+        } else {
+            $_SESSION['error_message'] = "Invalid key";
+        }
+        return $this->redirect('/');
     }
 }

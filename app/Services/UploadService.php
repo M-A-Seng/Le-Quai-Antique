@@ -9,6 +9,12 @@ use App\Services\Api\CloudinaryService;
 use Exception;
 use finfo;
 
+/**
+ * UploadService
+ * 
+ * - uploadImage()
+ * - deleteImage()
+ */
 class UploadService
 {
     private const ALLOWED_FILES = [
@@ -19,14 +25,19 @@ class UploadService
     private const MAX_SIZE = 10 * 1024 * 1024; // 10 MB
     private const MAX_WIDTH = 4000;
     private const MAX_HEIGHT = 4000;
-    private const SIZES = [
-        'thumb'  => 300,
-        'medium' => 800,
-        'large'  => 1920,
-    ];
 
     public function __construct(private CloudinaryService $cloudinary) {}
-
+    
+    /**
+     * uploadImage importer image
+     *
+     * @param  array $imageFile
+     * @param  int $restaurantId
+     * @param  string $publicId
+     * @return array
+     * 
+     * @throws ServerException
+     */
     public function uploadImage(array $imageFile, int $restaurantId, ?string $publicId = null): array
     {
         $this->validateImage($imageFile);
@@ -47,7 +58,15 @@ class UploadService
             "secure_url" => $result["secure_url"],
         ];
     }
-
+    
+    /**
+     * validateImage valider données image
+     *
+     * @param  array $file
+     * @return void
+     * 
+     * @throws InvalidFileException
+     */
     private function validateImage(array $file): void
     {
         # erreur fichier
@@ -74,7 +93,16 @@ class UploadService
             throw new InvalidFileException(UImessage:'Image trop grande: Veuillez fournir une image de maximum 4000px.');
         }
     }
-
+    
+    /**
+     * deleteImage supprimer image
+     *
+     * @param  string $publicId
+     * @return bool
+     * 
+     * @throws ServerException
+     * @throws NotFoundException
+     */
     public function deleteImage(string $publicId): bool
     {
         try {

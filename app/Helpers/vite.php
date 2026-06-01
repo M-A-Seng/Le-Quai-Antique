@@ -2,6 +2,8 @@
 
 namespace App\Helpers;
 
+use App\Exceptions\ServerException;
+
 /**
  * Retourne les balises link CSS pour Vite (DEV et PROD)
  *

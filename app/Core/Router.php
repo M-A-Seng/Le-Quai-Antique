@@ -34,6 +34,8 @@ class Router
      */
     public function dispatch(string $method, string $uri): Response
     {
+        $this->checkActivity();
+        
         foreach ($this->routes as $route)
         {
             [$httpMethod, $path, $controllerName, $controllerMethod] = $route;
@@ -120,6 +122,20 @@ class Router
             return new Response('', 303, ['Location' => $_SERVER['REQUEST_URI']]);
         }
         return null;
+    }
+    
+    /**
+     * checkActivity
+     *
+     * @return void
+     */
+    private function checkActivity(): void
+    {
+        $timeout = 1200; // 20min
+        if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity']) > $timeout) {
+            $this->auth->logout();
+        }
+        $_SESSION['last_activity'] = time();
     }
     
     /**

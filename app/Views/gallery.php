@@ -75,7 +75,7 @@ use function App\Helpers\vite_js;
 <div class="gallery sortable" data-li-classname="image" data-save-button-id="save-images-order" <?= isset($_SESSION['id']) && $_SESSION['role']->value === 'ADMIN' ? 'data-formaction="/admin/'.$_SESSION['id'].'/modifier/image"' : '' ?>>
 
     <?php foreach ($images as $image): ?>
-    <div class="image draggable" data-id="<?= html($image['id']) ?>" data-public-id="<?= html($image['public_id']) ?>" data-slug="<?= html($image['slug']) ?>">
+    <div class="image <?= isset($_SESSION['id']) && $_SESSION['role']->value === 'ADMIN' ? 'draggable' : '' ?>" data-id="<?= html($image['id']) ?>" data-public-id="<?= html($image['public_id']) ?>" data-slug="<?= html($image['slug']) ?>">
         <?= cloudinary_img($image['public_id'], ['width' => 1024, 'height' => 1024, 'widths' => [320, 480, 640, 800, 1024], 'alt' => 'IMAGE: '.$image['title'], 'id' => html('image-'.$image['id'])]) ?>
         <div class="caption">
             <?= html($image['title']) ?>

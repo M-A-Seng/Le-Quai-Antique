@@ -6,6 +6,13 @@ use Cloudinary\Api\ApiResponse;
 use Cloudinary\Cloudinary;
 use Cloudinary\Configuration\Configuration;
 
+/**
+ * CloudinaryService
+ * 
+ * - uploadRestaurantImage()
+ * - changeRestaurantImage()
+ * - destroyRestaurantImage()
+ */
 class CloudinaryService
 {
     private Cloudinary $cloudinary;
@@ -23,7 +30,14 @@ class CloudinaryService
             ]
         ]);
     }
-
+    
+    /**
+     * uploadRestaurantImage enregistrer image
+     *
+     * @param  string $tmpPath
+     * @param  int $restaurantId
+     * @return ApiResponse
+     */
     public function uploadRestaurantImage(string $tmpPath, int $restaurantId): ApiResponse {
         return $this->cloudinary->uploadApi()
             ->upload($tmpPath,
@@ -40,7 +54,15 @@ class CloudinaryService
                 ]
             );
     }
-
+    
+    /**
+     * changeRestaurantImage remplacer image
+     *
+     * @param  string $tmpPath
+     * @param  int $restaurantId
+     * @param  string $publicId
+     * @return ApiResponse
+     */
     public function changeRestaurantImage(string $tmpPath, int $restaurantId, string $publicId): ApiResponse {
         return $this->cloudinary->uploadApi()
             ->upload($tmpPath,
@@ -56,7 +78,13 @@ class CloudinaryService
                 ]
             );
     }
-
+    
+    /**
+     * destroyRestaurantImage supprimer image
+     *
+     * @param  string $publicId
+     * @return ApiResponse
+     */
     public function destroyRestaurantImage(string $publicId): ApiResponse {
         return $this->cloudinary->uploadApi()
             ->destroy($publicId, 

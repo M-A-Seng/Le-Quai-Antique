@@ -13,6 +13,11 @@ use App\Services\DishService;
 use App\Services\RenderService;
 use App\Services\SetMenuService;
 
+/**
+ * MenuController
+ * 
+ * - index()
+ */
 class MenuController extends AbstractController
 {
     public function __construct(private DishService $dishService, 
@@ -22,7 +27,12 @@ class MenuController extends AbstractController
     {
         parent::__construct($renderService, $logger);
     }
-    
+        
+    /**
+     * index afficher carte du restaurant
+     *
+     * @return Response
+     */
     public function index(): Response
     {
         $data = null;

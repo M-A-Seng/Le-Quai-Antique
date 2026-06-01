@@ -1,6 +1,5 @@
 <?php
 
-
 use App\Core\DIContainer;
 use App\Core\Response;
 use App\Services\RenderService;
@@ -9,20 +8,25 @@ use Dotenv\Dotenv;
 # Chargement autmatique des dépendances dans les fichers php
 require_once DIR_ROOT . '/vendor/autoload.php';
 
+# chargement des variables d'environnement
+$dotenv = Dotenv::createImmutable(DIR_ROOT);
+## dev
+$dotenv->load();
+## prod
+# $dotenv->safeLoad();
+
+# Variable globale, environnement dev ou prod
+define('APPENV', $_ENV['APP_ENV'] ?? null);
+
 # helpers
 require_once DIR_ROOT . '/app/Helpers/html.php';
 require_once DIR_ROOT . '/app/Helpers/vite.php';
 require_once DIR_ROOT . '/app/Helpers/cloudinary.php';
 
-# chargement des variables d'environnement
-$dotenv = Dotenv::createImmutable(DIR_ROOT);
-# dev
-$dotenv->load();
-# prod
-// $dotenv->safeLoad();
-
-# Variable globale, environnement dev ou prod
-define('APPENV', $_ENV['APP_ENV'] ?? null);
+// ne pas indéxer (moteurs de recherche) si dev ou protégé
+if (APPENV === 'dev' || $_ENV['APP_PROTECTED'] === 'true') {
+    header("X-Robots-Tag: noindex, nofollow, noarchive, nosnippet");
+}
 
 # Session
 session_start();

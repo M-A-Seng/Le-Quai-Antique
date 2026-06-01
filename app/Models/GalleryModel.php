@@ -8,6 +8,17 @@ use App\Exceptions\DbFailureException;
 use App\Exceptions\NotFoundException;
 use PDOException;
 
+/**
+ * GalleryModel
+ * 
+ * - addImage()
+ * - findAllImages()
+ * - findImageById()
+ * - findSlug()
+ * - updateImage()
+ * - countImages()
+ * - deleteImage()
+ */
 class GalleryModel extends AbstractModel
 {
     protected const TABLE = "image_gallery";
@@ -35,19 +46,39 @@ class GalleryModel extends AbstractModel
     {
         parent::__construct($connection);
     }
-
+    
+    /**
+     * addImage ajouter image
+     *
+     * @param  array $data
+     * @return array
+     */
     public function addImage(array $data): array
     {
         $this->checkProtectedColumns($data, $this->readOnlyColumns);
         return $this->insert($data);
     }
-
+    
+    /**
+     * findAllImages récupérer toutes les image d'un restaurant
+     *
+     * @param  int $restaurantId
+     * @return array
+     */
     public function findAllImages(int $restaurantId): ?array
     {
         $result = $this->findBy(['restaurant_id' => $restaurantId], ['position' => 'ASC']);
         return empty($result) ? null : $result;
     }
-
+    
+    /**
+     * findImageById trouver 1 image
+     *
+     * @param  int $id
+     * @return array
+     * 
+     * @throws NotFoundException
+     */
     public function findImageById(int $id): array
     {
         $result = $this->findBy(['id' => $id]);
@@ -56,19 +87,40 @@ class GalleryModel extends AbstractModel
         }
         return $result[0];
     }
-
+    
+    /**
+     * findSlug cherche slug en db
+     *
+     * @param  string $slug
+     * @return array
+     */
     public function findSlug(string $slug): ?array
     {
         $result = $this->findBy(['slug' => $slug]);
         return empty($result) ? null : $result[0];
     }
-
+    
+    /**
+     * updateImage modifier image
+     *
+     * @param  int $imageId
+     * @param  array $data
+     * @return array
+     */
     public function updateImage(int $imageId, array $data): array
     {
         $this->checkProtectedColumns($data, $this->readOnlyColumns);
         return $this->update($imageId, $data);
     }
-
+    
+    /**
+     * countImages compter images en db
+     *
+     * @param  int $restaurantId
+     * @return int
+     * 
+     * @throws DbFailureException
+     */
     public function countImages(int $restaurantId): int
     {
         $sql = "SELECT COUNT(*) AS total_images
@@ -83,7 +135,13 @@ class GalleryModel extends AbstractModel
             throw new DbFailureException(__METHOD__ . "Echec de l'opération: " . $e->getMessage(), 0, $e);
         }
     }
-
+    
+    /**
+     * deleteImage supprimer image
+     *
+     * @param  int $imageId
+     * @return int
+     */
     public function deleteImage(int $imageId): int
     {
         return $this->delete(['id' => $imageId]);

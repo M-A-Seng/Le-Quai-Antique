@@ -76,4 +76,7 @@ return [
     ['GET',  '/signup',                     'RedirectController',           'signup'],
     ['GET',  '/réserver',                   'RedirectController',           'reserve'],
     ['GET',  '/book',                       'RedirectController',           'reserve'],
+
+    # App protégée (preprod, env dev déployé)
+    ['POST', '/access/preprod',             'AuthenticationController',     'provideDevAccess',     ['requirePost&Csrf']],
 ];
