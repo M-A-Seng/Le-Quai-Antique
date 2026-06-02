@@ -1,0 +1,33 @@
+{
+  "name": "le-quai-antique",
+  "version": "1.0.0",
+  "description": "Projet scolaire: Site vitrine d'un restaurant",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs",
+    "test": "tests"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build", 
+    "preview": "vite preview",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/M-A-Seng/Le-Quai-Antique.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/M-A-Seng/Le-Quai-Antique/issues"
+  },
+  "homepage": "https://github.com/M-A-Seng/Le-Quai-Antique#readme",
+  "devDependencies": {
+    "vite": "^8.0.13"
+  },
+  "dependencies": {
+    "sortablejs": "^1.15.7"
+  }
+}

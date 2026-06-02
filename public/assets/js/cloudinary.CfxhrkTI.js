@@ -1,0 +1,1 @@
+`${document.querySelector(`meta[name="cloudinary-cloud-name"]`)?.content}`;

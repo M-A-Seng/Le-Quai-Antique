@@ -1,0 +1,66 @@
+<?php
+
+use App\Core\DIContainer;
+use App\Core\Response;
+use App\Services\RenderService;
+use Dotenv\Dotenv;
+
+# Chargement autmatique des dépendances dans les fichers php
+require_once DIR_ROOT . '/vendor/autoload.php';
+
+# chargement des variables d'environnement
+$dotenv = Dotenv::createImmutable(DIR_ROOT);
+## dev
+$dotenv->load();
+## prod
+# $dotenv->safeLoad();
+
+# Variable globale, environnement dev ou prod
+define('APPENV', $_ENV['APP_ENV'] ?? null);
+
+# helpers
+require_once DIR_ROOT . '/app/Helpers/html.php';
+require_once DIR_ROOT . '/app/Helpers/vite.php';
+require_once DIR_ROOT . '/app/Helpers/cloudinary.php';
+
+// ne pas indéxer (moteurs de recherche) si dev ou protégé
+if (APPENV === 'dev' || $_ENV['APP_PROTECTED'] === 'true') {
+    header("X-Robots-Tag: noindex, nofollow, noarchive, nosnippet");
+}
+
+# Session
+session_start();
+if (!isset($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
+
+# Gestion des Exceptions non prévues
+set_exception_handler(function (\Throwable $e) 
+{
+    $logMessage = "[" . date('Y-m-d H:i:s') . "] "
+                . $e->getMessage() . " in "
+                . $e->getFile() . ":" . $e->getLine() . "\n"
+                . $e->getTraceAsString() . "\n\n";
+
+    $logFile = DIR_ROOT . '/logs/errors.log';
+    error_log($logMessage, 3, $logFile);
+
+    if (APPENV === 'dev') {
+        echo "Une erreur interne est survenue. <br>";
+        echo "<pre>" . $e . "</pre>";
+    }
+    else {
+        $content = file_get_contents(DIR_ROOT . '/app/Views/errors/500.php');
+        $response = new Response($content, 500, ['Content-Type' => 'text/html']);
+        $response->send();
+    }
+});
+
+# La seule instance de RenderService
+$renderService = new RenderService();
+
+# La seule instance du container d'injection des dépendances
+$diContainer = new DIContainer($renderService);
+
+# Router
+$router = $diContainer->getRouter($routes, $diContainer); # $routes dans config.php
