@@ -5,23 +5,24 @@ export default defineConfig({
 
     build: {
         outDir: 'public/assets', // où sont générés les fichiers minifiés
-
         emptyOutDir: true, // vider avant génération
-
         manifest: true, // auto-générer manifest.json
+        sourcemap: false,
 
         rollupOptions: {
             // points d'entrée
             input: {
                 app: 'resources/js/app.js',
+                gallery: 'resources/js/pages/gallery.js',
                 signup: 'resources/js/pages/signup.js',
                 login: 'resources/js/pages/login.js',
                 reserve: 'resources/js/pages/reserve.js',
                 userProfile: 'resources/js/pages/user-profile.js',
                 userReservations: 'resources/js/pages/user-reservations.js',
-                adminService: 'resources/js/pages/admin-service.js',
+                adminService: 'resources/js/pages/admin-services.js',
                 adminReservations: 'resources/js/pages/admin-reservations.js',
-                adminMenu: 'resources/js/pages/admin-menu/index.js'
+                adminMenu: 'resources/js/pages/admin-menu/index.js',
+                cloudinary: 'resources/js/api/cloudinary.js'
             },
             // noms fichiers après build
             output: {
