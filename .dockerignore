@@ -1,0 +1,36 @@
+# Version
+.git
+.gitignore
+
+# Node
+node_modules
+npm-debug.log
+yarn.lock
+
+# Composer
+vendor
+
+# Env
+.env
+.env.* 
+
+# Build
+dist
+build
+public/build
+
+# Tests
+tests
+spec
+docs
+
+# Docker
+Dockerfile
+docker-compose.yml
+*.local
+
+# IDE / OS
+.vscode
+.idea
+*.swp
+*.DS_Store
