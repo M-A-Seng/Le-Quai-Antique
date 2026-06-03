@@ -2,21 +2,26 @@
 
 use App\Core\DIContainer;
 use App\Core\Response;
+use App\Exceptions\ServerException;
 use App\Services\RenderService;
 use Dotenv\Dotenv;
 
 # Chargement autmatique des dépendances dans les fichers php
 require_once DIR_ROOT . '/vendor/autoload.php';
 
-# chargement des variables d'environnement
-$dotenv = Dotenv::createImmutable(DIR_ROOT);
-## dev
-$dotenv->load();
-## prod
-# $dotenv->safeLoad();
+if (file_exists(DIR_ROOT . '/.env')) {
+    # chargement des variables d'environnement
+    $dotenv = Dotenv::createImmutable(DIR_ROOT);
+    if (getenv('APP_ENV') === 'prod') {
+        $dotenv->safeLoad();
+    } else {
+        $dotenv->load();
+    }
+}
 
-# Variable globale, environnement dev ou prod
-define('APPENV', $_ENV['APP_ENV'] ?? null);
+# Variables globales
+define('APPENV', getenv('APP_ENV') ?? $_ENV['APP_ENV'] ?? null);
+define('APP_PROTECTED', getenv('APP_ENV') ?? $_ENV['APP_ENV'] ?? null);
 
 # helpers
 require_once DIR_ROOT . '/app/Helpers/html.php';
@@ -24,7 +29,7 @@ require_once DIR_ROOT . '/app/Helpers/vite.php';
 require_once DIR_ROOT . '/app/Helpers/cloudinary.php';
 
 // ne pas indéxer (moteurs de recherche) si dev ou protégé
-if (APPENV === 'dev' || $_ENV['APP_PROTECTED'] === 'true') {
+if (APPENV === 'dev' || APP_PROTECTED === 'true') {
     header("X-Robots-Tag: noindex, nofollow, noarchive, nosnippet");
 }
 
@@ -63,4 +68,8 @@ $renderService = new RenderService();
 $diContainer = new DIContainer($renderService);
 
 # Router
-$router = $diContainer->getRouter($routes, $diContainer); # $routes dans config.php
+if (isset($routes)) {
+    $router = $diContainer->getRouter($routes, $diContainer); # $routes dans config.php
+} else {
+    throw new ServerException("FATAL ERROR: bootstrap.php Routes indéfinies.");
+}

@@ -34,7 +34,7 @@ class RenderService
             DIR_ROOT . '/app/Views/errors/' . $view . '.php'
             : DIR_ROOT . '/app/Views/' . $view . '.php';
         # layout dev.php si app déployée en dev
-        $layoutPath = $_ENV['APP_PROTECTED'] === 'true' ?
+        $layoutPath = APP_PROTECTED === 'true' ?
             DIR_ROOT . '/app/Views/layouts/protected.php'
             : DIR_ROOT . '/app/Views/layouts/' . $layout . '.php';
 

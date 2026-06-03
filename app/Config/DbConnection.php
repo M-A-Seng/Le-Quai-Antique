@@ -22,19 +22,19 @@ class DbConnection
      */
     public function __construct(string $userType, private PdoFactory $pdoFactory, private Logger $logger)
     {
-        $databaseURL = $_ENV['DATABASE_URL'] ?? null;
+        $databaseURL = getenv('DATABASE_URL') ?? $_ENV['DATABASE_URL'] ?? null;
         $users = [
             'front' => [
-                'user' => $_ENV['DB_USER_FRONT'],
-                'password' => $_ENV['DB_PASS_FRONT']
+                'user' => getenv('DB_USER_FRONT') ?? $_ENV['DB_USER_FRONT'],
+                'password' => getenv('DB_PASS_FRONT') ?? $_ENV['DB_PASS_FRONT']
             ],
             'back' => [
-                'user' => $_ENV['DB_USER_BACK'],
-                'password' => $_ENV['DB_PASS_BACK']
+                'user' => getenv('DB_USER_BACK') ?? $_ENV['DB_USER_BACK'],
+                'password' => getenv('DB_PASS_BACK') ?? $_ENV['DB_PASS_BACK']
             ],
             'logs' => [
-                'user' => $_ENV['DB_USER_LOGS'],
-                'password' => $_ENV['DB_PASS_LOGS']
+                'user' => getenv('DB_USER_LOGS') ?? $_ENV['DB_USER_LOGS'],
+                'password' => getenv('DB_PASS_LOGS') ?? $_ENV['DB_PASS_LOGS']
             ]
         ];
         if (!isset($users[$userType])) {
@@ -48,8 +48,8 @@ class DbConnection
                 $this->pdo = $this->pdoFactory->createFromUrl($databaseURL, $user, $password);
             }
             else {
-                $host = $_ENV['DB_HOST'] ?? throw new DbFailureException('DB Host manquant');
-                $dbName = $_ENV['DB_NAME'] ?? throw new DbFailureException('DB Name manquant');
+                $host = getenv('DB_HOST') ?? $_ENV['DB_HOST'] ?? throw new DbFailureException('DB Host manquant');
+                $dbName = getenv('DB_NAME') ?? $_ENV['DB_NAME'] ?? throw new DbFailureException('DB Name manquant');
                 $dsn = "pgsql:host=$host;dbname=$dbName";
 
                 $this->pdo = $this->pdoFactory->createFromDsn($dsn, $user, $password);
