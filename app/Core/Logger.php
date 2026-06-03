@@ -7,7 +7,7 @@ namespace App\Core;
  */
 class Logger
 {
-    private $file;
+    private string $file;
     /**
      * __construct
      *
