@@ -14,8 +14,8 @@
     html, body {
       height: 100%;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, #c8954e, #fbc18f);
-      color: #fff;
+      background: linear-gradient(135deg, #9b7030, #7a5621);
+      color: #B5AD9A;
     }
     body {
       display: flex;
@@ -26,7 +26,7 @@
     }
     .container {
       max-width: 500px;
-      background: rgba(0, 0, 0, 0.4);
+      background: #35281A;
       padding: 2rem;
       border-radius: 12px;
       box-shadow: 0 8px 20px rgba(0,0,0,0.3);
@@ -48,9 +48,9 @@
 </head>
 <body>
   <div class="container">
+    <p><small>RESTAURANT</small></p>
     <h1>Le Quai Antique vous accueille bientôt</h1>
-    <p>Nous préparons actuellement votre expérience gastronomique au cœur de Chambéry.</p>
-    <p>Notre table ouvrira très prochainement, le temps de sublimer chaque détail pour vous offrir une cuisine d'exception inspirée de la Savoie.</p>
+    <p><small>Nous préparons actuellement votre expérience gastronomique au cœur de Chambéry.</small></p><hr>
     <p>Merci de votre patience — nous avons hâte de vous recevoir.</p>
   </div>
 </body>
