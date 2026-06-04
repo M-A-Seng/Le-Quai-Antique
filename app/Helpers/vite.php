@@ -27,12 +27,12 @@ function vite_css(string $filePath): string
     # ressources compilées dans public/assets
     $manifestPath = DIR_ROOT . '/public/assets/.vite/manifest.json';
     if (!file_exists($manifestPath)) {
-        throw new ServerException(__FUNCTION__ . ': Vite manifest.json non trouvé.');
+        throw new ServerException(__FUNCTION__ . ': Vite manifest.json non trouvé: '.$manifestPath);
     }
     $manifest = json_decode(file_get_contents($manifestPath), true);
     
     if (!isset($manifest[$filePath])) {
-        throw new ServerException(__FUNCTION__ . ": Vite asset non trouvé: $filePath");
+        throw new ServerException(__FUNCTION__ . ": Vite asset non trouvé: ".$filePath);
     }
     $asset = $manifest[$filePath];
 
@@ -70,12 +70,12 @@ function vite_js(string $filePath): string
     # ressources compilées dans public/assets
     $manifestPath = DIR_ROOT . '/public/assets/.vite/manifest.json';
     if (!file_exists($manifestPath)) {
-        throw new ServerException(__FUNCTION__ . ': Vite manifest.json non trouvé.');
+        throw new ServerException(__FUNCTION__ . ': Vite manifest.json non trouvé: '.$manifestPath);
     }
     $manifest = json_decode(file_get_contents($manifestPath), true);
 
     if (!isset($manifest[$filePath])) {
-        throw new ServerException(__FUNCTION__ . ": Vite asset non trouvé: $filePath");
+        throw new ServerException(__FUNCTION__ . ": Vite asset non trouvé: ".$filePath);
     }
     $asset = $manifest[$filePath];
 
