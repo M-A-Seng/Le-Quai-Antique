@@ -35,7 +35,7 @@ class PdoFactory
     public function createFromUrl(string $url, string $dbUser, string $userPass): PDO
     {
         $url = parse_url($url);
-
+        
         $dsn = "pgsql:"
             . "host=" . $url["host"] . ";"
             . "port=5432;"

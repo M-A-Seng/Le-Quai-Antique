@@ -6,7 +6,7 @@ use App\Exceptions\ServerException;
 
 function cloudinary_img(string $publicId, array $options = []): string 
 {
-    $cloudName = getenv('CLOUDINARY_CLOUD_NAME') ?? $_ENV['CLOUDINARY_CLOUD_NAME'] ?? throw new ServerException(__METHOD__ . ": Cloudname Cloudinary manquant.");
+    $cloudName = get_valid_env('CLOUDINARY_CLOUD_NAME') ?? throw new ServerException(__METHOD__ . ": Cloudname Cloudinary manquant.");
     $publicId = trim($publicId);
     $publicId = ltrim($publicId, '/');
 

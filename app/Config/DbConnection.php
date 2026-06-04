@@ -8,33 +8,38 @@ use App\Exceptions\DbFailureException;
 use PDO;
 use PDOException;
 
+use function App\Helpers\get_valid_env;
+
 /**
  * Connection à la base de données postgresql
  */
 class DbConnection
 {
     private PDO $pdo;
+    
     /**
      * __construct
      *
      * @param  string $userType
      * @return void
      */
-    public function __construct(string $userType, private PdoFactory $pdoFactory, private Logger $logger)
+    public function __construct(string $userType, 
+                                private PdoFactory $pdoFactory, 
+                                private Logger $logger)
     {
-        $databaseURL = getenv('DATABASE_URL') ?? $_ENV['DATABASE_URL'] ?? null;
+        $databaseURL = get_valid_env('DATABASE_URL');
         $users = [
             'front' => [
-                'user' => getenv('DB_USER_FRONT') ?? $_ENV['DB_USER_FRONT'],
-                'password' => getenv('DB_PASS_FRONT') ?? $_ENV['DB_PASS_FRONT']
+                'user' => get_valid_env('DB_USER_FRONT'),
+                'password' => get_valid_env('DB_PASS_FRONT')
             ],
             'back' => [
-                'user' => getenv('DB_USER_BACK') ?? $_ENV['DB_USER_BACK'],
-                'password' => getenv('DB_PASS_BACK') ?? $_ENV['DB_PASS_BACK']
+                'user' => get_valid_env('DB_USER_BACK'),
+                'password' => get_valid_env('DB_PASS_BACK')
             ],
             'logs' => [
-                'user' => getenv('DB_USER_LOGS') ?? $_ENV['DB_USER_LOGS'],
-                'password' => getenv('DB_PASS_LOGS') ?? $_ENV['DB_PASS_LOGS']
+                'user' => get_valid_env('DB_USER_LOGS'),
+                'password' => get_valid_env('DB_PASS_LOGS')
             ]
         ];
         if (!isset($users[$userType])) {
@@ -48,8 +53,8 @@ class DbConnection
                 $this->pdo = $this->pdoFactory->createFromUrl($databaseURL, $user, $password);
             }
             else {
-                $host = getenv('DB_HOST') ?? $_ENV['DB_HOST'] ?? throw new DbFailureException('DB Host manquant');
-                $dbName = getenv('DB_NAME') ?? $_ENV['DB_NAME'] ?? throw new DbFailureException('DB Name manquant');
+                $host = get_valid_env('DB_HOST') ?? throw new DbFailureException('DB Host manquant');
+                $dbName = get_valid_env('DB_NAME') ?? throw new DbFailureException('DB Name manquant');
                 $dsn = "pgsql:host=$host;dbname=$dbName";
 
                 $this->pdo = $this->pdoFactory->createFromDsn($dsn, $user, $password);
@@ -57,7 +62,7 @@ class DbConnection
         } 
         catch (PDOException $e) {
             $this->logger->dbError($e->getMessage());
-            throw new PDOException("Erreur de connexion à la base de données.");
+            throw new PDOException("Erreur de connexion à la base de données : " . $e);
         }
     }
 

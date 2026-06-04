@@ -6,13 +6,20 @@ use App\Exceptions\ServerException;
 use App\Services\RenderService;
 use Dotenv\Dotenv;
 
+# helpers
+require_once DIR_ROOT . '/app/Helpers/main.php';
+require_once DIR_ROOT . '/app/Helpers/vite.php';
+require_once DIR_ROOT . '/app/Helpers/cloudinary.php';
+
 # Chargement autmatique des dépendances dans les fichers php
 require_once DIR_ROOT . '/vendor/autoload.php';
+
+use function App\Helpers\get_valid_env;
 
 if (file_exists(DIR_ROOT . '/.env')) {
     # chargement des variables d'environnement
     $dotenv = Dotenv::createImmutable(DIR_ROOT);
-    if (getenv('APP_ENV') === 'prod') {
+    if (get_valid_env('APP_ENV') === 'prod') {
         $dotenv->safeLoad();
     } else {
         $dotenv->load();
@@ -20,13 +27,8 @@ if (file_exists(DIR_ROOT . '/.env')) {
 }
 
 # Variables globales
-define('APPENV', getenv('APP_ENV') ?? $_ENV['APP_ENV'] ?? null);
-define('APP_PROTECTED', getenv('APP_ENV') ?? $_ENV['APP_ENV'] ?? null);
-
-# helpers
-require_once DIR_ROOT . '/app/Helpers/html.php';
-require_once DIR_ROOT . '/app/Helpers/vite.php';
-require_once DIR_ROOT . '/app/Helpers/cloudinary.php';
+define('APPENV', get_valid_env('APP_ENV'));
+define('APP_PROTECTED', get_valid_env('APP_PROTECTED'));
 
 // ne pas indéxer (moteurs de recherche) si dev ou protégé
 if (APPENV === 'dev' || APP_PROTECTED === 'true') {
