@@ -75,7 +75,14 @@ class UserController extends AbstractController
      */
     public function logout(): Response
     {
-        $this->auth->logout();
+        if (APPENV === 'dev' && APP_PROTECTED === 'true') {
+            session_unset();
+            $_SESSION['dev_token'] = bin2hex(random_bytes(32));
+            $_SESSION['last_activity'] = time();
+        } 
+        else {
+            $this->auth->logout();
+        }
         return $this->redirect('/');
     }
 }

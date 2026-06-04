@@ -1,12 +1,12 @@
 import { csrf } from '../app.js';
 
 const form = document.getElementById('form');
-const date = document.getElementById('reservation_date');
+export const date = document.getElementById('reservation_date');
 const time = document.getElementById('reservation_time');
 const defaultTime = document.getElementById('default_reservation_time').value;
 const guestCount = document.getElementById('guest_count');
 const clientName = document.getElementById('client_name');
-const feedback = document.getElementById('form-feedback');
+export const feedback = document.getElementById('form-feedback');
 const submit = document.getElementById('submit-button');
 
 // Fonction générer les données pour le champ select
@@ -59,7 +59,7 @@ function fillSelect(select, slots, defaultTime = null) {
 }
 
 // Activer bouton de soumission si tout est ok
-function updateFormState() {
+export function updateFormState() {
     const hasDate = date.value.trim() !== '';
     const hasTime = time.value.trim() !== '' && !time.disabled;
     guestCount.disabled = !(hasDate && hasTime); // activer input nombre d'invités si date heure fourni
@@ -80,7 +80,7 @@ guestCount.addEventListener('change', updateFormState);
 clientName.addEventListener('change', updateFormState);
 
 // AJAX récupérer les horaires et générer les options du select
-function updateDateTimeInput(date) {
+export function updateDateTimeInput(date) {
     const dateFeedback = document.getElementById('date-feedback');
     if (!date) return; // empêche fetch si le champ date est vide
 

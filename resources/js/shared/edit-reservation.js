@@ -1,13 +1,18 @@
 import { csrf } from '../app.js';
+import { feedback } from './reservation-form.js';
+import { updateDateTimeInput } from './reservation-form.js';
+import { date } from './reservation-form.js';
+import { updateFormState } from './reservation-form.js';
 
 const formContainer = document.getElementById('form-container');
-const reservationFeedback = document.getElementById('reservation-feedback');
 const currentPathname = window.location.pathname;
 
 // Ouvrir le formulaire prérempli
 document.querySelectorAll('.modify-button').forEach(button => {
     button.addEventListener('click', function() 
     {
+        const reservationFeedback = document.getElementById(`reservation-feedback-${this.value}`);
+
         fetch('/get/reservation', {
             method: 'POST',
             headers: {

@@ -9,7 +9,6 @@ composer.phar
 ############################
 node_modules/
 dist/
-.vite/
 
 ############################
 # Fichiers d'environnement

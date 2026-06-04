@@ -16,6 +16,6 @@ use function App\Helpers\html;
             <button type="button" class="modify-button" value="<?= html($reservation['id']) ?>" data-datetime="<?= html($reservation['date_fullformat']) ?>">Modifier</button>
             <button type="button" class="cancel-button" value="<?= html($reservation['id']) ?>" data-datetime="<?= html($reservation['date_fullformat']) ?>">Annuler</button>
         <?php endif; ?>
-            <p id="reservation-feedback" style="display:none"></p>
+            <p id="reservation-feedback-<?= html($reservation['id']) ?>" style="display:none"></p>
     </div>
 <?php endforeach; ?>

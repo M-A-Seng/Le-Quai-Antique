@@ -90,7 +90,7 @@ use function App\Helpers\vite_js;
                                 <button type="button" class="modify-button" value="<?= html($row['id']) ?>" data-datetime="<?= html($row['date_fullformat']) ?>">Modifier</button>
                                 <button type="button" class="cancel-button" value="<?= html($row['id']) ?>" data-datetime="<?= html($row['date_fullformat']) ?>">Annuler</button>
                             <?php endif; ?>
-                            <p id="reservation-feedback" style="display:none"></p>
+                            <p id="reservation-feedback-<?= html($row['id']) ?>" style="display:none"></p>
                         </td>
                     </tr>
                 </tbody>
@@ -99,8 +99,6 @@ use function App\Helpers\vite_js;
         <?php endforeach; ?>
     </div>
     <?php require_once DIR_ROOT . '/app/Views/components/reservationUpdateForm.php' ?>
-    <script src="/assets/js/reservation.form.script.js" defer></script>
-    <script src="/assets/js/user.reservation.script.js" defer></script>
 <?php elseif (!isset($error_message) || empty($error_message)): ?>
     <p>Aucune réservation enregistrée pour ce jour.</p>
 <?php endif; ?>

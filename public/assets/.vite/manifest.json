@@ -1,0 +1,120 @@
+{
+  "_edit-reservation.Bi5dLcNU.js": {
+    "file": "js/edit-reservation.Bi5dLcNU.js",
+    "name": "edit-reservation",
+    "imports": [
+      "resources/js/app.js",
+      "_reservation-form.Ct3v07ky.js"
+    ]
+  },
+  "_reorder.ZNsQMNBn.js": {
+    "file": "js/reorder.ZNsQMNBn.js",
+    "name": "reorder",
+    "imports": [
+      "resources/js/app.js"
+    ]
+  },
+  "_reservation-form.Ct3v07ky.js": {
+    "file": "js/reservation-form.Ct3v07ky.js",
+    "name": "reservation-form",
+    "imports": [
+      "resources/js/app.js"
+    ]
+  },
+  "resources/js/api/cloudinary.js": {
+    "file": "js/cloudinary.CfxhrkTI.js",
+    "name": "cloudinary",
+    "src": "resources/js/api/cloudinary.js",
+    "isEntry": true
+  },
+  "resources/js/app.js": {
+    "file": "js/app.DnDVqO2C.js",
+    "name": "app",
+    "src": "resources/js/app.js",
+    "isEntry": true,
+    "css": [
+      "styles/app.DzVKttbp.css"
+    ]
+  },
+  "resources/js/pages/admin-menu/index.js": {
+    "file": "js/adminMenu.CGSF-SpK.js",
+    "name": "adminMenu",
+    "src": "resources/js/pages/admin-menu/index.js",
+    "isEntry": true,
+    "imports": [
+      "_reorder.ZNsQMNBn.js",
+      "resources/js/app.js"
+    ]
+  },
+  "resources/js/pages/admin-reservations.js": {
+    "file": "js/adminReservations.CfvDOy9O.js",
+    "name": "adminReservations",
+    "src": "resources/js/pages/admin-reservations.js",
+    "isEntry": true,
+    "imports": [
+      "resources/js/app.js",
+      "_edit-reservation.Bi5dLcNU.js",
+      "_reservation-form.Ct3v07ky.js"
+    ]
+  },
+  "resources/js/pages/admin-services.js": {
+    "file": "js/adminService.COkffGg6.js",
+    "name": "adminService",
+    "src": "resources/js/pages/admin-services.js",
+    "isEntry": true
+  },
+  "resources/js/pages/gallery.js": {
+    "file": "js/gallery.BEe59HzV.js",
+    "name": "gallery",
+    "src": "resources/js/pages/gallery.js",
+    "isEntry": true,
+    "imports": [
+      "_reorder.ZNsQMNBn.js"
+    ]
+  },
+  "resources/js/pages/login.js": {
+    "file": "js/login.CEA9wSk5.js",
+    "name": "login",
+    "src": "resources/js/pages/login.js",
+    "isEntry": true
+  },
+  "resources/js/pages/reserve.js": {
+    "file": "js/reserve.DyWVzJjm.js",
+    "name": "reserve",
+    "src": "resources/js/pages/reserve.js",
+    "isEntry": true,
+    "imports": [
+      "resources/js/app.js",
+      "_reservation-form.Ct3v07ky.js"
+    ]
+  },
+  "resources/js/pages/signup.js": {
+    "file": "js/signup.C3Ylgqwx.js",
+    "name": "signup",
+    "src": "resources/js/pages/signup.js",
+    "isEntry": true,
+    "imports": [
+      "resources/js/app.js"
+    ]
+  },
+  "resources/js/pages/user-profile.js": {
+    "file": "js/userProfile.DwvtRsd7.js",
+    "name": "userProfile",
+    "src": "resources/js/pages/user-profile.js",
+    "isEntry": true,
+    "imports": [
+      "_edit-reservation.Bi5dLcNU.js",
+      "_reservation-form.Ct3v07ky.js"
+    ]
+  },
+  "resources/js/pages/user-reservations.js": {
+    "file": "js/userReservations.CgaHrnMq.js",
+    "name": "userReservations",
+    "src": "resources/js/pages/user-reservations.js",
+    "isEntry": true,
+    "imports": [
+      "_edit-reservation.Bi5dLcNU.js",
+      "_reservation-form.Ct3v07ky.js"
+    ]
+  }
+}
