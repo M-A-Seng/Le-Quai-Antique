@@ -52,9 +52,4 @@ use function App\Helpers\vite_js;
     <button type="submit">Enregistrer</button>
 </form>
 
-<form action="/deconnexion" target="_self" method="POST">
-    <input type="hidden" name="csrf_token" value="<?= html($_SESSION['csrf_token']) ?>">
-    <button type="submit">Se déconnecter</button>
-</form>
-
 <?= vite_js('resources/js/pages/admin-services.js') ?>

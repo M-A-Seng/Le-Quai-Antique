@@ -1,9 +1,10 @@
 {
-  "_edit-reservation.TQaQMRC5.js": {
-    "file": "js/edit-reservation.TQaQMRC5.js",
+  "_edit-reservation.Bi5dLcNU.js": {
+    "file": "js/edit-reservation.Bi5dLcNU.js",
     "name": "edit-reservation",
     "imports": [
-      "resources/js/app.js"
+      "resources/js/app.js",
+      "_reservation-form.Ct3v07ky.js"
     ]
   },
   "_reorder.ZNsQMNBn.js": {
@@ -13,8 +14,8 @@
       "resources/js/app.js"
     ]
   },
-  "_reservation-form.RybUmoao.js": {
-    "file": "js/reservation-form.RybUmoao.js",
+  "_reservation-form.Ct3v07ky.js": {
+    "file": "js/reservation-form.Ct3v07ky.js",
     "name": "reservation-form",
     "imports": [
       "resources/js/app.js"
@@ -46,14 +47,14 @@
     ]
   },
   "resources/js/pages/admin-reservations.js": {
-    "file": "js/adminReservations.DQs2d4zt.js",
+    "file": "js/adminReservations.CfvDOy9O.js",
     "name": "adminReservations",
     "src": "resources/js/pages/admin-reservations.js",
     "isEntry": true,
     "imports": [
       "resources/js/app.js",
-      "_edit-reservation.TQaQMRC5.js",
-      "_reservation-form.RybUmoao.js"
+      "_edit-reservation.Bi5dLcNU.js",
+      "_reservation-form.Ct3v07ky.js"
     ]
   },
   "resources/js/pages/admin-services.js": {
@@ -78,13 +79,13 @@
     "isEntry": true
   },
   "resources/js/pages/reserve.js": {
-    "file": "js/reserve.CBEPRV3x.js",
+    "file": "js/reserve.DyWVzJjm.js",
     "name": "reserve",
     "src": "resources/js/pages/reserve.js",
     "isEntry": true,
     "imports": [
       "resources/js/app.js",
-      "_reservation-form.RybUmoao.js"
+      "_reservation-form.Ct3v07ky.js"
     ]
   },
   "resources/js/pages/signup.js": {
@@ -97,23 +98,23 @@
     ]
   },
   "resources/js/pages/user-profile.js": {
-    "file": "js/userProfile.DS88GHZh.js",
+    "file": "js/userProfile.DwvtRsd7.js",
     "name": "userProfile",
     "src": "resources/js/pages/user-profile.js",
     "isEntry": true,
     "imports": [
-      "_edit-reservation.TQaQMRC5.js",
-      "_reservation-form.RybUmoao.js"
+      "_edit-reservation.Bi5dLcNU.js",
+      "_reservation-form.Ct3v07ky.js"
     ]
   },
   "resources/js/pages/user-reservations.js": {
-    "file": "js/userReservations.Do1qM5lV.js",
+    "file": "js/userReservations.CgaHrnMq.js",
     "name": "userReservations",
     "src": "resources/js/pages/user-reservations.js",
     "isEntry": true,
     "imports": [
-      "_edit-reservation.TQaQMRC5.js",
-      "_reservation-form.RybUmoao.js"
+      "_edit-reservation.Bi5dLcNU.js",
+      "_reservation-form.Ct3v07ky.js"
     ]
   }
 }

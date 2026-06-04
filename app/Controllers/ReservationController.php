@@ -34,8 +34,10 @@ class ReservationController extends AbstractController
                                 Logger $logger)
     {
         parent::__construct($renderService, $logger);
-        $this->baseUrl = ($_SESSION['role']->value === 'ADMIN' ? '/admin/' : '/profil/') . $_SESSION['id'];
-        $this->pageUrl = $this->baseUrl . ($_SESSION['role']->value === 'ADMIN' ? '/reservations' : '/mes-reservations');
+        if (isset($_SESSION['role'])) {
+            $this->baseUrl = ($_SESSION['role']->value === 'ADMIN' ? '/admin/' : '/profil/') . $_SESSION['id'];
+            $this->pageUrl = $this->baseUrl . ($_SESSION['role']->value === 'ADMIN' ? '/reservations' : '/mes-reservations');
+        }
     }
     
     /**

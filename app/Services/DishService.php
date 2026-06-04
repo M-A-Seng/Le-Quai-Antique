@@ -109,7 +109,6 @@ class DishService extends AbstractService
      */
     public function getRestaurantDishes(int $restaurantId): ?array
     {
-        $this->checkUserLegitimacy(roles:[Role::ADMIN]);
         $this->validatePositiveInteger($restaurantId);
 
         return $this->dishModel->findAllRestaurantDishes($restaurantId);

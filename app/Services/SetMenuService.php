@@ -76,7 +76,6 @@ class SetMenuService extends AbstractService
      */
     public function getRestaurantMenus(int $restaurantId): ?array
     {
-        $this->checkUserLegitimacy(roles:[Role::ADMIN]);
         $this->validatePositiveInteger($restaurantId);
 
         return $this->setMenuModel->findAllMenus($restaurantId);
