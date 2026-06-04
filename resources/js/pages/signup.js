@@ -3,7 +3,6 @@ import { csrf } from '../app.js';
 // Vérification email en base de données avec AJAX
 document.getElementById('email').addEventListener('blur', function() 
 {
-    let csrf = document.getElementById('csrf_token').value;
     let email = this.value;
     fetch("/check/email", {
         method: "POST",
