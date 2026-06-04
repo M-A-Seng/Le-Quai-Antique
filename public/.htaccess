@@ -1,0 +1,10 @@
+# empêche l'affichage du contenu d'un répertoire lorsqu'il n'y a pas de fichier index.
+Options -Indexes
+
+RewriteEngine On
+
+# Ne pas réécrire les fichiers et dossiers réels
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+
+RewriteRule ^ index.php [QSA,L]
