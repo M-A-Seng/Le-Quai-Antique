@@ -7,6 +7,8 @@ use Cloudinary\Api\ApiResponse;
 use Cloudinary\Cloudinary;
 use Cloudinary\Configuration\Configuration;
 
+use function App\Helpers\get_valid_env;
+
 /**
  * CloudinaryService
  * 
@@ -17,21 +19,14 @@ use Cloudinary\Configuration\Configuration;
 class CloudinaryService
 {
     private Cloudinary $cloudinary;
-    private string $cloud_name;
-    private string $api_key;
-    private string $api_secret;
 
     public function __construct()
     {
-        $this->cloud_name = getenv('CLOUDINARY_CLOUD_NAME') ?? $_ENV['CLOUDINARY_CLOUD_NAME'] ?? throw new ServerException(__METHOD__ . ": Cloudname cloudinary manquant.");
-        $this->api_key = getenv('CLOUDINARY_API_KEY') ?? $_ENV['CLOUDINARY_API_KEY'] ?? throw new ServerException(__METHOD__ . ": Clé API cloudinary manquant.");
-        $this->api_secret = getenv('CLOUDINARY_API_SECRET') ?? $_ENV['CLOUDINARY_API_SECRET'] ?? throw new ServerException(__METHOD__ . ": Secret API cloudinary manquant.");
-
         $this->cloudinary = new Cloudinary([
             'cloud' => [
-                'cloud_name' => $this->cloud_name,
-                'api_key' => $this->api_key,
-                'api_secret' => $this->api_secret,
+                'cloud_name' => get_valid_env('CLOUDINARY_CLOUD_NAME') ?? throw new ServerException(__METHOD__ . ": Cloudname cloudinary manquant."),
+                'api_key' => get_valid_env('CLOUDINARY_API_KEY') ?? throw new ServerException(__METHOD__ . ": Clé API cloudinary manquant."),
+                'api_secret' => get_valid_env('CLOUDINARY_API_SECRET') ?? throw new ServerException(__METHOD__ . ": Secret API cloudinary manquant.")
             ],
             'url' => [
                 'secure' => true
