@@ -72,4 +72,8 @@ dist/
 *.ods.bak
 *.xml.bak
 diagram_activites_quai-antique.pdf
+mockup-desktop-1.png
+mockup-mobile-1.png
+mockup-tablet-1.png
+wireframe-desktop-1.png
 info.php

@@ -16,16 +16,16 @@ use function App\Helpers\vite_js;
     </label><br>
 
     <label for="email">Email* :
-        <input id="email" name="email" type="email" required>
+        <input id="email" name="email" maxlength="64" type="email" required>
         <span id="email-message"></span>
     </label><br>
 
     <label for="tel">Téléphone :
-        <input id="tel" name="tel" type="text" $pattern = "/^(\+?[1-9]{1}[0-9\s\-]{6,15}|0[0-9\s\-]{6,15})$/"; placeholder="(Facultatif)">
+        <input id="tel" name="tel" maxlength="24" type="text" $pattern = "/^(\+?[1-9]{1}[0-9\s\-]{6,15}|0[0-9\s\-]{6,15})$/"; placeholder="(Facultatif)">
     </label><br>
 
     <label for="password">Mot de passe* :
-        <input id="password" name="password" type="password" pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,}$" required>
+        <input id="password" name="password" minlength="8" maxlength="64" type="password" pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,}$" required>
         <span id="password-feedback"></span>
         <ul>
             <li id="password-lowercase">Minimum 1 lettre majuscule.</li>
@@ -36,7 +36,7 @@ use function App\Helpers\vite_js;
         </ul>
     </label><br>
     <label for="password-confirm">Confirmez votre mot de passe* :
-        <input id="password-confirm" name="password-confirm" type="password" pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,}$" required>
+        <input id="password-confirm" name="password-confirm" type="password" minlength="8" maxlength="64" pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,}$" required>
         <span id="password-confirm-feedback"></span>
     </label><br>
     

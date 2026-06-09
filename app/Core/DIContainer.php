@@ -8,6 +8,7 @@ use App\Controllers\AdminReservationController;
 use App\Controllers\AuthenticationController;
 use App\Controllers\CategoryController;
 use App\Controllers\DishController;
+use App\Controllers\ErrorController;
 use App\Controllers\GalleryController;
 use App\Controllers\HomeController;
 use App\Controllers\MenuController;
@@ -313,5 +314,15 @@ class DIContainer
     public function getRedirectController(): RedirectController
     {
         return new RedirectController($this->renderService, $this->logger);
+    }
+    
+    /**
+     * getErrorController retourne une instance de ErrorController
+     *
+     * @return ErrorController
+     */
+    public function getErrorController(): ErrorController
+    {
+        return new ErrorController($this->renderService, $this->logger);
     }
 }

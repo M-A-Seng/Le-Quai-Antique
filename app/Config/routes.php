@@ -77,6 +77,11 @@ return [
     ['GET',  '/réserver',                   'RedirectController',           'reserve'],
     ['GET',  '/book',                       'RedirectController',           'reserve'],
 
+    # Erreurs
+    ['GET',  '/error/404',                       'ErrorController',           'error404'],
+    ['GET',  '/error/403',                       'ErrorController',           'error403'],
+    ['GET',  '/error/500',                       'ErrorController',           'error500'],
+
     # App protégée (preprod, env dev déployé)
     ['POST', '/access/preprod',             'AuthenticationController',     'provideDevAccess',     ['requirePost&Csrf']],
 ];
