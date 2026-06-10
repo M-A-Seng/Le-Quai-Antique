@@ -118,12 +118,12 @@ class ReservationController extends AbstractController
                 'allergy' => $allergy,
                 'formaction' => $formaction
             ];
-            // redirection
+            // après redirection (user non identifié)
             if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                 $content = $this->renderService->render('reserve', $data, 'user');
                 return $this->html($content);
             }
-            // ajax
+            // ajax (user authentifié)
             return $this->json($data);
         }
         catch (AbstractFrontendException | NotFoundException $e) {
@@ -146,7 +146,7 @@ class ReservationController extends AbstractController
         return $this->html($content, $http);
     }
     
-    /**
+    /** 
      * checkAndPreserveData méthode appelée lorsque l'utilisateur essai de réserver sans être authentifiée.
      *
      * @return Response

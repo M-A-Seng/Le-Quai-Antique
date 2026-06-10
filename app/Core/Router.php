@@ -2,6 +2,7 @@
 
 namespace App\Core;
 
+use App\Controllers\ErrorController;
 use App\Core\DIContainer;
 use App\Core\Auth;
 use App\Enums\Role;
@@ -17,12 +18,14 @@ use App\Services\RenderService;
 class Router
 {
     private Auth $auth;
+    private ErrorController $errorController;
 
     public function __construct(private array $routes, 
                                 private DIContainer $diContainer, 
                                 private RenderService $renderService)
     {
         $this->auth = $this->diContainer->getAuth(); 
+        $this->errorController = $this->diContainer->getErrorController();
     }
         
     /**
@@ -86,8 +89,7 @@ class Router
                 if (APPENV === 'dev') {
                     throw new NotFoundException(__METHOD__ . ": Erreur : méthode '$getController' non trouvée dans le container");
                 } else {
-                    $content = $this->renderService->render('404', [], 'error');
-                    return new Response($content, 404, ['Content-Type' => 'text/html']);
+                    return $this->errorController->error404();
                 }
             }
             $controller = $this->diContainer->$getController();
@@ -97,8 +99,7 @@ class Router
             }
             return $response;
         }
-        $content = $this->renderService->render('404', [], 'error');
-        return new Response($content, 404, ['Content-Type' => 'text/html']);
+        return $this->errorController->error404();
     }
 
     /**
