@@ -39,7 +39,7 @@ class RegistrationController extends AbstractController
      */
     public function index(): Response
     {
-        $content = $this->renderService->render("signup");
+        $content = $this->renderService->render("signup", ['page' => 'inscription']);
         return $this->html($content);
     }
     

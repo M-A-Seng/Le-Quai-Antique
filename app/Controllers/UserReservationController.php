@@ -48,6 +48,7 @@ class UserReservationController extends AbstractController
      */
     public function index(array $param = [], array $extraData = []): Response
     {
+        $error_message = null;
         $http = 200;
         $data = [];
         if ($param['id'] && (int)$param['id'] !== (int)$_SESSION['id']) {
@@ -58,10 +59,10 @@ class UserReservationController extends AbstractController
             $data['reservations'] = $userReservations ?? null;
         }
         catch (AbstractFrontendException | NotFoundException $e) {
-            $data['error_message'] = $e->getUIMessage();
+            $error_message = $e->getUIMessage();
         }
         catch (AbstractBackendException $e) {
-            $data['error_message'] = $e->getUIMessage();
+            $error_message = $e->getUIMessage();
             $http = $e->getHttpCode();
             if ($e instanceof DbFailureException) {
                 $this->logger->dbError($e->getMessage());
@@ -69,7 +70,12 @@ class UserReservationController extends AbstractController
                 $this->logger->error($e->getMessage());
             }
         }
-        $content = $this->renderService->render('user.reservations', array_merge($data, $extraData), 'user');
+        $page = [
+            'page' => 'mes-reservations',
+            'error_message' => $error_message
+        ];
+        $data = array_merge($page, $data, $extraData);
+        $content = $this->renderService->render('user.reservations', $data, 'user');
         return $this->html($content, $http);
     }
     

@@ -12,7 +12,7 @@
 
     <?php if (!isset($_SESSION['dev_token']) || empty($_SESSION['dev_token'])): ?>
         <div class="modal">
-            <div class="modal-content">
+            <div class="modal_content">
                 <p><strong>Access key required</strong></p>
                 <form action="/access/preprod" method="POST" class="form-check-validity" data-submit-button="access-submit">
                     <input type="hidden" name="csrf_token" value="<?= html($_SESSION['csrf_token']) ?>">
@@ -23,11 +23,10 @@
         </div>
         <?= vite_js('resources/js/app.js') ?>
     <?php else: ?>
-        <?php require_once DIR_ROOT . '/app/Views/components/header.php' ?>
-
-        <body>
-            <?php require DIR_ROOT . '/app/Views/components/global-ui.php' ?>
-
+        <body data-page="<?= isset($page) ? html($page) : '' ?>">
+            <?php require_once DIR_ROOT . '/app/Views/components/header.php' ?>
+            <main>
+                <?php require DIR_ROOT . '/app/Views/components/global-ui.php' ?>
                 <?php if (isset($content)): ?>
                     <?= $content ?>
                 <?php else: ?>
@@ -35,8 +34,8 @@
                     <button onclick="location.reload()">Recharger la page</button>
                     <button onclick="window.location.href='/'">Page d'accueil</button><br>
                 <?php endif; ?>
+            </main>
+            <?php require_once DIR_ROOT . '/app/Views/components/footer.php' ?>
         </body>
-
-        <?php require_once DIR_ROOT . '/app/Views/components/footer.php' ?>
     <?php endif; ?>
 </html>

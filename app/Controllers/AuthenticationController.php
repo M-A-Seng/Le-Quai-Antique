@@ -40,7 +40,7 @@ class AuthenticationController extends AbstractController
      */
     public function index(): Response
     {
-        $content = $this->renderService->render("login");
+        $content = $this->renderService->render("login", ['page' => 'connexion']);
         return $this->html($content);
     }
     

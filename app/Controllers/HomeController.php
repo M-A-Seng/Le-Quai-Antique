@@ -26,7 +26,7 @@ class HomeController extends AbstractController
      */
     public function index(): Response
     {
-        $content = $this->renderService->render("home");
+        $content = $this->renderService->render("home", ['page' => 'accueil']);
         return $this->html($content);
     }
 }

@@ -133,14 +133,20 @@ class Router
     private function checkActivity(): bool|Response
     {
         $timeout = 1200; // 20min
-        if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity']) > $timeout) {
-            $this->auth->logout();
-            $_SESSION['error_message'] = "Votre session a expiré. Veuillez vous reconnecter.";
+        if (isset($_SESSION['id'], $_SESSION['role']) || isset($_SESSION['dev_token'])) 
+        {
+            if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity']) > $timeout) {
+                $this->auth->logout();
+                $_SESSION['error_message'] = "Votre session a expiré. Veuillez vous reconnecter.";
+                if (!isset($_SESSION['csrf_token'])) {
+                    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+                }
 
-            $content = $this->renderService->render('login');
-            return new Response($content, 301, ['Content-Type' => 'text/html']);
+                $content = $this->renderService->render('login');
+                return new Response($content, 301, ['Content-Type' => 'text/html']);
+            }
+            $_SESSION['last_activity'] = time();
         }
-        $_SESSION['last_activity'] = time();
         return true;
     }
     

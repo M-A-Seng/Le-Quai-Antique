@@ -45,7 +45,11 @@ class UserController extends AbstractController
         }
         $forthcomingReservations = $this->reservationService->getUserReservations($params['id'], true);
 
-        $content = $this->renderService->render("user.profile", ['reservations' => $forthcomingReservations] ,'user');
+        $data = [
+            'page' => 'profil',
+            'reservations' => $forthcomingReservations
+        ];
+        $content = $this->renderService->render("user.profile", $data,'user');
         return $this->html($content);
     }
     

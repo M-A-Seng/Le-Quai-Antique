@@ -28,3 +28,17 @@ document.querySelectorAll('.form-check-validity').forEach(form => {
         document.getElementById(form.dataset.submitButton).disabled = !form.checkValidity();
     });
 });
+
+// Header
+document.addEventListener('click', (e) => {
+    const burger = e.target.closest('.navbar_burger-icon');
+    if (burger) {
+        document.querySelector('.navbar')?.classList.toggle('nav-active');
+    }
+
+    const dropdown = e.target.closest('.dropdown');
+    if (dropdown) {
+        dropdown.classList.toggle('dropdown_open');
+        document.querySelector('.dropdown_list')?.classList.toggle('dropdown_active');
+    }
+});
