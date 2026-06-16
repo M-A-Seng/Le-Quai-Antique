@@ -39,7 +39,8 @@ class GalleryController extends AbstractController
     {
         $result = $this->galleryService->getRestaurantImages(1);
         $data = [
-            "images" => $result
+            "images" => $result,
+            "page" => 'galerie'
         ];
         if (isset($_SESSION['GalleryController_index'])) {
             $data = array_merge($data, $_SESSION['GalleryController_index']);

@@ -61,11 +61,9 @@ class ReservationController extends AbstractController
                 }
             }
             catch (AbstractFrontendException | NotFoundException $e) {
-                echo $e;
                 $error_message = $e->getUIMessage();
             }
             catch (AbstractBackendException $e) {
-                echo $e;
                 $error_message = $e->getUIMessage();
                 $http = $e->getHttpCode();
                 if ($e instanceof DbFailureException) {
@@ -75,8 +73,11 @@ class ReservationController extends AbstractController
                 }
             }
         }
-        $data = array_merge($userParam ?? [], $cached ?? []);
-        $data['error_message'] = $error_message;
+        $page = [
+            'page' => 'reserver',
+            'error_message' => $error_message
+        ];
+        $data = array_merge($page, $userParam ?? [], $cached ?? []);
         $content = $this->renderService->render('reserve', $data);
         return $this->html($content, $http);
     }

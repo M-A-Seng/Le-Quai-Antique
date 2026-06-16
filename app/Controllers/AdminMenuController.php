@@ -40,18 +40,22 @@ class AdminMenuController extends AbstractController
     {
         $http = 200;
         $default = 'dishes';
+        $page = null;
         if (isset($params['branch'])) {
             switch ($params['branch']) {
                 case 'categories':
                     $default = 'categories';
+                    $page = 'categories';
                     break;
             
                 case 'plats':
                     $default = 'dishes';
+                    $page = 'plats';
                     break;
                 
                 case 'menus':
                     $default = 'setmenus';
+                    $page = 'menus';
                     break;
 
                 default:
@@ -62,6 +66,7 @@ class AdminMenuController extends AbstractController
         $data = null;
         try {
             $data = [
+                'page' => $page,
                 'default' => $default,
                 'dishes' => $this->dishService->getRestaurantDishes(1),
                 'categories' => $this->categoryService->getRestaurantCategories(1),

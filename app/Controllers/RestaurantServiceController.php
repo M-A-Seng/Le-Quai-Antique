@@ -36,11 +36,11 @@ class RestaurantServiceController extends AbstractController
      */
     public function index(array $extraData = [], int $http = 200): Response
     {
-        $data = [];
+        $data = null;
         $error_message = null;
+        $servicesData = null;
         try {
             $servicesData = $this->restaurantServiceService->getRestaurantServices(1); # restaurant uniquement actuellement
-            $data = array_merge($servicesData, $extraData);
         }
         catch (AbstractFrontendException | NotFoundException $e) {
             $error_message = $e->getUIMessage();
@@ -54,9 +54,11 @@ class RestaurantServiceController extends AbstractController
                 $this->logger->error($e->getMessage());
             }
         }
-        if (!is_null($error_message)) {
-            $data['error_message'] = $error_message;
-        }
+        $page = [
+            'page' => 'services',
+            'error_message' => $error_message
+        ];
+        $data = array_merge($page, $servicesData, $extraData);
         $content = $this->renderService->render("admin.services", $data, 'user');
         return $this->html($content, $http);
     }

@@ -74,3 +74,5 @@ myprocess.md
 logs.md
 diagram_activites_quai-antique.pdf
 docs/
+*.css.map
+resources/

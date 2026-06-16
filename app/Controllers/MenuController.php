@@ -41,6 +41,7 @@ class MenuController extends AbstractController
             $dishes = $this->dishService->getRestaurantDishes(1);
             unset($dishes['Assiettes non catégorisées']);
             $data = [
+                'page' => 'la-carte',
                 'dishes' => $dishes,
                 'setmenus' => $this->setMenusService->getRestaurantMenus(1)
             ];

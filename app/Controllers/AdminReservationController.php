@@ -69,6 +69,7 @@ class AdminReservationController extends AbstractController
                 $this->logger->error($e->getMessage());
             }
         }
+        $data['page'] = 'reservations';
         $content = $this->renderService->render('admin.reservations', $data, 'user');
         return $this->html($content, $http);
     }
