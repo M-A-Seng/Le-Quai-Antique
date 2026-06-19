@@ -8,6 +8,9 @@ RUN apt-get update && apt-get install -y \
     libonig-dev \
     libssl-dev \
     curl \
+    pkg-config \
+    && pecl install mongodb \
+    && docker-php-ext-enable mongodb \
     && docker-php-ext-install \
         pdo_pgsql \
         mbstring \

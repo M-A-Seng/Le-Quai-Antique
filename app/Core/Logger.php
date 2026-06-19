@@ -2,6 +2,10 @@
 
 namespace App\Core;
 
+use App\Enums\Entity;
+use App\Models\LogModel;
+use MongoDB\BSON\UTCDateTime;
+
 /**
  * Logger Génère des logs dans logs/app.log par défaut ; Si le dossier/fichier n'existe pas -> sera automatiquement crée.
  */
@@ -14,7 +18,7 @@ class Logger
      * @param  string $fileName
      * @return void
      */
-    public function __construct(string $fileName = 'app.log')
+    public function __construct(private LogModel $logModel, string $fileName = 'app.log')
     {
         $logDir = DIR_ROOT . '/logs';
 
@@ -55,5 +59,45 @@ class Logger
     {
         $line = sprintf("[%s] [%s] %s\n", date('Y-m-d H:i:s'), $level, $message);
         file_put_contents($this->file, $line, FILE_APPEND);
+    }
+
+    ###########################
+    # MongoDB Logging
+    ###########################
+
+    public function logCreate(Entity $entity, array $data): string
+    {
+        return $this->logModel->insert([
+            'entity'        => $entity->value,
+            'action'        => 'create',
+            'user_id'       => $_SESSION['id'],
+            'created_at'    => new UTCDateTime(),
+            'data'          => $data,
+        ]);
+    }
+
+    public function logUpdate(Entity $entity, int $entityId, array $before, array $after): string
+    {
+        return $this->logModel->insert([
+            'entity'        => $entity->value,
+            'entity_id'     => $entityId,
+            'action'        => 'update',
+            'user_id'       => $_SESSION['id'],
+            'created_at'    => new UTCDateTime(),
+            'before'        => $before,
+            'after'         => $after,
+        ]);
+    }
+
+    public function logDelete(Entity $entity, int $entityId, array $deletedData): string
+    {
+        return $this->logModel->insert([
+            'entity'        => $entity->value,
+            'entity_id'     => $entityId,
+            'action'        => 'delete',
+            'user_id'       => $_SESSION['id'],
+            'created_at'    => new UTCDateTime(),
+            'data'          => $deletedData,
+        ]);
     }
 }
