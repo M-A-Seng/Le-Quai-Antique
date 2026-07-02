@@ -20,7 +20,7 @@ class TestableAbstractModel extends AbstractModel
         parent::__construct($connection);
     }
     # Accéder aux méthodes protected
-    public function insertMethod(array $data): int {
+    public function insertMethod(array $data): array {
         return $this->insert($data);
     }
     public function findAllMethod(): array {
@@ -29,7 +29,7 @@ class TestableAbstractModel extends AbstractModel
     public function findByMethod(string $column, mixed $value): array {
         return $this->findBy($column, $value);
     }
-    public function updateMethod(int $id, array $data): int {
+    public function updateMethod(int $id, array $data): array {
         return $this->update($id, $data);
     }
     public function deleteMethod(array $conditions): int {

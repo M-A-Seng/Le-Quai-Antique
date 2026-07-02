@@ -185,7 +185,7 @@ abstract class AbstractService extends ConstantsCheckerService
     /**
      * checkUserLegitimacy Vérifie que l'utilisateur de la session est valide id + role.
      *
-     * @param  int $userId
+     * @param int $userId
      * @param Role[] $roles | liste de Role Enum
      * @return void
      */

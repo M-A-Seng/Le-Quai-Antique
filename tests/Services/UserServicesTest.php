@@ -94,7 +94,6 @@ class UserServicesTest extends TestCase
             'starts with 00' => ['0033612345678', '0033612345678'],
             'space only' => ['          ', NULL], # Ok car le tel est facultatif
             'empty string' => ['', NULL], # Ok car le tel est facultatif
-
         ];
     }
     public static function invalidPhoneProvider(): array {

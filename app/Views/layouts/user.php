@@ -7,9 +7,6 @@ use function App\Helpers\vite_js;
         <?php require_once DIR_ROOT . '/app/Views/components/head/head.php' ?>
         <?php require_once DIR_ROOT . '/app/Views/components/head/head-private.php' ?>
     </head>
-
-    LAYOUT USER  <!-- retirer en prod -->
-
     <body data-page="<?= isset($page) ? html($page) : '' ?>">
         <?php require_once DIR_ROOT . '/app/Views/components/header.php' ?>
         <main>

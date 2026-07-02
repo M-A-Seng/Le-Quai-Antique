@@ -8,8 +8,6 @@ use function App\Helpers\vite_js;
         <?php require_once DIR_ROOT . '/app/Views/components/head/head-public.php' ?>
     </head>
 
-    DEFAULT LAYOUT <!-- retirer en prod -->
-
     <body data-page="<?= isset($page) ? html($page) : '' ?>">
         <?php require_once DIR_ROOT . '/app/Views/components/header.php' ?>
         

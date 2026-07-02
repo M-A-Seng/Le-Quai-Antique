@@ -9,7 +9,7 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "vite build", 
+    "build": "vite build",
     "preview": "vite preview",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -25,6 +25,7 @@
   },
   "homepage": "https://github.com/M-A-Seng/Le-Quai-Antique#readme",
   "devDependencies": {
+    "sass": "^1.101.0",
     "vite": "^8.0.13"
   },
   "dependencies": {

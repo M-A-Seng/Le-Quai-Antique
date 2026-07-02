@@ -22,17 +22,8 @@ class Response
     private array $headers;
     public function __construct(private mixed $content = '', int $status = 200, array $headers = [])
     {
-        if ($this->isValidHttpCode($status)) {
-            $this->status = $status;
-        } else {
-            throw new ServerException("Code HTTP invalide : " . $status);
-        }
-        if (!array_is_list($headers)) {
-            $this->headers = $headers;
-        } else {
-            $array = print_r($headers, true);
-            throw new ServerException("Données invalides :" . $array . "\nUn tableau associatif est attendu");
-        }
+        $this->status = $this->isValidHttpCode($status) ? $status : throw new ServerException("Code HTTP invalide : " . $status) ;
+        $this->headers = !array_is_list($headers) ? $headers : throw new ServerException("Données invalides :" . json_encode($headers) . "\nUn tableau associatif est attendu");
     }
 
     public function send(): void

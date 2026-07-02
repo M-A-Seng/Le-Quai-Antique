@@ -33,7 +33,6 @@ export default defineConfig({
                     if (assetInfo.name.endsWith('.css')) {
                         return 'styles/[name].[hash][extname]'
                     }
-
                     return 'assets/[name].[hash][extname]'
                 }
             }

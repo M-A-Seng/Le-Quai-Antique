@@ -9,7 +9,6 @@ use App\Services\RenderService;
 /**
  * AbstractController
  * 
- * - render()
  * - redirect()
  * - html()
  * - json()

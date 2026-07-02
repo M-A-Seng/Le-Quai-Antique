@@ -11,7 +11,6 @@ use App\Exceptions\InvalidReservationException;
 use App\Exceptions\ServerException;
 use App\Models\ReservationModel;
 use App\Models\RestaurantServiceModel;
-use DateTime;
 use DateTimeImmutable;
 use DateTimeZone;
 use Exception;
