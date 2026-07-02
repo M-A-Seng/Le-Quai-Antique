@@ -118,7 +118,7 @@ class ReservationController extends AbstractController
                 'tel' => $data['client_tel'] ?? '',
                 'allergy' => $allergy,
                 'formaction' => $formaction
-            ];
+            ]; 
             // après redirection (user non identifié)
             if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                 $content = $this->renderService->render('reserve', $data, 'user');
@@ -196,21 +196,18 @@ class ReservationController extends AbstractController
         try {
             $_POST['client_id'] = $_SESSION['id'];
             $this->reservationService->addReservation(1, $_POST); # Actuellement restaurant unique
-
             unset($_SESSION['reservation_data'], $_SESSION['reservation_pending_confirmation']);
 
-            if ($_SESSION['role']->value === 'ADMIN') {
-                $_SESSION['confirmation_message'] = "Réservation enregistrée avec succès !";
-                return $this->redirect($this->pageUrl);
-            }
-            $_SESSION['confirmation_message'] = "Réservation confirmée ! Merci pour votre confiance. Vous pouvez consulter vos réservations directement depuis votre profil ou votre onglet « Mes Réservations ».";
+            $_SESSION['confirmation_message'] = $_SESSION['role']->value === 'ADMIN' ? 
+                                                "Réservation enregistrée avec succès !" 
+                                                : "Réservation confirmée ! Merci pour votre confiance. Vous pouvez consulter vos réservations directement depuis votre profil ou votre onglet « Mes Réservations ».";
             return $this->redirect($this->pageUrl);
         } 
         catch (AbstractFrontendException | NotFoundException $e) {
-            $error_message = $e;//->getUIMessage();
+            $error_message = $e->getUIMessage();
         }
         catch (AbstractBackendException $e) {
-            $error_message = $e;//->getUIMessage();
+            $error_message = $e->getUIMessage();
             $http = $e->getHttpCode();
             if ($e instanceof DbFailureException) {
                 $this->logger->dbError($e->getMessage());

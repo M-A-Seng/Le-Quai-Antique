@@ -1,0 +1,21 @@
+# Empêche l'affichage du contenu des répertoires
+Options -Indexes
+# Active le moteur de réécriture d'URL.
+RewriteEngine On
+
+# Protection des fichiers sensibles
+<FilesMatch "^(\.env|composer\.(json|lock)|phpunit\.xml|\.git)">
+    Require all denied
+</FilesMatch>
+
+# Ne pas réécrire les fichiers et dossiers existants. Si la ressource demandée n'est pas un fichier réel (!-f) Et n'est pas un dossier réel (!-d) Alors Apache réécrit la requête vers index.php
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+
+# Front Controller
+RewriteRule ^ index.php [QSA,L]
+
+# Pages d'erreur Apache
+ErrorDocument 403 /error/403
+ErrorDocument 404 /error/404
+ErrorDocument 500 /error/500

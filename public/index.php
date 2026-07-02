@@ -1,7 +1,11 @@
 <?php
 
 use App\Core\Response;
-
+# helpers
+require_once __DIR__ . '/../app/Helpers/main.php';
+require_once __DIR__ . '/../app/Helpers/vite.php';
+require_once __DIR__ . '/../app/Helpers/cloudinary.php';
+# configuration / structure
 require_once __DIR__ . '/../app/Config/config.php';
 require_once __DIR__ . '/../app/Config/bootstrap.php';
 

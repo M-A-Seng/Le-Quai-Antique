@@ -8,8 +8,6 @@
         <?php require_once DIR_ROOT . '/app/Views/components/head/head-private.php' ?>
     </head>
 
-    LAYOUT PROTECTED  <!-- retirer en prod -->
-
     <?php if (!isset($_SESSION['dev_token']) || empty($_SESSION['dev_token'])): ?>
         <div class="modal">
             <div class="modal_content">

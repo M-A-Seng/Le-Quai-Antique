@@ -1,4 +1,5 @@
 <?php 
+use function App\Helpers\get_valid_env;
 
 # Variable globale, chemin racine du projet
 define('DIR_ROOT', dirname(__DIR__, 2));
@@ -15,6 +16,6 @@ session_set_cookie_params([
     'path' => '/',
     'domain' => '',
     'httponly' => true,
-    'secure' => false,   // Mettre true en prod
+    'secure' => get_valid_env('APP_ENV') !== 'dev',
     'samesite' => 'Strict'
 ]);

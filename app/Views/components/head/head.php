@@ -23,4 +23,4 @@ use function App\Helpers\vite_css;
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Hind+Mysuru:wght@300;400;500;600;700&family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
 <!-- scripts -->
-<?= vite_css('resources/js/app.js') ?>
+<link rel="stylesheet" href="assets/styles/app.Bwq6TOsd.css">

@@ -106,8 +106,9 @@ abstract class AbstractModel extends ConstantsCheckerService
         }
         $data = $this->filterAllowedColumns(static::class, $data);
 
-        $columns = implode(',', array_map(fn($col) => "\"$col\"", array_keys($data)));
-        $placeholders = ':' . implode(', :', array_keys($data));
+        $keys = array_keys($data);
+        $columns = '"' . implode('","', $keys) . '"';
+        $placeholders = ':' . implode(', :', $keys);
 
         $sql = "INSERT INTO \"" . static::TABLE . "\" ($columns) VALUES ($placeholders) RETURNING *";
         $stmt = $this->pdo->prepare($sql);

@@ -17,7 +17,7 @@ class Logger
     public function __construct(string $fileName = 'app.log')
     {
         $logDir = DIR_ROOT . '/logs';
-
+        // Permet de prendre en charge aussi bien un nom de fichier seul qu'un chemin avec des /
         if (str_contains($fileName, '/')) {
             $this->file = $fileName;
             $logDir = dirname($fileName);
@@ -25,7 +25,7 @@ class Logger
             $logDir = DIR_ROOT . '/logs';
             $this->file = $logDir . '/' . $fileName;
         }
-
+        // Si le dossier n'existe pas il est crée avec les permissions larges (0777)
         if (!is_dir($logDir)) {
             mkdir($logDir, 0777, true);
         }
@@ -53,7 +53,9 @@ class Logger
 
     private function write(string $level, string $message): void
     {
+        // Formatte la ligne avec [date], [niveau], [message]
         $line = sprintf("[%s] [%s] %s\n", date('Y-m-d H:i:s'), $level, $message);
+        // écrit le log dans le fichier sans écraser les précédents
         file_put_contents($this->file, $line, FILE_APPEND);
     }
 }
